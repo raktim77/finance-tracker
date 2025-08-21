@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+/* Define theme colors for light mode */
+@layer theme {
+  :root {
+    --color-background: #F9FAFB;      /* page bg */
+    --color-surface:    #FFFFFF;      /* cards / header */
+    --color-text-primary:   #111827;  /* main text */
+    --color-text-secondary: #4B5563;  /* muted text */
+    --color-primary:    #4F46E5;      /* indigo accent */
+    --color-success:    #16A34A;      /* green */
+    --color-warm:       #9333EA;      /* violet glow/accent */
+    --color-accent-teal: #32a59e;     /* teal accent (new) */
+    --color-danger:     #EF4444;
+    --benefits-card-color: #FFFFFF; 
+        --pricing-card-color: #FFFFFF;
+
+    /* 👇 new: light-mode glow behind pricing card */
+    --pricing-card-glow-teal: rgba(50, 165, 158, 0.12);
+    --pricing-card-glow-warm: rgba(147, 51, 234, 0.08);      /* red for alerts (new) */
+  }
+}
+
+/* 🌙 Dark Mode */
+@layer base {
+  html.dark {
+    --color-background: #0B0F1A;      /* deep navy bg */
+    --color-surface:    #1A1F2E;      /* panels */
+    --color-text-primary:   #F9FAFB;  /* main text */
+    --color-text-secondary: #9CA3AF;  /* muted text */
+    --color-primary:    #6366F1;      /* indigo-purple accent */
+    --color-success:    #22C55E;      /* green */
+    --color-warm:       #9333EA;      /* violet glow/accent */
+    --color-accent-teal: #00a8aa;     /* teal accent (new) */
+    --color-danger:     #F87171;
+    --benefits-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
+    --pricing-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
+  }
+}
+@layer theme {
+  :root {
+    --color-surface-elevated: var(--color-surface);
+  }
+}
+
+:root {
+  --exp-glow: 0;     /* card ring/edge glow */
+  --exp-auras: 0;    /* big background blurs */
+}
+
+.dark {
+  --exp-glow: .4;    /* nice in dark mode */
+  --exp-auras: 1;    /* show background auras */
+}
+
+/* Dark: elevated = 10% darker than surface */
+@layer base {
+  html.dark {
+    --color-surface-elevated: color-mix(in oklab, var(--color-surface) 90%, black);
+  }
+}
+@layer components {
+  /* base button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    border-radius: 9999px;              /* rounded-full */
+    padding: 0.75rem 1.5rem;            /* px-6 py-3 */
+    transition: opacity .15s ease, background-color .15s ease, color .15s ease;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  /* solid teal */
+  .btn-primary {
+    background: var(--color-accent-teal);
+    color: #fff;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+  .btn-primary:hover { opacity: .9; }
+
+  /* outline teal */
+  .btn-outline {
+    background: transparent;
+    color: var(--color-accent-teal);
+    border: 2px solid var(--color-accent-teal);
+  }
+  .btn-outline:hover {
+    background: var(--color-accent-teal);
+    color: #fff;
+  }
+
+  /* compact header button */
+  .btn-header {
+    padding: 0.5rem 1rem;               /* px-4 py-2 */
+    border-radius: 0.75rem;             /* rounded-xl */
+    background: var(--color-accent-teal);
+    color: #fff;
+  }
+  .btn-header:hover { opacity: .9; }
+}
+
+
+
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+}
+
+#root{
+  width: 100%;
+  
+}
+
+/* a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+} */
+
+body {
+  margin: 0;
+  /* display: flex;
+  place-items: center; */
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-background); color: var(--color-text-primary); 
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+/* button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+} */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--color-text-primary);
+    background-color: var(--color-background);
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
