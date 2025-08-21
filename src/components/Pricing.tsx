@@ -74,7 +74,7 @@ function PricingMobileBlock() {
         Simple pricing. <span className="text-[var(--color-primary)]">Free</span> to start.
       </h2>
       <p className="mt-2 text-[var(--color-text-secondary)]">
-        Expensio’s core features are free forever. No trial clock, no credit card.
+        Xpensio’s core features are free forever. No trial clock, no credit card.
         Upgrade later only if you want advanced automations and team tools.
       </p>
 
@@ -182,7 +182,7 @@ export default function Pricing() {
             </h2>
 
             <p className="mt-3 text-[var(--color-text-secondary)] max-w-prose">
-              Expensio’s core features are free forever. No trial clock, no credit card. Upgrade
+              Xpensio’s core features are free forever. No trial clock, no credit card. Upgrade
               later only if you want advanced automations and team tools.
             </p>
 

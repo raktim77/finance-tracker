@@ -33,7 +33,7 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="flex items-center gap-2 text-[var(--color-text-primary)] font-extrabold text-xl">
               <span className="bg-gradient-to-r from-[var(--color-accent-teal)] to-[var(--color-warm)] bg-clip-text text-transparent">
-                Expensio
+                Xpensio
               </span>
             </div>
 
@@ -140,7 +140,7 @@ export default function Footer() {
           </div>
 
           <div className="text-center md:text-right">
-            © {new Date().getFullYear()} Expensio. All rights reserved.
+            © {new Date().getFullYear()} Xpensio. All rights reserved.
           </div>
         </div>
       </div>

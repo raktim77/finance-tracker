@@ -173,7 +173,7 @@ const Benefits = () => {
           </h2>
 
           <p className="mt-3 text-[var(--color-text-secondary)] max-w-prose">
-            Built for everyone—Expensio gives you a seamless,
+            Built for everyone—Xpensio gives you a seamless,
             secure, and intuitive financial workflow.
           </p>
 

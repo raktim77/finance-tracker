@@ -8,7 +8,7 @@ const Hero = () => {
           Manage <span className="text-[var(--color-primary)]">Finances</span> <br /> Easily and Smartly
         </h1>
         <p className="mt-6 text-lg md:text-xl text-[var(--color-text-secondary)]">
-          Expensio helps you control spending, track income, and manage savings with an intuitive dashboard.
+          Xpensio helps you control spending, track income, and manage savings with an intuitive dashboard.
         </p>
         <div className="mt-8 flex justify-center">
           <button className="btn btn-primary px-6 py-3 rounded-full font-medium text-lg shadow-lg hover:opacity-90 transition">
@@ -26,7 +26,7 @@ const Hero = () => {
 
         <img
           src="/assets/professional-dashboard-user-panel.png" // your dashboard image
-          alt="Expensio Dashboard"
+          alt="Xpensio Dashboard"
           className="w-[min(92vw,1400px)] rounded-xl shadow-2xl "
         />
       </div>

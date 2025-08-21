@@ -135,6 +135,11 @@ a:hover {
   color: #535bf2;
 } */
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;   /* hard stop */
+}
+
 body {
   margin: 0;
   /* display: flex;

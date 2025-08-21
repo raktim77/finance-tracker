@@ -46,7 +46,7 @@ const Header = () => {
         <div className="flex items-center cursor-pointer" onClick={() => handleNav("home")}>
           <img
             src={theme === "light" ? LogoLight : Logo}
-            alt="Expensio Logo"
+            alt="Xpensio Logo"
             className="w-35"
           />
         </div>

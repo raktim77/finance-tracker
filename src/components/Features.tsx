@@ -60,7 +60,7 @@ const Features = () => {
       <div className="px-6 text-center mb-12">
         <span className="inline-block text-xs tracking-widest uppercase px-3 py-1 rounded-full
                          bg-[var(--color-accent-teal)]/15 text-[var(--color-accent-teal)]">
-          Why Expensio
+          Why Xpensio
         </span>
         <h2 className="mt-4 text-3xl md:text-4xl font-extrabold text-[var(--color-text-primary)]">
           Powerful Features to <span className="text-[var(--color-primary)]">Elevate</span> Your Finances
