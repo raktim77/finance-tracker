@@ -71,7 +71,7 @@ const Features = () => {
         </p>
       </div>
 
-      {/* Grid → always 12 on lg so we can do 12/5/7/7/5 spans */}
+      {/* Grid → always 12 on lg so we can do 12/5/7/7/5 spans some comment */}
       <div className="px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
           {cards.map((c, idx) => {
