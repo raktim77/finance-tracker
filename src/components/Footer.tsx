@@ -1,5 +1,4 @@
 import { Github, Twitter, Linkedin } from "lucide-react";
-import React from "react";
 
 // Smooth scroll that accounts for the sticky header height
 function scrollToId(id: string) {
