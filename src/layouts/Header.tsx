@@ -40,8 +40,10 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+<header
+  className="fixed inset-x-0 top-0 z-50 bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-md"
+>
+  <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         {/* Logo */}
         <div className="flex items-center cursor-pointer" onClick={() => handleNav("home")}>
           <img

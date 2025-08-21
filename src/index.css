@@ -137,8 +137,10 @@ a:hover {
 
 html, body {
   max-width: 100%;
-  overflow-x: hidden;   /* hard stop */
+  overflow-x: hidden; 
 }
+
+:root { --header-h: 72px; }
 
 body {
   margin: 0;

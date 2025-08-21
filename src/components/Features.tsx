@@ -119,10 +119,10 @@ const Features = () => {
                       {c.mobileCta && (
                         <div className="mt-6">
                           <a
-                            href="#"
+                            
                             className="btn-outline inline-flex items-center gap-2 rounded-xl px-4 py-2
                                         text-[var(--color-accent-teal)] font-medium
-                                       hover:opacity-90 transition hover:bg-[var(--color-accent-teal)] hover:text-white"
+                                       hover:opacity-90 transition hover:bg-[var(--color-accent-teal)] hover:text-white cursor-pointer"
                             aria-label="Get it on Google Play"
                           >
                             <GooglePlayIcon />

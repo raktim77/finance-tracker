@@ -41,35 +41,35 @@ export default function Footer() {
             <nav className="flex flex-wrap justify-center md:justify-start gap-6 text-sm font-medium text-[var(--color-text-secondary)]">
               <button
                 onClick={() => scrollToId("home")}
-                className="hover:text-[var(--color-accent-teal)] transition"
+                className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Home"
               >
                 Home
               </button>
               <button
                 onClick={() => scrollToId("features")}
-                className="hover:text-[var(--color-accent-teal)] transition"
+                className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Features"
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToId("benefits")}
-                className="hover:text-[var(--color-accent-teal)] transition"
+                className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Benefits"
               >
                 Benefits
               </button>
               <button
                 onClick={() => scrollToId("pricing")}
-                className="hover:text-[var(--color-accent-teal)] transition"
+                className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Pricing"
               >
                 Pricing
               </button>
               <button
                 
-                className="hover:text-[var(--color-accent-teal)] transition"
+                className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to FAQ"
               >
                 FAQ
@@ -118,14 +118,14 @@ export default function Footer() {
           <div className="flex justify-center md:justify-start gap-6">
             <button
               
-              className="hover:text-[var(--color-accent-teal)] transition"
+              className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
               aria-label="Go to Privacy Policy"
             >
               Privacy Policy
             </button>
             <button
            
-              className="hover:text-[var(--color-accent-teal)] transition"
+              className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
               aria-label="Go to Terms of Use"
             >
               Terms of Use
@@ -134,7 +134,7 @@ export default function Footer() {
 
           <div className="text-center md:text-left">
             Developed with ❤️ by{" "}
-            <span className="text-[var(--color-accent-teal)] font-medium">
+            <span className="text-[var(--color-accent-teal)] font-medium cursor-pointer">
               <a  aria-label="Raktim Routh profile">Raktim Routh</a>
             </span>
           </div>
