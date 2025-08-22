@@ -183,7 +183,19 @@ button:focus-visible {
   a:hover {
     color: #747bff;
   }
-  button {
+  /* button {
     background-color: #f9f9f9;
+  } */
+}
+@layer base {
+  button {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
   }
 }
