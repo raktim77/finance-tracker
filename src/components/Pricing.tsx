@@ -1,8 +1,7 @@
-// Pricing.tsx
+
 import React from "react";
 import { Check, Shield, Sparkles } from "lucide-react";
 
-// Accept CSS custom properties safely (e.g., --exp-glow)
 type CSSVars = { [key: `--${string}`]: string | number };
 type CSSVarStyle = React.CSSProperties & CSSVars;
 
@@ -94,9 +93,7 @@ function PricingMobileBlock() {
           <div className="absolute inset-0 rounded-[2rem] bg-[var(--color-warm)]/10 blur-3xl hidden dark:block" />
         </div>
 
-        {/* locally nudge ring so it pops in light too */}
         <GlowCard className="p-6" style={{ ["--exp-glow"]: 0.18 }}>
-          {/* top: Free Plan / For Individuals (matches desktop) */}
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm uppercase tracking-wide text-[var(--color-text-secondary)]">

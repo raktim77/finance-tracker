@@ -25,7 +25,7 @@ const Hero = () => {
         </div>
 
         <img
-          src="/assets/professional-dashboard-user-panel.png" // your dashboard image
+          src="/assets/professional-dashboard-user-panel.png" // dashboard image
           alt="Xpensio Dashboard"
           className="w-[min(92vw,1400px)] rounded-xl shadow-2xl "
         />

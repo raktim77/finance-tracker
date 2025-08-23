@@ -24,7 +24,6 @@ const gallery = [
 ];
 
 /** GlowCard — white in light, elevated dark surface in dark */
-/** GlowCard — white in light, elevated dark surface in dark */
 function GlowCard({
   children,
   className = "",
@@ -34,7 +33,6 @@ function GlowCard({
       className={[
         "relative rounded-2xl border border-black/5 dark:border-white/10",
         "bg-[var(--benefits-card-color)]", 
-        // 👆 force pure white in light, keep elevated dark in dark
         "shadow-[0_2px_6px_rgba(0,0,0,0.08)] dark:shadow-xl",
         "overflow-hidden transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
         className,
@@ -59,7 +57,7 @@ function GlowCard({
 }
 
 
-/** Accordion item — smooth transitions */
+/** Accordion item  */
 function AccordionItem({
   title,
   desc,

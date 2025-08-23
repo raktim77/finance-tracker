@@ -20,7 +20,6 @@ function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
 
-  // approximate header height (adjust if you change header size)
   const header = document.querySelector("header");
   const headerH = header ? (header as HTMLElement).offsetHeight : 72;
 

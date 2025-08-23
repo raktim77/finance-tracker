@@ -12,7 +12,6 @@ const Home = () => {
       <Benefits />
       <Pricing />
       <Footer />
-      {/* Later: Features, Pricing, etc */}
     </div>
   );
 };

@@ -76,7 +76,7 @@ const Features = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
           {cards.map((c, idx) => {
             const isWide = c.span?.includes("lg:col-span-12"); // only the top hero card
-            // Keep the alternating image/text order for non-wide cards
+            // Keeps the alternating image/text order for non-wide cards
             const reverse = !isWide && idx % 2 === 1;
 
             return (

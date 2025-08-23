@@ -9,9 +9,7 @@ function App() {
       <MainLayout>
         <Routes>
           <Route path="/" element={<Home />} />
-          {/* Future pages */}
-          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
-          {/* <Route path="/reports" element={<Reports />} /> */}
+        
         </Routes>
       </MainLayout>
       <Analytics />
