@@ -13,8 +13,8 @@
     --color-accent-teal: #32a59e;     /* teal accent (new) */
     --color-danger:     #EF4444;
     --benefits-card-color: #FFFFFF; 
-        --pricing-card-color: #FFFFFF;
-
+    --pricing-card-color: #FFFFFF;
+    --input-border: #e6e9eb;
     /* 👇 new: light-mode glow behind pricing card */
     --pricing-card-glow-teal: rgba(50, 165, 158, 0.12);
     --pricing-card-glow-warm: rgba(147, 51, 234, 0.08);      /* red for alerts (new) */
@@ -33,6 +33,7 @@
     --color-warm:       #9333EA;      /* violet glow/accent */
     --color-accent-teal: #00a8aa;     /* teal accent (new) */
     --color-danger:     #F87171;
+    --input-border: transparent;
     --benefits-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
     --pricing-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
   }
@@ -47,7 +48,16 @@
   --exp-glow: 0;     /* card ring/edge glow */
   --exp-auras: 0;    /* big background blurs */
 }
+:root{
+  --input-border-light: #e6e9eb; /* subtle */
+  --input-border-dark: transparent;
+}
 
+/* If you have a dark theme toggler that applies .dark on html/body */
+.dark {
+  --input-border-light: transparent; /* ignored in dark */
+  --input-border-dark: transparent;
+}
 .dark {
   --exp-glow: .4;    /* nice in dark mode */
   --exp-auras: 1;    /* show background auras */
@@ -123,7 +133,22 @@
 
 #root{
   width: 100%;
-  
+  height: 100%;
+}
+
+.m-h-ctm{
+  min-height: calc(100vh - 64px) !important;
+}
+/* prevent a tiny scroll from oversized blurs on desktop */
+body.app-no-scroll-desktop {
+  overflow: hidden;
+}
+
+/* fallback: if viewport is narrow/tall (mobile), allow scroll */
+@media (max-height: 720px), (max-width: 640px) {
+  body.app-no-scroll-desktop {
+    overflow: auto;
+  }
 }
 
 /* a {
@@ -136,11 +161,13 @@ a:hover {
 } */
 
 html, body {
-  max-width: 100%;
-  overflow-x: hidden; 
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  /* overflow-x: hidden; */
 }
 
-:root { --header-h: 72px; }
+:root { --header-h: 64px; }
 
 body {
   margin: 0;
@@ -198,4 +225,35 @@ button:focus-visible {
     font: inherit;
     color: inherit;
   }
+}
+
+
+/* index.css (or globals.css) - append) */
+@keyframes logo-rotate {
+  0% { transform: rotate(0deg) scale(1); filter: blur(0px); opacity: 1; }
+  40% { transform: rotate(18deg) scale(1.06); filter: blur(0.6px); opacity: 1; }
+  80% { transform: rotate(-10deg) scale(0.98); filter: blur(0.4px); opacity: 0.95; }
+  100% { transform: rotate(0deg) scale(1); filter: blur(0px); opacity: 1; }
+}
+
+.logo-loader-rotate {
+  animation: logo-rotate 1.6s ease-in-out infinite;
+  will-change: transform, filter, opacity;
+}
+
+/* subtle glow */
+.logo-loader-glow {
+  box-shadow: 0 6px 18px rgba(59,130,246,0.12), 0 2px 6px rgba(59,130,246,0.06);
+  transition: box-shadow .18s ease;
+}
+
+/* backdrop blur and darken */
+.fullscreen-loader-backdrop {
+  background: rgba(10, 11, 13, 0.5); /* tweak to taste */
+  backdrop-filter: blur(6px);
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .logo-loader-rotate { animation: none !important; transform: none !important; filter: none !important; }
 }
