@@ -208,17 +208,9 @@ export default function AuthCard({ onAuthSuccess }: Props) {
     }
   };
 
-  const handleGoogle = async (_credential?: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await new Promise((r) => setTimeout(r, 600));
-      onAuthSuccess?.({ id: `g-${Date.now()}`, email: "google@xpensio.app", name: "Google User" });
-    } catch {
-      setError("Google sign-in failed");
-    } finally {
-      setLoading(false);
-    }
+  const handleGoogle = () => {
+    const api = import.meta.env.VITE_API_BASE;
+    window.location.href = `${api}/api/auth/google?prompt=select_account`;
   };
 
   const inputClass =

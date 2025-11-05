@@ -112,6 +112,10 @@
   .btn-header:hover { opacity: .9; }
 }
 
+button {
+  cursor: pointer;
+}
+
 
 
 
