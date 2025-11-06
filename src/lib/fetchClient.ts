@@ -7,10 +7,22 @@ export interface ApiError {
   data?: unknown;
 }
 
+interface RefreshResponse {
+  accessToken?: string;
+  [key: string]: unknown;
+}
+
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
 const AUTH_REFRESH_URL = "/api/auth/refresh";
 
+// For legacy compatibility a separate BASE_URL was present; prefer API_BASE for all calls
+
 let accessToken: string | null = null;
+let refreshInFlight: Promise<{
+  ok: boolean;
+  data?: RefreshResponse;
+} | null> | null = null;
+
 export function setAccessToken(token: string | null) {
   accessToken = token;
 }
@@ -18,52 +30,73 @@ export function getAccessToken() {
   return accessToken;
 }
 
-// Refresh queue helpers
-let refreshPromise: Promise<boolean> | null = null;
+function wait(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
-async function doRefresh(): Promise<boolean> {
-  if (refreshPromise) return refreshPromise;
+/**
+ * Deduped refresh helper.
+ * If a refresh is already in-flight, callers will wait for the same promise.
+ * Returns { ok: true, data } on success (data may contain accessToken), or { ok: false } on failure.
+ */
+async function doRefreshOnce(): Promise<{
+  ok: boolean;
+  data?: RefreshResponse;
+} | null> {
+  if (refreshInFlight) return refreshInFlight;
 
-  refreshPromise = (async () => {
+  refreshInFlight = (async () => {
     try {
+      // Uncomment for debugging who triggered refresh:
+      // console.trace("[fetchClient] doRefreshOnce start");
+
       const res = await fetch(`${API_BASE}${AUTH_REFRESH_URL}`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
 
+      const text = await res.text();
+      let data: RefreshResponse | string | null = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = text;
+      }
+
       if (!res.ok) {
-        setAccessToken(null);
-        refreshPromise = null;
-        return false;
+        // clear local access token if refresh fails
+        accessToken = null;
+        return { ok: false, data: data as RefreshResponse };
       }
 
-      const json: unknown = await res.json();
-      const data = json as { accessToken?: string };
-
-      if (data?.accessToken) {
-        setAccessToken(data.accessToken);
-        refreshPromise = null;
-        return true;
+      // update accessToken if provided
+      if (
+        data &&
+        typeof data === "object" &&
+        "accessToken" in data &&
+        data.accessToken
+      ) {
+        accessToken = data.accessToken;
       }
 
-      setAccessToken(null);
-      refreshPromise = null;
-      return false;
-    } catch {
-      setAccessToken(null);
-      refreshPromise = null;
-      return false;
+      return { ok: true, data: data as RefreshResponse };
+    } catch (err) {
+      console.error("[fetchClient] doRefreshOnce error", err);
+      accessToken = null;
+      return { ok: false, data: undefined };
+    } finally {
+      // allow future refresh attempts
+      refreshInFlight = null;
     }
   })();
 
-  return refreshPromise;
+  return refreshInFlight;
 }
 
-function wait(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
+/**
+ * apiFetch - main client for API calls
+ */
 export async function apiFetch<T = unknown>(
   path: string,
   opts: {
@@ -86,25 +119,32 @@ export async function apiFetch<T = unknown>(
     headers = {},
   } = opts;
 
+  // prefer explicit absolute paths if provided
   const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
-  const init: RequestInit = {
+
+  const baseHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...headers,
+  };
+
+  const initBase: RequestInit = {
     method,
     signal: signal || undefined,
-    headers: { "Content-Type": "application/json", ...headers },
+    headers: baseHeaders as HeadersInit,
   };
 
   if (accessToken) {
     (
-      init.headers as Record<string, string>
+      initBase.headers as Record<string, string>
     ).Authorization = `Bearer ${accessToken}`;
   }
 
   if (includeCredentials) {
-    init.credentials = "include";
+    initBase.credentials = "include";
   }
 
   if (body !== undefined && body !== null) {
-    init.body = JSON.stringify(body);
+    initBase.body = JSON.stringify(body);
   }
 
   let attempt = 0;
@@ -112,10 +152,18 @@ export async function apiFetch<T = unknown>(
 
   while (attempt <= retry) {
     try {
+      // Clone the init for each fetch because RequestInit can be mutated (esp. body consumed)
+      const init: RequestInit = {
+        method: initBase.method,
+        headers: { ...(initBase.headers as Record<string, string>) },
+        credentials: initBase.credentials,
+        signal: initBase.signal,
+        body: initBase.body,
+      };
+
       const res = await fetch(url, init);
       const text = await res.text();
       let data: unknown = null;
-
       try {
         data = text ? JSON.parse(text) : null;
       } catch {
@@ -126,12 +174,12 @@ export async function apiFetch<T = unknown>(
         return { ok: true, data: data as T };
       }
 
-      // Handle 401 - attempt refresh
+      // Handle 401 - try refresh (unless explicitly skipped)
       if (res.status === 401 && !skipRefreshOn401) {
-        const refreshed = await doRefresh();
+        const refreshRes = await doRefreshOnce();
 
-        if (refreshed) {
-          // Retry with new token
+        if (refreshRes?.ok && refreshRes.data) {
+          // If accessToken updated, retry original request once with new header
           if (accessToken) {
             (
               init.headers as Record<string, string>
@@ -141,7 +189,6 @@ export async function apiFetch<T = unknown>(
           const retried = await fetch(url, init);
           const txt2 = await retried.text();
           let data2: unknown = null;
-
           try {
             data2 = txt2 ? JSON.parse(txt2) : null;
           } catch {
@@ -152,33 +199,34 @@ export async function apiFetch<T = unknown>(
             return { ok: true, data: data2 as T };
           }
 
-          const errorData = data2 as {
-            error?: string;
-            message?: string;
-          } | null;
+          const errData =
+            (data2 as { error?: string; message?: string } | null) ?? null;
           return {
             ok: false,
             error: {
               status: retried.status,
-              message:
-                errorData?.error || errorData?.message || retried.statusText,
+              message: errData?.error || errData?.message || retried.statusText,
               data: data2,
             },
           };
-        } else {
-          const errorData = data as { error?: string; message?: string } | null;
-          return {
-            ok: false,
-            error: {
-              status: 401,
-              message: errorData?.error || errorData?.message || "Unauthorized",
-            },
-          };
         }
+
+        // refresh failed -> return original unauthorized info
+        const errData =
+          (data as { error?: string; message?: string } | null) ?? null;
+        return {
+          ok: false,
+          error: {
+            status: 401,
+            message: errData?.error || errData?.message || "Unauthorized",
+            data,
+          },
+        };
       }
 
-      // Non-401 error
-      const errorData = data as { error?: string; message?: string } | null;
+      // Non-401 error -> return structured error
+      const errorData =
+        (data as { error?: string; message?: string } | null) ?? null;
       return {
         ok: false,
         error: {
@@ -190,7 +238,7 @@ export async function apiFetch<T = unknown>(
     } catch (err) {
       lastErr = err instanceof Error ? err : new Error(String(err));
 
-      // Network error - retry with backoff
+      // Network error - retry with exponential backoff
       if (attempt < retry) {
         const backoff = 200 * Math.pow(2, attempt);
         await wait(backoff + Math.random() * 100);
@@ -198,7 +246,6 @@ export async function apiFetch<T = unknown>(
         continue;
       }
 
-      // Exhausted retries
       return {
         ok: false,
         error: {
@@ -209,6 +256,7 @@ export async function apiFetch<T = unknown>(
     }
   }
 
+  // Shouldn't reach here; return generic error
   return {
     ok: false,
     error: {

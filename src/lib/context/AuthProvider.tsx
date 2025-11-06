@@ -1,11 +1,9 @@
 // src/lib/context/AuthProvider.tsx
 import React, { useEffect, useState } from 'react';
 import { AuthStateContext, AuthActionsContext } from "./authState";
-import type { User as UserType } from "./authState";
-import * as authApi from '../api/authApi';
+import type { User as UserType } from "./authState"; import * as authApi from '../api/authApi';
 import { setAccessToken } from '../fetchClient';
 import type { AuthResponse } from '../api/authApi';
-
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserType>(null);
@@ -14,8 +12,9 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     let cancelled = false;
+    let listener: (() => void) | null = null;
 
-    (async () => {
+    const runBootstrap = async () => {
       console.log('[Auth] bootstrap start');
       setLoading(true);
       try {
@@ -59,10 +58,38 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           console.log('[Auth] bootstrap done');
         }
       }
-    })();
+    };
+
+    // If we're on the oauth finish page, delay bootstrap until finalize completes.
+    // The OAuthFinish page will dispatch 'xpensio:oauth-finalized' once it has called the finalize endpoint
+    // and the backend has set the refresh cookie.
+    try {
+      const path = typeof window !== 'undefined' ? window.location.pathname : '';
+      if (path === '/oauth-finish') {
+        console.log('[Auth] oauth finish detected - deferring bootstrap until finalize event');
+        listener = async () => {
+          // small microtask wait to ensure cookie flush
+          await Promise.resolve();
+          if (!cancelled) await runBootstrap();
+          // remove listener after first run - event listener will be removed below on cleanup
+        };
+        window.addEventListener('xpensio:oauth-finalized', listener as EventListener);
+      } else {
+        // default flow - bootstrap immediately
+        (async () => {
+          await runBootstrap();
+        })();
+      }
+    } catch (e) {
+      console.log(e);
+
+      // if window isn't available, just bootstrap normally
+      (async () => await runBootstrap())();
+    }
 
     return () => {
       cancelled = true;
+      if (listener) window.removeEventListener('xpensio:oauth-finalized', listener as EventListener);
     };
   }, []);
 
