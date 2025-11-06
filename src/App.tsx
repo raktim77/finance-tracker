@@ -7,6 +7,7 @@ import AuthCard from "./pages/auth/AuthCard";
 import { useAuth } from "./lib/context/useAuth";
 import Dashboard from "./pages/Dashboard";
 import FullscreenLogoLoaderMotion from "./components/loader/FullscreenLogoLoaderMotion";
+import OAuthFinish from "./pages/auth/OAuthFinish";
 
 
 function HomeWrapper() {
@@ -55,6 +56,8 @@ function App() {
             }
           />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/oauth-finish" element={<OAuthFinish />} />
+
         </Routes>
       </MainLayout>
       <Analytics />
