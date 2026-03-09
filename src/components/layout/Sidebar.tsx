@@ -18,7 +18,7 @@ type SidebarProps = {
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { name: "Transactions", icon: ArrowLeftRight, path: "/transactions" },
-  { name: "Wallets", icon: Wallet, path: "/wallets" },
+  { name: "Accounts", icon: Wallet, path: "/accounts" },
   { name: "Budgets", icon: Target, path: "/budgets" },
   { name: "Analytics", icon: BarChart3, path: "/analytics" },
   { name: "Settings", icon: Settings, path: "/settings" }

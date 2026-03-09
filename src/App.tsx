@@ -11,7 +11,7 @@ import { useAuth } from "./lib/context/useAuth";
 import FullscreenLogoLoaderMotion from "./components/loader/FullscreenLogoLoaderMotion";
 import { Analytics } from "@vercel/analytics/react";
 import Transactions from "./pages/Transactions";
-import Wallets from "./pages/Wallets";
+import Accounts from "./pages/Accounts";
 import Budgets from "./pages/Budgets";
 import Settings from "./pages/Settings";
 import AnalyticsPage from "./pages/Analytics";
@@ -86,11 +86,11 @@ function App() {
         />
         {/* Wallets */}
         <Route
-          path="/wallets"
+          path="/accounts"
           element={
             <ProtectedRoute>
               <DashboardLayout>
-                <Wallets />
+                <Accounts />
               </DashboardLayout>
             </ProtectedRoute>
           }

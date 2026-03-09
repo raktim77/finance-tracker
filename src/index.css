@@ -273,3 +273,6 @@ button:focus-visible {
 .recharts-surface:focus {
   outline: none !important;
 }
+.recharts-wrapper svg {
+  cursor: pointer;
+}

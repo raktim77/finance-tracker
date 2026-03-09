@@ -65,7 +65,7 @@ export default function BottomNav() {
 
       {/* Wallets */}
       <NavLink
-        to="/wallets"
+        to="/accounts"
         className={({ isActive }) =>
           `flex flex-col items-center justify-center gap-1.5 transition-all ${isActive
             ? "text-[var(--color-accent)] scale-105"
@@ -74,7 +74,7 @@ export default function BottomNav() {
         }
       >
         <Wallet size={22} strokeWidth={2.5} />
-        <span className="text-[11px] font-bold tracking-tight">Wallets</span>
+        <span className="text-[11px] font-bold tracking-tight">Accounts</span>
       </NavLink>
 
       {/* Menu */}

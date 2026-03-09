@@ -163,7 +163,7 @@ function SpendingDonut() {
     <div className="flex flex-col md:flex-row items-center gap-6">
 
       {/* Donut */}
-      <div className="relative w-[380px] h-[200px] flex items-center justify-center focus:outline-none">
+      <div className="relative w-[380px] h-[200px] flex items-center justify-center">
 
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -363,7 +363,7 @@ function AIInsights() {
 export default function Dashboard() {
   return (
 
-    <div className="flex flex-col gap-8 pb-32 animate-in fade-in duration-700 mx-auto md:px-0">
+    <div className="flex flex-col gap-8 pb-24 animate-in fade-in duration-700 mx-auto md:px-0">
 
       {/* HERO BALANCE CARD */}
 
