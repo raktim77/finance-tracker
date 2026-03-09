@@ -11,6 +11,9 @@ import ProfileMenu from "../components/ProfileMenu";
 import { useAuth } from "../lib/context/useAuth";
 
 type NavItem = { label: string; id: "home" | "features" | "benefits" | "pricing" };
+type HeaderProps = {
+  toggleSidebar?: () => void;
+};
 
 const NAV: NavItem[] = [
   { label: "Home", id: "home" },
@@ -33,7 +36,7 @@ function scrollToId(id: string) {
   window.scrollTo({ top, behavior: "smooth" });
 }
 
-const Header = () => {
+const Header = ({ toggleSidebar }: HeaderProps) => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -81,12 +84,26 @@ const Header = () => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         {/* Logo */}
-        <div className="flex items-center cursor-pointer" onClick={() => smartNavigate("home")}>
-          <img
-            src={theme === "light" ? LogoLight : Logo}
-            alt="Xpensio Logo"
-            className="w-35"
-          />
+        <div className="flex items-center gap-3">
+          {toggleSidebar && (
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg hover:bg-black/10 transition"
+            >
+              <Menu size={20} />
+            </button>
+          )}
+
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => smartNavigate("home")}
+          >
+            <img
+              src={theme === "light" ? LogoLight : Logo}
+              alt="Xpensio Logo"
+              className="w-35"
+            />
+          </div>
         </div>
 
         {/* Desktop nav */}
@@ -105,7 +122,7 @@ const Header = () => {
 
         {/* Actions */}
         {/* Actions */}
-        <div className="flex items-center gap-4 md:gap-6">
+        <div className="flex items-center md:gap-6">
           {/* Theme toggle - always visible */}
           <button
             onClick={toggleTheme}

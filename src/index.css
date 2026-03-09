@@ -15,6 +15,8 @@
     --benefits-card-color: #FFFFFF; 
     --pricing-card-color: #FFFFFF;
     --input-border: #e6e9eb;
+    --color-accent: #523dff;
+    --color-accent-soft: #f2efff;
     /* 👇 new: light-mode glow behind pricing card */
     --pricing-card-glow-teal: rgba(50, 165, 158, 0.12);
     --pricing-card-glow-warm: rgba(147, 51, 234, 0.08);      /* red for alerts (new) */
@@ -34,6 +36,8 @@
     --color-accent-teal: #00a8aa;     /* teal accent (new) */
     --color-danger:     #F87171;
     --input-border: transparent;
+    --color-accent: #c380ff;
+    --color-accent-soft: rgba(124,108,255,0.16);
     --benefits-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
     --pricing-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
   }
@@ -260,4 +264,12 @@ button:focus-visible {
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .logo-loader-rotate { animation: none !important; transform: none !important; filter: none !important; }
+}
+
+
+/* Remove focus outlines from recharts charts */
+.recharts-wrapper:focus,
+.recharts-wrapper *:focus,
+.recharts-surface:focus {
+  outline: none !important;
 }

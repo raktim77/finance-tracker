@@ -1,18 +1,21 @@
-// src/pages/OAuthFinish.tsx
-import { useEffect } from "react";
+// src/pages/auth/OAuthFinish.tsx
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import FullscreenLogoLoaderMotion from "../../components/loader/FullscreenLogoLoaderMotion";
 
 export default function OAuthFinish() {
   const navigate = useNavigate();
+  const mounted = useRef(true);
 
   useEffect(() => {
+    mounted.current = true;
     (async () => {
       try {
         const hash = window.location.hash.replace(/^#/, "");
         const params = new URLSearchParams(hash);
         const ott = params.get("ott");
         if (!ott) {
-          navigate("/login");
+          if (mounted.current) navigate("/login", { replace: true });
           return;
         }
 
@@ -28,27 +31,30 @@ export default function OAuthFinish() {
         });
 
         if (!res.ok) {
-          navigate("/login?oauth=failed");
+          if (mounted.current) navigate("/login?oauth=failed", { replace: true });
           return;
         }
 
         // Notify AuthProvider (and any other listeners) that OAuth finalize completed
-        // so it can run its bootstrap refresh now that cookie is present.
         try {
           window.dispatchEvent(new Event("xpensio:oauth-finalized"));
         } catch (e) {
-          // ignore if event dispatch fails in some environment
           console.warn("Could not dispatch xpensio:oauth-finalized", e);
         }
 
         // SPA navigate to dashboard — AuthProvider will perform refresh and set user
-        navigate("/dashboard", { replace: true });
+        if (mounted.current) navigate("/dashboard", { replace: true });
       } catch (err) {
         console.error("OAuthFinish error:", err);
-        navigate("/login?oauth=failed");
+        if (mounted.current) navigate("/login?oauth=failed", { replace: true });
       }
     })();
+
+    return () => {
+      mounted.current = false;
+    };
   }, [navigate]);
 
-  return <div className="p-6">Finalizing sign-in…</div>;
+  // show the fullscreen loader component while finalizing
+  return <FullscreenLogoLoaderMotion message="Finalizing sign-in…" />;
 }

@@ -6,7 +6,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 pt-[var(--header-h)]">{children}</main>
+      <main className="flex-1 pt-[var(--header-h)] pb-24 overflow-auto">{children}</main>
     </div>
   );
 };
