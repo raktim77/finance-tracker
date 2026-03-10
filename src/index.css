@@ -15,6 +15,7 @@
     --benefits-card-color: #FFFFFF; 
     --pricing-card-color: #FFFFFF;
     --input-border: #e6e9eb;
+    --border: #e6e9eb;
     --color-accent: #523dff;
     --color-accent-soft: #f2efff;
     /* 👇 new: light-mode glow behind pricing card */
@@ -36,6 +37,7 @@
     --color-accent-teal: #00a8aa;     /* teal accent (new) */
     --color-danger:     #F87171;
     --input-border: transparent;
+    --border: #ffffff15;
     --color-accent: #c380ff;
     --color-accent-soft: rgba(124,108,255,0.16);
     --benefits-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */

@@ -67,14 +67,16 @@ export default function Transactions() {
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  return (<div className="flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
+  return (<div className="p-1 flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}
     <div className="flex items-start justify-between gap-2 w-full">
 
       <div className="flex flex-col min-w-0 gap-2">
 
-        <h2 className="text-2xl md:text-4xl font-bold  truncate">
-          Transactions
+        <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
+          <span className="hidden md:block">Transactions</span>
+          <span className="md:hidden block">History</span>
+
         </h2>
 
         <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
@@ -83,28 +85,11 @@ export default function Transactions() {
 
       </div>
 
-      {/* <button
-        className="
-  hidden md:flex items-center gap-2 md:px-4 md:py-3 p-2 rounded-lg font-medium
-  active:scale-95 transition-all shrink-0
 
-  bg-[var(--color-primary)] text-white
-
-  shadow-md
-  hover:shadow-lg
-  hover:brightness-105
-
-  dark:shadow-[0_6px_18px_rgba(99,102,241,0.45)]
-  dark:hover:shadow-[0_8px_22px_rgba(99,102,241,0.55)]
-  "
-      >
-        <PlusCircle size={20} />
-        Add transaction
-      </button> */}
-
-      <button className="hidden md:flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)]">
+      <button className="flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)]">
         <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
         <span className="hidden md:block text-sm">Record transaction</span>
+        <span className="block md:hidden text-sm">Record</span>
       </button>
 
     </div>
@@ -217,7 +202,7 @@ export default function Transactions() {
 
     {/* TRANSACTION LIST */}
 
-    <div className="rounded-[1.5rem] bg-[var(--color-surface)] border border-[var(--input-border)] overflow-hidden shadow-sm w-full">
+    <div className="rounded-[1.5rem] bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden shadow-sm w-full">
 
       <div className="flex flex-col p-1 md:p-4 gap-1">
 
@@ -279,7 +264,7 @@ export default function Transactions() {
       {/* Pagination */}
       {totalPages > 1 && (
 
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--input-border)] bg-[var(--color-surface)]">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border)] bg-[var(--color-surface)]">
 
           <span className="text-xs font-bold text-[var(--color-text-secondary)]">
             Page {currentPage} of {totalPages}
@@ -290,7 +275,7 @@ export default function Transactions() {
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(prev => prev - 1)}
-              className="p-2 rounded-lg border border-[var(--input-border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
+              className="p-2 rounded-lg border border-[var(--border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
             >
 
               <ChevronLeft size={16} />
@@ -300,7 +285,7 @@ export default function Transactions() {
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(prev => prev + 1)}
-              className="p-2 rounded-lg border border-[var(--input-border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
+              className="p-2 rounded-lg border border-[var(--border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
             >
 
               <ChevronRight size={16} />

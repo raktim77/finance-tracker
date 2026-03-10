@@ -29,15 +29,15 @@ const accounts: Account[] = [
 
 export default function Accounts() {
   return (
-    <div className="flex flex-col gap-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-1000 mx-auto w-full">
+    <div className="p-1 flex flex-col gap-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-1000 mx-auto w-full">
 
       {/* 1. HEADER SECTION */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl md:text-4xl font-bold  truncate">
+          <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
             Accounts
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-baseline gap-2">
             <span className="flex h-2 w-2 rounded-full bg-[var(--color-success)]" />
             <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em] opacity-60">
               {accounts.length} ACTIVE ACCOUNTS
@@ -92,7 +92,7 @@ export default function Accounts() {
           return (
             <div
               key={i}
-              className="shadow-sm  group relative flex flex-col justify-between rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--input-border)] transition-all duration-300 hover:shadow-lg hover:cursor-pointer hover:border-[var(--color-accent)]/30  overflow-hidden"
+              className="shadow-sm group relative flex flex-col justify-between rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] transition-all duration-300 hover:shadow-lg hover:cursor-pointer hover:border-[var(--color-accent)]/30  overflow-hidden"
             >
               {/* Background Glow on Hover */}
               <div className="absolute -top-10 -right-10 w-24 h-24 blur-3xl rounded-full opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none" style={{ backgroundColor: acc.color }} />
@@ -125,7 +125,7 @@ export default function Accounts() {
                   {acc.balance}
                 </h4>
 
-                <div className="flex items-center justify-between pt-4 border-t border-[var(--input-border)] border-dashed">
+                <div className="flex items-center justify-between pt-4 border-t border-[var(--border)] border-dashed">
                   <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-tighter">
                     Updated {acc.lastUpdated}
                   </span>

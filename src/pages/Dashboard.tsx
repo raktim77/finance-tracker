@@ -52,7 +52,7 @@ interface TransactionItemProps {
 const StatCard = ({ label, amount, icon: Icon, color }: StatCardProps) => (
   <div
     className="group p-5 rounded-2xl bg-[var(--color-surface)] 
-border border-[var(--input-border)]
+border border-[var(--border)]
 flex items-center gap-4
 transition-all duration-200
 hover:-translate-y-[2px]
@@ -87,7 +87,7 @@ const TransactionItem = ({
 }: TransactionItemProps) => (
   <div className="flex items-center justify-between group cursor-pointer py-1">
     <div className="flex items-center gap-4 min-w-0">
-      <div className="w-11 h-11 rounded-full bg-[var(--color-background)] border border-[var(--input-border)] flex items-center justify-center group-hover:bg-[var(--color-accent-soft)] transition-colors shrink-0">
+      <div className="w-11 h-11 rounded-full bg-[var(--color-background)] border border-[var(--border)] flex items-center justify-center group-hover:bg-[var(--color-accent-soft)] transition-colors shrink-0">
         <Icon
           size={18}
           className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)]"
@@ -135,7 +135,7 @@ function SpendingDonut() {
   const activeItem = activeIndex !== null ? categoryData[activeIndex] : null;
 
   return (
-    <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--input-border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
+    <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
       <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
         Spending Categories
       </h2>
@@ -223,7 +223,7 @@ import { Sparkles, AlertTriangle, Brain } from "lucide-react";
 
 function AIInsights() {
   return (
-    <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--input-border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
+    <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-soft)] flex items-center justify-center">
           <Sparkles size={18} className="text-[var(--color-accent)]" />
@@ -274,7 +274,7 @@ function AIInsights() {
 
 export default function Dashboard() {
   return (
-    <div className="flex flex-col gap-8 pb-24 animate-in fade-in duration-700 mx-auto md:px-0">
+    <div className="p-1 flex flex-col gap-8 pb-24 animate-in fade-in duration-700 mx-auto">
 
       {/* 1. HERO BALANCE CARD (z-0) */}
       <div
@@ -341,7 +341,7 @@ bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_50px_
 
       {/* ANALYTICS + TRANSACTIONS */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
-        <div className="lg:col-span-3 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--input-border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
+        <div className="lg:col-span-3 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
@@ -371,7 +371,7 @@ bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_50px_
                   contentStyle={{
                     backgroundColor: "var(--color-surface)",
                     borderRadius: "12px",
-                    border: "1px solid var(--input-border)",
+                    border: "1px solid var(--border)",
                     fontSize: "12px"
                   }}
                   itemStyle={{
@@ -382,7 +382,7 @@ bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_50px_
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="var(--input-border)"
+                  stroke="var(--border)"
                   opacity={0.5}
                 />
                 <XAxis
@@ -410,7 +410,7 @@ bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_50px_
           </div>
         </div>
 
-        <div className="lg:col-span-2 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--input-border)] shadow-sm hover:shadow-md transition-all">
+        <div className="lg:col-span-2 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-8">
             <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
               Recent History

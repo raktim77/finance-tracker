@@ -4,12 +4,13 @@ import {
   ArrowLeftRight,
   Wallet,
   Plus,
-  Logs
+  Logs,
+  Target
 } from "lucide-react";
 
 export default function BottomNav() {
   return (<nav className="fixed bottom-0 left-0 right-0 h-18 lg:hidden
-   bg-[color-mix(in_oklab,var(--color-surface)_90%,transparent)]
+   bg-[var(--color-surface)]
    backdrop-blur-md
    border-t border-[var(--input-border)]
    z-50
@@ -79,6 +80,19 @@ export default function BottomNav() {
 
       {/* Menu */}
       <NavLink
+        to="/budgets"
+        className={({ isActive }) =>
+          `flex flex-col items-center justify-center gap-1.5 transition-all ${isActive
+            ? "text-[var(--color-accent)] scale-105"
+            : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+          }`
+        }
+      >
+        <Target size={22} strokeWidth={2.5} />
+        <span className="text-[11px] font-bold tracking-tight">Budgets</span>
+      </NavLink>
+      {/* Menu */}
+      {/* <NavLink
         to="/menu"
         className={({ isActive }) =>
           `flex flex-col items-center justify-center gap-1.5 transition-all ${isActive
@@ -89,7 +103,7 @@ export default function BottomNav() {
       >
         <Logs size={22} strokeWidth={2.5} />
         <span className="text-[11px] font-bold tracking-tight">Menu</span>
-      </NavLink>
+      </NavLink> */}
 
     </div>
   </nav>
