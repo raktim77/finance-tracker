@@ -14,6 +14,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
+import DatePicker from "../components/ui/DatePicker";
 
 type Transaction = {
   id: number;
@@ -52,6 +53,9 @@ export default function Transactions() {
 
   const itemsPerPage = 5;
 
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
   let filtered = transactions.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -63,13 +67,13 @@ export default function Transactions() {
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  return (<div className="flex flex-col gap-6 pb-40 md:pb-32 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
+  return (<div className="flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}
-    <div className="flex items-center justify-between gap-2 pt-2 w-full">
+    <div className="flex items-start justify-between gap-2 w-full">
 
       <div className="flex flex-col min-w-0 gap-2">
 
-        <h2 className="text-2xl md:text-4xl font-black text-[var(--color-text-primary)] tracking-tight truncate">
+        <h2 className="text-2xl md:text-4xl font-bold  truncate">
           Transactions
         </h2>
 
@@ -79,133 +83,143 @@ export default function Transactions() {
 
       </div>
 
-      <button className="flex items-center justify-center gap-2 bg-[var(--color-accent)] text-white p-2 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl font-black text-xs shadow-lg shadow-[var(--color-accent)]/20 active:scale-95 transition-all shrink-0">
+      {/* <button
+        className="
+  hidden md:flex items-center gap-2 md:px-4 md:py-3 p-2 rounded-lg font-medium
+  active:scale-95 transition-all shrink-0
 
-        <PlusCircle size={18} strokeWidth={2.5} />
+  bg-[var(--color-primary)] text-white
 
-        <span className="hidden md:block">Add Transaction</span>
+  shadow-md
+  hover:shadow-lg
+  hover:brightness-105
 
-        <span className="md:hidden px-1">Add</span>
+  dark:shadow-[0_6px_18px_rgba(99,102,241,0.45)]
+  dark:hover:shadow-[0_8px_22px_rgba(99,102,241,0.55)]
+  "
+      >
+        <PlusCircle size={20} />
+        Add transaction
+      </button> */}
 
+      <button className="hidden md:flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)]">
+        <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+        <span className="hidden md:block text-sm">Record transaction</span>
       </button>
 
     </div>
 
     {/* CONTROLS */}
-    <div className="flex flex-col gap-4 w-full">
 
-      {/* Row 1 */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-3">
+    <div className="flex flex-col gap-5 w-full">
 
-        {/* Search */}
-        <div className="relative w-full min-w-0">
+      {/* SEARCH */}
 
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" />
+      <div className="relative w-full">
 
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search transactions..."
-            className="w-full pl-11 pr-4 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
-          />
+        <Search
+          size={16}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]"
+        />
+
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search transactions..."
+          className="w-full pl-11 pr-4 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
+        />
+
+      </div>
+
+      {/* FILTER ROW */}
+
+      {/* FILTER ROW */}
+
+      <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
+
+        {/* LEFT SIDE (Date controls) */}
+
+        <div className="flex flex-col md:flex-row md:items-center gap-3 flex-1">
+
+          {/* Date Range Dropdown */}
+          <div className="w-full md:w-[220px]">
+            <Dropdown
+              icon={Calendar}
+              value={dateRange}
+              onChange={(v) => setDateRange(v as DateRangeType)}
+              options={[
+                { label: "Last 30 Days", value: "30" },
+                { label: "Last 60 Days", value: "60" },
+                { label: "Last 90 Days", value: "90" },
+                { label: "Custom Range", value: "custom" }
+              ]}
+            />
+          </div>
+
+          {/* Custom Range Dates */}
+          {dateRange === "custom" && (
+            <div className="flex items-center gap-3 w-full md:w-auto animate-in slide-in-from-top-2">
+
+              <DatePicker value={startDate} onChange={setStartDate} />
+
+              <span className="text-xs font-bold text-[var(--color-text-secondary)] opacity-60">
+                →
+              </span>
+
+              <DatePicker value={endDate} onChange={setEndDate} />
+
+            </div>
+          )}
 
         </div>
 
-        {/* Date Range */}
-        <div className="relative w-full">
+        {/* RIGHT SIDE (Filter + Sort) */}
 
-          <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
-          <Dropdown
-            icon={Calendar}
-            value={dateRange}
-            onChange={(v) => setDateRange(v as DateRangeType)}
-            options={[
-              { label: "Last 30 Days", value: "30" },
-              { label: "Last 60 Days", value: "60" },
-              { label: "Last 90 Days", value: "90" },
-              { label: "Custom Range", value: "custom" }
-            ]}
-          />
-          <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-text-secondary)] pointer-events-none" />
+        <div className="grid grid-cols-2 md:flex md:items-center gap-8 md:w-auto">
+
+          {/* Filter */}
+          <div className="w-full md:w-[180px]">
+            <Dropdown
+              icon={Filter}
+              value={filter}
+              onChange={(v) => setFilter(v as FilterType)}
+              options={[
+                { label: "All Types", value: "all" },
+                { label: "Income", value: "income" },
+                { label: "Expense", value: "expense" }
+              ]}
+            />
+          </div>
+
+          {/* Sort */}
+          <div className="w-full md:w-[180px]">
+            <Dropdown
+              icon={ArrowUpDown}
+              value={sort}
+              onChange={(v) => setSort(v as SortType)}
+              options={[
+                { label: "Latest", value: "latest" },
+                { label: "Highest", value: "highest" },
+                { label: "Lowest", value: "lowest" }
+              ]}
+            />
+          </div>
 
         </div>
 
       </div>
 
 
-      {/* Custom Range */}
-      {dateRange === "custom" && (
-
-        <div className="grid grid-cols-2 gap-3 w-full animate-in slide-in-from-top-2">
-
-          <input
-            type="date"
-            className="h-11 px-4 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-xs font-bold outline-none text-[var(--color-text-primary)]"
-          />
-
-          <input
-            type="date"
-            className="h-11 px-4 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-xs font-bold outline-none text-[var(--color-text-primary)]"
-          />
-
-        </div>
-
-      )}
-
-      {/* Row 2 */}
-      <div className="grid grid-cols-2 md:grid-cols-[180px_180px] gap-3">
-
-        {/* Filter */}
-        <div className="relative w-full">
-
-          <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
-
-          <Dropdown
-            icon={Filter}
-            value={filter}
-            onChange={(v) => setFilter(v as FilterType)}
-            options={[
-              { label: "All Types", value: "all" },
-              { label: "Income", value: "income" },
-              { label: "Expense", value: "expense" }
-            ]}
-          />
-
-          <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-text-secondary)] pointer-events-none" />
-
-        </div>
-
-
-        {/* Sort */}
-        <div className="relative w-full">
-
-          <ArrowUpDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
-
-          <Dropdown
-            icon={ArrowUpDown}
-            value={sort}
-            onChange={(v) => setSort(v as SortType)}
-            options={[
-              { label: "Latest", value: "latest" },
-              { label: "Highest", value: "highest" },
-              { label: "Lowest", value: "lowest" }
-            ]}
-          />
-
-          <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-text-secondary)] pointer-events-none" />
-
-        </div>
-
-      </div>
 
     </div>
+
 
 
     {/* TRANSACTION LIST */}
 
     <div className="rounded-[1.5rem] bg-[var(--color-surface)] border border-[var(--input-border)] overflow-hidden shadow-sm w-full">
 
-      <div className="flex flex-col p-1 md:p-4">
+      <div className="flex flex-col p-1 md:p-4 gap-1">
 
         {currentItems.length === 0 ? (
 
