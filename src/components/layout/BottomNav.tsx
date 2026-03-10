@@ -4,7 +4,7 @@ import {
   ArrowLeftRight,
   Wallet,
   Plus,
-  Logs,
+  // Logs,
   Target
 } from "lucide-react";
 
