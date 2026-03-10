@@ -8,8 +8,12 @@ import {
   Car,
   Briefcase,
   PlusCircle,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon
 } from "lucide-react";
+import Dropdown from "../components/ui/Dropdown";
 
 type Transaction = {
   id: number;
@@ -22,6 +26,7 @@ type Transaction = {
 
 type FilterType = "all" | "income" | "expense";
 type SortType = "latest" | "highest" | "lowest";
+type DateRangeType = "30" | "60" | "90" | "custom";
 
 const transactions: Transaction[] = [
   { id: 1, name: "Swiggy", category: "Food", date: "Today, 2:45 PM", amount: -420, type: "expense" },
@@ -42,33 +47,31 @@ export default function Transactions() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [sort, setSort] = useState<SortType>("latest");
+  const [dateRange, setDateRange] = useState<DateRangeType>("30");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 5;
 
   let filtered = transactions.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (filter !== "all") {
-    filtered = filtered.filter((t) => t.type === filter);
-  }
+  if (filter !== "all") filtered = filtered.filter((t) => t.type === filter);
+  if (sort === "highest") filtered = [...filtered].sort((a, b) => b.amount - a.amount);
+  if (sort === "lowest") filtered = [...filtered].sort((a, b) => a.amount - b.amount);
 
-  if (sort === "highest") {
-    filtered = [...filtered].sort((a, b) => b.amount - a.amount);
-  }
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  if (sort === "lowest") {
-    filtered = [...filtered].sort((a, b) => a.amount - b.amount);
-  }
-
-  return (<div className="flex flex-col gap-6 pb-40 md:pb-32 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full max-w-7xl mx-auto px-4 md:px-6 box-border overflow-x-hidden">
+  return (<div className="flex flex-col gap-6 pb-40 md:pb-32 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}
-
     <div className="flex items-center justify-between gap-2 pt-2 w-full">
 
-      <div className="flex flex-col min-w-0">
+      <div className="flex flex-col min-w-0 gap-2">
 
-        <h1 className="text-xl md:text-2xl font-black text-[var(--color-text-primary)] tracking-tight truncate">
+        <h2 className="text-2xl md:text-4xl font-black text-[var(--color-text-primary)] tracking-tight truncate">
           Transactions
-        </h1>
+        </h2>
 
         <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
           {filtered.length} records found
@@ -88,82 +91,108 @@ export default function Transactions() {
 
     </div>
 
-
     {/* CONTROLS */}
+    <div className="flex flex-col gap-4 w-full">
 
-    <div className="flex flex-col gap-3 w-full">
+      {/* Row 1 */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-3">
 
-      {/* SEARCH */}
+        {/* Search */}
+        <div className="relative w-full min-w-0">
 
-      <div className="relative w-full min-w-0">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" />
 
-        <Search
-          size={16}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]"
-        />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search transactions..."
+            className="w-full pl-11 pr-4 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
+          />
 
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search transactions..."
-          className="w-full min-w-0 pl-11 pr-4 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all"
-        />
+        </div>
+
+        {/* Date Range */}
+        <div className="relative w-full">
+
+          <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
+          <Dropdown
+            icon={Calendar}
+            value={dateRange}
+            onChange={(v) => setDateRange(v as DateRangeType)}
+            options={[
+              { label: "Last 30 Days", value: "30" },
+              { label: "Last 60 Days", value: "60" },
+              { label: "Last 90 Days", value: "90" },
+              { label: "Custom Range", value: "custom" }
+            ]}
+          />
+          <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-text-secondary)] pointer-events-none" />
+
+        </div>
 
       </div>
 
 
-      {/* FILTER + SORT */}
+      {/* Custom Range */}
+      {dateRange === "custom" && (
 
-      <div className="grid grid-cols-2 gap-3 w-full min-w-0">
+        <div className="grid grid-cols-2 gap-3 w-full animate-in slide-in-from-top-2">
 
-        {/* FILTER */}
-
-        <div className="relative w-full min-w-0">
-
-          <Filter
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none"
+          <input
+            type="date"
+            className="h-11 px-4 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-xs font-bold outline-none text-[var(--color-text-primary)]"
           />
 
-          <select
+          <input
+            type="date"
+            className="h-11 px-4 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-xs font-bold outline-none text-[var(--color-text-primary)]"
+          />
+
+        </div>
+
+      )}
+
+      {/* Row 2 */}
+      <div className="grid grid-cols-2 md:grid-cols-[180px_180px] gap-3">
+
+        {/* Filter */}
+        <div className="relative w-full">
+
+          <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
+
+          <Dropdown
+            icon={Filter}
             value={filter}
-            onChange={(e) => setFilter(e.target.value as FilterType)}
-            className="w-full min-w-0 pl-9 pr-2 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold appearance-none transition-all outline-none"
-          >
+            onChange={(v) => setFilter(v as FilterType)}
+            options={[
+              { label: "All Types", value: "all" },
+              { label: "Income", value: "income" },
+              { label: "Expense", value: "expense" }
+            ]}
+          />
 
-            <option value="all">All Types</option>
-
-            <option value="income">Income</option>
-
-            <option value="expense">Expense</option>
-
-          </select>
+          <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-text-secondary)] pointer-events-none" />
 
         </div>
 
 
-        {/* SORT */}
+        {/* Sort */}
+        <div className="relative w-full">
 
-        <div className="relative w-full min-w-0">
+          <ArrowUpDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
 
-          <ArrowUpDown
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none"
+          <Dropdown
+            icon={ArrowUpDown}
+            value={sort}
+            onChange={(v) => setSort(v as SortType)}
+            options={[
+              { label: "Latest", value: "latest" },
+              { label: "Highest", value: "highest" },
+              { label: "Lowest", value: "lowest" }
+            ]}
           />
 
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortType)}
-            className="w-full min-w-0 pl-9 pr-2 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold appearance-none transition-all outline-none"
-          >
-
-            <option value="latest">Latest</option>
-
-            <option value="highest">Highest</option>
-
-            <option value="lowest">Lowest</option>
-
-          </select>
+          <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-text-secondary)] pointer-events-none" />
 
         </div>
 
@@ -174,11 +203,11 @@ export default function Transactions() {
 
     {/* TRANSACTION LIST */}
 
-    <div className="rounded-[1.5rem] bg-[var(--color-surface)] border border-[var(--input-border)] overflow-hidden shadow-sm w-full min-w-0">
+    <div className="rounded-[1.5rem] bg-[var(--color-surface)] border border-[var(--input-border)] overflow-hidden shadow-sm w-full">
 
       <div className="flex flex-col p-1 md:p-4">
 
-        {filtered.length === 0 ? (
+        {currentItems.length === 0 ? (
 
           <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
             No transactions found
@@ -186,16 +215,13 @@ export default function Transactions() {
 
         ) : (
 
-          filtered.map((t) => {
+          currentItems.map((t) => {
 
             const Icon = categoryIcons[t.category] || Utensils;
 
             return (
 
-              <div
-                key={t.id}
-                className="flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group min-w-0"
-              >
+              <div key={t.id} className="flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group min-w-0">
 
                 <div className="flex items-center gap-3 md:gap-4 min-w-0">
 
@@ -205,7 +231,7 @@ export default function Transactions() {
 
                   </div>
 
-                  <div className="flex flex-col min-w-0">
+                  <div className="flex flex-col min-w-0 gap-1">
 
                     <span className="font-bold text-sm text-[var(--color-text-primary)] truncate">
                       {t.name}
@@ -219,16 +245,9 @@ export default function Transactions() {
 
                 </div>
 
+                <div className={`font-black text-sm md:text-base shrink-0 ${t.amount < 0 ? "text-[var(--color-danger)]" : "text-[var(--color-success)]"}`}>
 
-                <div
-                  className={`font-black text-sm md:text-base shrink-0 ${t.amount < 0
-                      ? "text-[var(--color-danger)]"
-                      : "text-[var(--color-success)]"
-                    }`}
-                >
-
-                  {t.amount < 0 ? "-" : "+"}₹
-                  {Math.abs(t.amount).toLocaleString()}
+                  {t.amount < 0 ? "-" : "+"}₹{Math.abs(t.amount).toLocaleString()}
 
                 </div>
 
@@ -241,6 +260,44 @@ export default function Transactions() {
         )}
 
       </div>
+
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--input-border)] bg-[var(--color-surface)]">
+
+          <span className="text-xs font-bold text-[var(--color-text-secondary)]">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <div className="flex gap-2">
+
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => prev - 1)}
+              className="p-2 rounded-lg border border-[var(--input-border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
+            >
+
+              <ChevronLeft size={16} />
+
+            </button>
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              className="p-2 rounded-lg border border-[var(--input-border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
+            >
+
+              <ChevronRight size={16} />
+
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
 
     </div>
 
