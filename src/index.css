@@ -278,3 +278,32 @@ button:focus-visible {
 .recharts-wrapper svg {
   cursor: pointer;
 }
+
+
+/* ANALYTICS CSS */
+.analytics-card {
+
+  background: linear-gradient(
+    135deg,
+    color-mix(in_oklab,var(--color-surface) 92%,black),
+    var(--color-surface)
+  );
+
+  border: 1px solid var(--border);
+
+  border-radius: 14px;
+
+  padding: 18px;
+
+  transition: all .25s ease;
+
+}
+
+.analytics-card:hover {
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 32px rgba(0,0,0,.35);
+
+}

@@ -146,9 +146,10 @@ function SpendingDonut() {
               <Pie
                 className="focus:outline-none"
                 data={categoryData}
-                innerRadius={65}
-                outerRadius={90}
-                paddingAngle={3}
+                innerRadius={60}
+                outerRadius={85}
+                paddingAngle={2}
+                cornerRadius={6}
                 dataKey="value"
                 animationDuration={900}
                 onMouseEnter={(_, index) => setActiveIndex(index)}
@@ -372,7 +373,8 @@ bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_50px_
                     backgroundColor: "var(--color-surface)",
                     borderRadius: "12px",
                     border: "1px solid var(--border)",
-                    fontSize: "12px"
+                    fontSize: "12px",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)"
                   }}
                   itemStyle={{
                     color: "var(--color-text-primary)",
