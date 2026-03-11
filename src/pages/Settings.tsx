@@ -125,13 +125,13 @@ export default function Settings() {
   const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
 
   return (
-    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 pb-4">
+    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-1">
 
       {/* 1. HEADER - Static and Pinned */}
-      <div className="flex flex-col gap-2 shrink-0 pt-2 bg-[var(--color-background)] z-20">
-        <h1 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
+      <div className="flex flex-col gap-2 shrink-0  bg-[var(--color-background)] z-20">
+        <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
           Settings
-        </h1>
+        </h2>
         <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em] opacity-60">
           Personalize your financial experience
         </p>
@@ -198,12 +198,12 @@ export default function Settings() {
         </div>
 
         {/* 3. RIGHT CONTENT - Independent Scroll */}
-        <div className="flex-1 w-full h-full overflow-y-auto pr-2 no-scrollbar pb-32">
+        <div className="flex-1 w-full h-full overflow-y-auto no-scrollbar pb-24">
 
           {/* PROFILE */}
           {activeTab === "profile" && (
             <div className="settings-section-animate space-y-6">
-              <div className="flex items-center gap-4 mb-2">
+              <div className="flex items-center gap-4 mb-6">
                 <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-warm)] p-[2px]">
                   <div className="w-full h-full rounded-[1.9rem] bg-[var(--color-surface)] flex items-center justify-center text-2xl font-black text-[var(--color-text-primary)]">
                     RR
