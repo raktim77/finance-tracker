@@ -51,32 +51,33 @@ interface TransactionItemProps {
 
 const StatCard = ({ label, amount, icon: Icon, color }: StatCardProps) => (
   <div
-    className="group p-5 rounded-2xl bg-[var(--color-surface)] 
-border border-[var(--border)]
-flex items-center gap-4
-transition-all duration-200
-hover:-translate-y-[2px]
-hover:shadow-lg
-hover:border-[var(--color-accent)]/30"
+    className="group p-4 md:p-5 rounded-2xl bg-[var(--color-surface)] 
+    border border-[var(--border)] shadow-sm
+    flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-4
+    transition-all duration-200
+    hover:-translate-y-[2px]
+    hover:shadow-lg
+    hover:border-[var(--color-accent)]/30"
   >
+    {/* Icon: Smaller on mobile, standard on desktop */}
     <div
-      className="w-12 h-12 rounded-xl flex items-center justify-center shadow-inner shrink-0"
+      className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shadow-inner shrink-0"
       style={{ backgroundColor: `${color}15`, color: color }}
     >
-      <Icon size={24} strokeWidth={2.5} />
+      <Icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
     </div>
 
-    <div className="flex flex-col min-w-0">
-      <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)] truncate">
+    {/* Text: Centered on mobile, left-aligned on desktop */}
+    <div className="flex flex-col items-center sm:items-start min-w-0 w-full">
+      <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)] truncate w-full text-center sm:text-left">
         {label}
       </span>
-      <span className="text-xl font-black text-[var(--color-text-primary)] truncate">
+      <span className="text-base md:text-xl font-black text-[var(--color-text-primary)] truncate w-full text-center sm:text-left">
         {amount}
       </span>
     </div>
   </div>
 );
-
 const TransactionItem = ({
   name,
   category,
@@ -275,13 +276,13 @@ function AIInsights() {
 
 export default function Dashboard() {
   return (
-    <div className="p-1 flex flex-col gap-8 pb-24 animate-in fade-in duration-700 mx-auto">
+    <div className="p-1 flex flex-col gap-6 md:gap-8 pb-24 animate-in fade-in duration-700 mx-auto">
 
       {/* 1. HERO BALANCE CARD (z-0) */}
       <div
         className="
 relative z-0 group overflow-hidden rounded-[2.5rem] p-8 md:p-12
-bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_50px_rgba(124,108,255,0.2)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.5)] transition-all duration-500 hover:scale-[1.005]
+bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50 transition-all duration-500 hover:scale-[1.005]
 "
       >
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-110" />
@@ -312,7 +313,16 @@ bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_50px_
 
       {/* 2. MINI STAT CARDS (The Overlap Trick: z-10 and negative margin) */}
       <div className="relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Subtle Period Indicator - Elevated Pill Version */}
+        <div className="relative z-20 mb-3">
+          <div className="inline-flex items-baseline gap-2 px-4 py-2 rounded-full bg-[var(--color-surface)] border border-[var(--border)] backdrop-blur-md">
+            <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-primary)] antialiased">
+              Current Month Overview
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
           <StatCard
             label="Income"
             amount="₹45,000"

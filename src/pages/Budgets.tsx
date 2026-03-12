@@ -92,9 +92,7 @@ export default function Budgets() {
       relative group rounded-[2.5rem] p-6 md:p-12 
       bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] 
       transition-all duration-500 
-      /* We use a shadow with a larger spread and specific color */
-      shadow-[0_20px_50px_rgba(124,108,255,0.35)] 
-      dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)]
+      shadow-2xl/50
       z-10
     "
         >

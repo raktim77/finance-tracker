@@ -53,7 +53,7 @@ export default function Accounts() {
       </div>
 
       {/* 2. PREMIUM TOTAL BALANCE CARD */}
-      <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-[0_20px_40px_rgba(124,108,255,0.15)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.5)] transition-all duration-500 hover:scale-[1.005]">
+      <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50 transition-all duration-500 hover:scale-[1.005]">
         {/* Animated Mesh Gradients */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32 animate-pulse" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-[60px] -ml-20 -mb-20" />
