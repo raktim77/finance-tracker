@@ -20,7 +20,7 @@ export default function OAuthFinish() {
         }
 
         const base = import.meta.env.DEV
-          ? "http://localhost:4000"
+          ? "http://192-168-29-182.nip.io:4000"
           : "https://xpensio-backend-i54c.onrender.com";
 
         const res = await fetch(`${base}/api/auth/google/finalize`, {

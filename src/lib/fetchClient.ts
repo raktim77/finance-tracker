@@ -107,7 +107,7 @@ export async function apiFetch<T = unknown>(
     skipRefreshOn401?: boolean;
     signal?: AbortSignal | null;
     headers?: Record<string, string>;
-  } = {}
+  } = {},
 ): Promise<{ ok: true; data: T } | { ok: false; error: ApiError }> {
   const {
     method = "GET",
@@ -134,9 +134,8 @@ export async function apiFetch<T = unknown>(
   };
 
   if (accessToken) {
-    (
-      initBase.headers as Record<string, string>
-    ).Authorization = `Bearer ${accessToken}`;
+    (initBase.headers as Record<string, string>).Authorization =
+      `Bearer ${accessToken}`;
   }
 
   if (includeCredentials) {
@@ -181,9 +180,8 @@ export async function apiFetch<T = unknown>(
         if (refreshRes?.ok && refreshRes.data) {
           // If accessToken updated, retry original request once with new header
           if (accessToken) {
-            (
-              init.headers as Record<string, string>
-            ).Authorization = `Bearer ${accessToken}`;
+            (init.headers as Record<string, string>).Authorization =
+              `Bearer ${accessToken}`;
           }
 
           const retried = await fetch(url, init);
