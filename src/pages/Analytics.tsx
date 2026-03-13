@@ -91,7 +91,7 @@ export default function Analytics() {
 
       {/* 2. PREMIUM HERO SECTION */}
       <div className="relative w-full max-w-full">
-        <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50 transition-all duration-500">
+        <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50br transition-all duration-500">
           <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] pointer-events-none">
             <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-white/10 rounded-full blur-[60px] md:blur-[80px] -mr-16 -mt-16 md:-mr-32 md:-mt-32 animate-pulse" />
           </div>

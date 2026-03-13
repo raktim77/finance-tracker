@@ -32,7 +32,7 @@ export default function DatePicker({ value, onChange, align = "left" }: Props) {
         className="w-full flex items-center gap-2 pl-3 pr-3 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[11px] font-bold text-[var(--color-text-primary)] transition-all hover:border-[var(--color-accent)]/50"
       >
         <Calendar size={14} className="text-[var(--color-text-secondary)] shrink-0" />
-        <span className="truncate">
+        <span className="truncate text-xs">
           {value ? value.toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }) : "Select date"}
         </span>
       </button>

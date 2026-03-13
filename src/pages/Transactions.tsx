@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
+import TransactionSheet from "../components/transactions/TransactionSheet";
 
 type Transaction = {
   id: number;
@@ -50,7 +51,7 @@ export default function Transactions() {
   const [sort, setSort] = useState<SortType>("latest");
   const [dateRange, setDateRange] = useState<DateRangeType>("30");
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [sheetOpen, setSheetOpen] = useState(false);
   const itemsPerPage = 5;
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -86,7 +87,7 @@ export default function Transactions() {
       </div>
 
 
-      <button className="flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)]">
+      <button onClick={() => setSheetOpen(true)} className="flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)]">
         <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
         <span className="hidden md:block text-sm">Record transaction</span>
         <span className="block md:hidden text-sm">Record</span>
@@ -299,7 +300,16 @@ export default function Transactions() {
       )}
 
     </div>
-
+    
+<TransactionSheet
+  open={sheetOpen}
+  onClose={() => setSheetOpen(false)}
+  categories={[]} 
+  accounts={[]}
+  onSubmit={async (data) => {
+    console.log("transaction", data);
+  }}
+/>
   </div>
 
   );

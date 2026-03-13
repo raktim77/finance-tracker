@@ -19,7 +19,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <Topbar toggleSidebar={() => setCollapsed(!collapsed)} />
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 overflow-auto md:p-6">
           {children}
         </main>
 
