@@ -1,3 +1,5 @@
+import { useTransactions } from "../features/transactions/hooks/useTransactions";
+import type { Transaction as ApiTransaction } from "../features/transactions/types/transaction.types";
 import { useState } from "react";
 import {
   Search,
@@ -16,26 +18,12 @@ import {
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
 import TransactionSheet from "../components/transactions/TransactionSheet";
-
-type Transaction = {
-  id: number;
-  name: string;
-  category: string;
-  date: string;
-  amount: number;
-  type: "income" | "expense";
-};
+import { useAuth } from "../lib/context/useAuth";
 
 type FilterType = "all" | "income" | "expense";
 type SortType = "latest" | "highest" | "lowest";
 type DateRangeType = "30" | "60" | "90" | "custom";
 
-const transactions: Transaction[] = [
-  { id: 1, name: "Swiggy", category: "Food", date: "Today, 2:45 PM", amount: -420, type: "expense" },
-  { id: 2, name: "Salary", category: "Income", date: "Yesterday", amount: 45000, type: "income" },
-  { id: 3, name: "Amazon", category: "Shopping", date: "Mar 07, 2026", amount: -2199, type: "expense" },
-  { id: 4, name: "Uber", category: "Transport", date: "Mar 06, 2026", amount: -340, type: "expense" }
-];
 
 const categoryIcons: Record<string, LucideIcon> = {
   Food: Utensils,
@@ -44,8 +32,31 @@ const categoryIcons: Record<string, LucideIcon> = {
   Income: Briefcase
 };
 
-export default function Transactions() {
 
+function formatDisplayDate(dateString: string) {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) return dateString;
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function getTransactionTitle(transaction: ApiTransaction) {
+  return transaction.note?.trim() || transaction.category_name || "Transaction";
+}
+
+function getTransactionCategoryLabel(transaction: ApiTransaction) {
+  if (transaction.type === "income") return transaction.category_name || "Income";
+  if (transaction.type === "transfer") return "Transfer";
+  return transaction.category_name || "Expense";
+}
+
+export default function Transactions() {
+  const { accessToken, loading } = useAuth();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [sort, setSort] = useState<SortType>("latest");
@@ -57,16 +68,35 @@ export default function Transactions() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
-  let filtered = transactions.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const queryParams = {
+    page: currentPage,
+    limit: itemsPerPage,
+    search: search || undefined,
+    type: filter === "all" ? undefined : filter,
+    sort,
+    from:
+      dateRange === "custom"
+        ? startDate?.toISOString()
+        : undefined,
+    to:
+      dateRange === "custom"
+        ? endDate?.toISOString()
+        : undefined,
+  };
 
-  if (filter !== "all") filtered = filtered.filter((t) => t.type === filter);
-  if (sort === "highest") filtered = [...filtered].sort((a, b) => b.amount - a.amount);
-  if (sort === "lowest") filtered = [...filtered].sort((a, b) => a.amount - b.amount);
+  const {
+  data,
+  isLoading,
+  isError,
+  error,
+} = useTransactions(queryParams, {
+  accessToken,
+  enabled: !loading && !!accessToken,
+});
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentItems = data?.items ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalRecords = data?.total ?? 0;
 
   return (<div className="p-1 flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}
@@ -81,7 +111,7 @@ export default function Transactions() {
         </h2>
 
         <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
-          {filtered.length} records found
+          {totalRecords} records found
         </p>
 
       </div>
@@ -145,14 +175,18 @@ export default function Transactions() {
           {/* Custom Range Dates */}
           {dateRange === "custom" && (
             <div className="flex items-center gap-3 w-full md:w-auto animate-in slide-in-from-top-2">
+              <div className="w-full flex items-center justify-between px-3 md:px-4 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30">
+                <DatePicker value={startDate} onChange={setStartDate} />
 
-              <DatePicker value={startDate} onChange={setStartDate} />
+              </div>
 
               <span className="text-xs font-bold text-[var(--color-text-secondary)] opacity-60">
                 →
               </span>
+              <div className="w-full flex items-center justify-between px-3 md:px-4 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30">
+                <DatePicker value={endDate} onChange={setEndDate} />
 
-              <DatePicker value={endDate} onChange={setEndDate} />
+              </div>
 
             </div>
           )}
@@ -207,7 +241,19 @@ export default function Transactions() {
 
       <div className="flex flex-col p-1 md:p-4 gap-1">
 
-        {currentItems.length === 0 ? (
+        {isLoading ? (
+
+          <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
+            Loading transactions...
+          </div>
+
+        ) : isError ? (
+
+          <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
+            {error instanceof Error ? error.message : "Failed to load transactions"}
+          </div>
+
+        ) : currentItems.length === 0 ? (
 
           <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
             No transactions found
@@ -217,11 +263,19 @@ export default function Transactions() {
 
           currentItems.map((t) => {
 
-            const Icon = categoryIcons[t.category] || Utensils;
-
+            const categoryLabel = getTransactionCategoryLabel(t);
+            const title = getTransactionTitle(t);
+            const displayDate = formatDisplayDate(t.date);
+            const Icon = categoryIcons[categoryLabel] || Utensils;
+            const displayAmount =
+              t.type === "expense"
+                ? -Math.abs(t.amount)
+                : t.type === "income"
+                  ? Math.abs(t.amount)
+                  : 0;
             return (
 
-              <div key={t.id} className="flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group min-w-0">
+              <div key={t._id} className="flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group min-w-0">
 
                 <div className="flex items-center gap-3 md:gap-4 min-w-0">
 
@@ -234,21 +288,27 @@ export default function Transactions() {
                   <div className="flex flex-col min-w-0 gap-1">
 
                     <span className="font-bold text-sm text-[var(--color-text-primary)] truncate">
-                      {t.name}
+                      {title}
                     </span>
 
                     <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-tight truncate">
-                      {t.category} • {t.date}
+                      {categoryLabel} • {displayDate}
                     </span>
 
                   </div>
 
                 </div>
 
-                <div className={`font-black text-sm md:text-base shrink-0 ${t.amount < 0 ? "text-[var(--color-danger)]" : "text-[var(--color-success)]"}`}>
-
-                  {t.amount < 0 ? "-" : "+"}₹{Math.abs(t.amount).toLocaleString()}
-
+                <div
+                  className={`font-black text-sm md:text-base shrink-0 ${displayAmount < 0
+                      ? "text-[var(--color-danger)]"
+                      : displayAmount > 0
+                        ? "text-[var(--color-success)]"
+                        : "text-[var(--color-text-secondary)]"
+                    }`}
+                >
+                  {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
+                  ₹{Math.abs(displayAmount).toLocaleString()}
                 </div>
 
               </div>
@@ -300,16 +360,16 @@ export default function Transactions() {
       )}
 
     </div>
-    
-<TransactionSheet
-  open={sheetOpen}
-  onClose={() => setSheetOpen(false)}
-  categories={[]} 
-  accounts={[]}
-  onSubmit={async (data) => {
-    console.log("transaction", data);
-  }}
-/>
+
+    <TransactionSheet
+      open={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      categories={[]}
+      accounts={[]}
+      onSubmit={async (data) => {
+        console.log("transaction", data);
+      }}
+    />
   </div>
 
   );

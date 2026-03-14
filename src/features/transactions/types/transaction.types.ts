@@ -1,0 +1,70 @@
+export type TransactionType = "expense" | "income" | "transfer";
+
+export interface Transaction {
+  _id: string;
+  user_id: string;
+  account_id: string;
+  to_account_id?: string | null;
+  category_id?: string | null;
+
+  type: TransactionType;
+  amount: number;
+  signed_amount: number;
+
+  category_name?: string | null;
+  category_icon?: string | null;
+  category_color?: string | null;
+
+  note?: string | null;
+  date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTransactionPayload {
+  amount: number;
+  type: TransactionType;
+  account_id: string;
+  to_account_id?: string;
+  category_id?: string;
+  note?: string;
+  date: string;
+}
+
+export interface UpdateTransactionPayload {
+  amount?: number;
+  type?: TransactionType;
+  account_id?: string;
+  to_account_id?: string;
+  category_id?: string;
+  note?: string;
+  date?: string;
+}
+
+export interface GetTransactionsParams
+  extends Record<string, string | number | boolean | null | undefined> {
+  page?: number;
+  limit?: number;
+  search?: string;
+  type?: TransactionType;
+  account_id?: string;
+  from?: string;
+  to?: string;
+  sort?: "latest" | "oldest" | "highest" | "lowest";
+}
+
+export interface PaginatedTransactionsResponse {
+  items: Transaction[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface TransactionResponse {
+  transaction: Transaction;
+}
+
+export interface DeleteTransactionResponse {
+  message: string;
+}
