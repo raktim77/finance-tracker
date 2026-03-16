@@ -3,8 +3,8 @@ import type {
   CreateTransactionPayload,
   DeleteTransactionResponse,
   GetTransactionsParams,
-  PaginatedTransactionsResponse,
   TransactionResponse,
+  TransactionsListResponse,
   UpdateTransactionPayload,
 } from "../types/transaction.types";
 
@@ -15,8 +15,8 @@ interface AuthOptions {
 export async function getTransactions(
   params: GetTransactionsParams = {},
   options: AuthOptions = {}
-): Promise<PaginatedTransactionsResponse> {
-  return apiClient.get<PaginatedTransactionsResponse>("/transactions", {
+): Promise<TransactionsListResponse> {
+  return apiClient.get<TransactionsListResponse>("/transactions", {
     query: params,
     authToken: options.accessToken,
   });

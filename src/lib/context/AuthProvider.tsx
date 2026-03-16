@@ -2,13 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import { AuthStateContext, AuthActionsContext } from "./authState";
 import type { User as UserType } from "./authState"; import * as authApi from '../api/authApi';
-import { setAccessToken } from '../fetchClient';
+import { setAccessToken, subscribeToAccessToken } from '../fetchClient';
 import type { AuthResponse } from '../api/authApi';
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserType>(null);
   const [accessToken, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAccessToken((token) => {
+      setToken((currentToken) => (currentToken === token ? currentToken : token));
+    });
+
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,14 +33,12 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
         if (!r.ok || !r.data) {
           setUser(null);
-          setToken(null);
           setAccessToken(null);
           return;
         }
 
         const resp = r.data as AuthResponse;
         const token = resp.accessToken ?? null;
-        setToken(token);
         setAccessToken(token);
 
         if (resp.user) {
@@ -50,7 +56,6 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       } catch (err) {
         console.error('[Auth] bootstrap error', err);
         setUser(null);
-        setToken(null);
         setAccessToken(null);
       } finally {
         if (!cancelled) {
@@ -93,16 +98,11 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     };
   }, []);
 
-  useEffect(() => {
-    setAccessToken(accessToken);
-  }, [accessToken]);
-
   const login = async (email: string, password: string) => {
     const r = await authApi.login({ email, password });
     if (!r.ok || !r.data) return { ok: false, error: 'Login failed' };
     const resp = r.data as AuthResponse;
     const token = resp.accessToken ?? null;
-    setToken(token);
     setAccessToken(token);
     if (resp.user) {
       setUser(resp.user);
@@ -122,7 +122,6 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     if (!r.ok || !r.data) return { ok: false, error: 'Signup failed' };
     const resp = r.data as AuthResponse;
     const token = resp.accessToken ?? null;
-    setToken(token);
     setAccessToken(token);
     if (resp.user) {
       setUser(resp.user);
@@ -139,7 +138,6 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const logout = async () => {
     await authApi.logout();
-    setToken(null);
     setAccessToken(null);
     setUser(null);
   };

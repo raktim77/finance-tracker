@@ -53,12 +53,12 @@ export interface GetTransactionsParams
   sort?: "latest" | "oldest" | "highest" | "lowest";
 }
 
-export interface PaginatedTransactionsResponse {
-  items: Transaction[];
-  page: number;
-  limit: number;
+export interface TransactionsListResponse {
+  ok: boolean;
   total: number;
-  totalPages: number;
+  page: number;
+  pages: number;
+  transactions: Transaction[];
 }
 
 export interface TransactionResponse {

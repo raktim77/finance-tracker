@@ -94,9 +94,9 @@ export default function Transactions() {
   enabled: !loading && !!accessToken,
 });
 
-  const currentItems = data?.items ?? [];
-  const totalPages = data?.totalPages ?? 1;
-  const totalRecords = data?.total ?? 0;
+  const currentItems = data?.transactions ?? [];
+const totalPages = Math.max(data?.pages ?? 1, 1);
+const totalRecords = data?.total ?? 0;
 
   return (<div className="p-1 flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}

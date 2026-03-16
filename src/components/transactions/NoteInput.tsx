@@ -6,7 +6,7 @@ type Props = {
 export default function NoteInput({ value, onChange }: Props) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-40 ml-1">
+      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-50 ml-1">
         Note
       </label>
 

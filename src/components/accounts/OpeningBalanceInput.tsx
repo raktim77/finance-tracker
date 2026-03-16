@@ -5,7 +5,7 @@ type Props = {
   onChange: (value: number | "") => void;
 };
 
-export default function AmountInput({ value, onChange }: Props) {
+export default function OpeningBalanceInput({ value, onChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   
   // Local string state to allow for "10." or "10.0" during typing
@@ -80,7 +80,7 @@ export default function AmountInput({ value, onChange }: Props) {
       </div>
       
       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--color-text-secondary)] opacity-40 mt-4">
-        Enter Amount
+        Enter Opening Balance
       </span>
     </div>
   );

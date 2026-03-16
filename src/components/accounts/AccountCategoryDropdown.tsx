@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import {
   ChevronDown,
-  LayoutGrid,
+  Wallet,
   HelpCircle,
   X,
   type LucideIcon,
@@ -10,14 +10,13 @@ import * as Icons from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 
-export type Category = {
+export type AccountCategory = {
   _id: string;
   name: string;
   icon: string;
   color: string;
-  type: "expense" | "income";
+  group: string;
 };
-
 
 const DynamicIcon = ({
   name,
@@ -28,14 +27,12 @@ const DynamicIcon = ({
   size?: number;
   className?: string;
 }) => {
-
   const normalized = name.trim().toLowerCase();
 
-  const pascalName =
-    normalized
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join("");
+  const pascalName = normalized
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join("");
 
   const IconLibrary = Icons as unknown as Record<string, LucideIcon>;
   const IconComponent = IconLibrary[pascalName] || HelpCircle;
@@ -44,16 +41,14 @@ const DynamicIcon = ({
 };
 
 type Props = {
-  categories: Category[];
-  type: "expense" | "income" | "transfer";
+  categories: AccountCategory[];
   value: string | null;
   onChange: (id: string) => void;
   onOpenChange?: (open: boolean) => void;
 };
 
-export default function CategoryDropdown({
+export default function AccountCategoryDropdown({
   categories,
-  type,
   value,
   onChange,
   onOpenChange,
@@ -81,14 +76,9 @@ export default function CategoryDropdown({
     };
   }, [isOpen]);
 
-  const filtered = useMemo(() => {
-    if (type === "transfer") return [];
-    return categories.filter((c) => c.type === type);
-  }, [categories, type]);
-
-  const selected = filtered.find((c) => c._id === value);
-
-  if (type === "transfer") return null;
+  const selected = useMemo(() => {
+    return categories.find((c) => c._id === value) || null;
+  }, [categories, value]);
 
   const overlay = mounted
     ? createPortal(
@@ -125,7 +115,7 @@ export default function CategoryDropdown({
                       Selection
                     </span>
                     <h3 className="text-base font-black tracking-tight text-[var(--color-text-primary)] mt-1">
-                      Select Category
+                      Account Type
                     </h3>
                   </div>
 
@@ -140,9 +130,9 @@ export default function CategoryDropdown({
 
                 <div className="max-h-[60vh] overflow-y-auto p-4 no-scrollbar overscroll-contain">
                   <div className="grid grid-cols-2 gap-3">
-                    {filtered.map((cat) => (
+                    {categories.map((cat) => (
                       <button
-                        key={`cat-${cat.type}-${cat._id}`} // Prefix + fallback to index
+                        key={`acc-cat-${cat._id}`}
                         type="button"
                         onClick={() => {
                           onChange(cat._id);
@@ -187,11 +177,12 @@ export default function CategoryDropdown({
         document.body
       )
     : null;
+
   return (
     <>
-      <div className="flex flex-col gap-2 relative">
+      <div className="flex flex-col gap-3 relative">
         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-50 ml-1">
-          Category
+          Account Type
         </label>
 
         <button
@@ -218,7 +209,7 @@ export default function CategoryDropdown({
               {selected ? (
                 <DynamicIcon name={selected.icon} />
               ) : (
-                <LayoutGrid size={18} className="text-[var(--color-accent)]" />
+                <Wallet size={18} className="text-[var(--color-accent)]" />
               )}
             </div>
 
@@ -230,12 +221,12 @@ export default function CategoryDropdown({
                     : "text-[var(--color-text-primary)]"
                 }`}
               >
-                {selected ? selected.name : "Choose Category"}
+                {selected ? selected.name : "Choose Account Type"}
               </span>
 
               {selected && (
                 <span className="text-[9px] font-black uppercase tracking-widest opacity-40 leading-none mt-1">
-                  Classification
+                  {selected.group}
                 </span>
               )}
             </div>

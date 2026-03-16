@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import FullscreenLogoLoaderMotion from "../../components/loader/FullscreenLogoLoaderMotion";
+import { API_ORIGIN, warnIfCookieRefreshMayFail } from "../../lib/api/config";
 
 export default function OAuthFinish() {
   const navigate = useNavigate();
@@ -19,11 +20,9 @@ export default function OAuthFinish() {
           return;
         }
 
-        const base = import.meta.env.DEV
-          ? "http://192-168-29-182.nip.io:4000"
-          : "https://xpensio-backend-i54c.onrender.com";
+        warnIfCookieRefreshMayFail();
 
-        const res = await fetch(`${base}/api/auth/google/finalize`, {
+        const res = await fetch(`${API_ORIGIN}/api/auth/google/finalize`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },

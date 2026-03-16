@@ -1,5 +1,6 @@
 // src/lib/fetchClient.ts
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+import { API_ORIGIN, warnIfCookieRefreshMayFail } from "./api/config";
 
 export interface ApiError {
   status?: number;
@@ -12,7 +13,7 @@ interface RefreshResponse {
   [key: string]: unknown;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+const API_BASE = API_ORIGIN;
 const AUTH_REFRESH_URL = "/api/auth/refresh";
 
 // For legacy compatibility a separate BASE_URL was present; prefer API_BASE for all calls
@@ -22,12 +23,24 @@ let refreshInFlight: Promise<{
   ok: boolean;
   data?: RefreshResponse;
 } | null> | null = null;
+const accessTokenListeners = new Set<(token: string | null) => void>();
 
 export function setAccessToken(token: string | null) {
+  if (accessToken === token) return;
   accessToken = token;
+  accessTokenListeners.forEach((listener) => listener(token));
 }
 export function getAccessToken() {
   return accessToken;
+}
+
+export function subscribeToAccessToken(
+  listener: (token: string | null) => void
+) {
+  accessTokenListeners.add(listener);
+  return () => {
+    accessTokenListeners.delete(listener);
+  };
 }
 
 function wait(ms: number) {
@@ -50,6 +63,8 @@ async function doRefreshOnce(): Promise<{
       // Uncomment for debugging who triggered refresh:
       // console.trace("[fetchClient] doRefreshOnce start");
 
+      warnIfCookieRefreshMayFail();
+
       const res = await fetch(`${API_BASE}${AUTH_REFRESH_URL}`, {
         method: "POST",
         credentials: "include",
@@ -66,7 +81,18 @@ async function doRefreshOnce(): Promise<{
 
       if (!res.ok) {
         // clear local access token if refresh fails
-        accessToken = null;
+        if (
+          typeof data === "object" &&
+          data &&
+          "error" in data &&
+          data.error === "Invalid refresh token"
+        ) {
+          console.warn(
+            `[Auth] /api/auth/refresh failed with "Invalid refresh token". The request intentionally does not use an Authorization header; it expects a refresh cookie via credentials: include. Check whether login/OAuth finalize set the cookie and whether the browser is sending it for ${API_BASE}.`
+          );
+        }
+
+        setAccessToken(null);
         return { ok: false, data: data as RefreshResponse };
       }
 
@@ -77,13 +103,13 @@ async function doRefreshOnce(): Promise<{
         "accessToken" in data &&
         data.accessToken
       ) {
-        accessToken = data.accessToken;
+        setAccessToken(data.accessToken);
       }
 
       return { ok: true, data: data as RefreshResponse };
     } catch (err) {
       console.error("[fetchClient] doRefreshOnce error", err);
-      accessToken = null;
+      setAccessToken(null);
       return { ok: false, data: undefined };
     } finally {
       // allow future refresh attempts
@@ -92,6 +118,10 @@ async function doRefreshOnce(): Promise<{
   })();
 
   return refreshInFlight;
+}
+
+export async function refreshAccessToken() {
+  return doRefreshOnce();
 }
 
 /**

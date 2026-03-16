@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Lightbulb, Sparkles } from "lucide-react";
 import { useAuth } from "../../lib/context/useAuth";
+import { API_ORIGIN, warnIfCookieRefreshMayFail } from "../../lib/api/config";
 
 /**
  * AuthCard.tsx
@@ -209,8 +210,8 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   };
 
   const handleGoogle = () => {
-    const api = import.meta.env.VITE_API_BASE;
-    window.location.href = `${api}/api/auth/google?prompt=select_account`;
+    warnIfCookieRefreshMayFail();
+    window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
   };
 
   const inputClass =

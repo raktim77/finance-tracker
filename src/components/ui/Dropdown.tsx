@@ -12,6 +12,10 @@ type DropdownProps = {
   options: Option[];
   onChange: (value: string) => void;
   className?: string;
+  buttonClassName?: string;
+  menuClassName?: string;
+  optionClassName?: string;
+  compact?: boolean;
 };
 
 export default function Dropdown({
@@ -19,7 +23,11 @@ export default function Dropdown({
   value,
   options,
   onChange,
-  className
+  className,
+  buttonClassName,
+  menuClassName,
+  optionClassName,
+  compact = false,
 }: DropdownProps) {
 
   const [open, setOpen] = useState(false);
@@ -45,8 +53,13 @@ export default function Dropdown({
 
       {/* Button */}
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between pl-9 pr-3 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30"
+        className={`w-full flex items-center justify-between bg-[var(--color-surface)] border border-[var(--input-border)] font-bold transition-all hover:border-[var(--color-accent)]/30 ${
+          compact
+            ? "pl-3 pr-2 h-9 rounded-lg text-[13px]"
+            : "pl-9 pr-3 h-11 rounded-xl text-[12px]"
+        } ${buttonClassName ?? ""}`}
       >
 
         <div className="flex items-center gap-2">
@@ -54,11 +67,13 @@ export default function Dropdown({
           {Icon && (
             <Icon
               size={14}
-              className="absolute left-3 text-[var(--color-text-secondary)]"
+              className={`absolute text-[var(--color-text-secondary)] ${
+                compact ? "left-2.5" : "left-3"
+              }`}
             />
           )}
 
-          <span>{selected?.label}</span>
+          <span className="truncate">{selected?.label}</span>
 
         </div>
 
@@ -73,18 +88,30 @@ export default function Dropdown({
       {/* Dropdown Menu */}
       {open && (
 
-        <div className="absolute top-full left-0 mt-2 w-full bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1">
+        <div
+          className={`absolute top-full left-0 mt-2 bg-[var(--color-surface)] border border-[var(--input-border)] shadow-xl overflow-y-auto z-50 animate-in fade-in slide-in-from-top-1 ${
+            compact
+              ? "min-w-full w-max max-h-56 rounded-lg p-1.5"
+              : "w-full rounded-xl overflow-hidden"
+          } ${menuClassName ?? ""}`}
+        >
 
           {options.map((option) => (
 
             <button
+              type="button"
               key={option.value}
               onClick={() => {
                 onChange(option.value);
                 setOpen(false);
               }}
-              className={`w-full text-left px-4 py-2 text-sm font-semibold hover:bg-[var(--color-background)] transition-colors ${value === option.value ? "text-[var(--color-accent)]" : ""
-                }`}
+              className={`w-full text-left font-semibold transition-colors ${
+                compact
+                  ? "px-3 py-2 rounded-md text-[13px] whitespace-nowrap"
+                  : "px-4 py-2 text-sm"
+              } hover:bg-[var(--color-background)] ${
+                value === option.value ? "text-[var(--color-accent)]" : ""
+              } ${optionClassName ?? ""}`}
             >
 
               {option.label}
