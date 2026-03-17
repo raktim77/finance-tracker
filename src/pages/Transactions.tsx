@@ -305,69 +305,71 @@ export default function Transactions() {
                   : 0;
             return (
 
-             <div
+            <div
   key={t._id}
-  className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group"
+  className="flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group gap-3"
 >
-
-  {/* TOP ROW (mobile) / LEFT SIDE (desktop) */}
-  <div className="flex items-start gap-3 md:gap-4 min-w-0 flex-1">
-
-    {/* ICON */}
-    <div className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-xl bg-[var(--color-background)] flex items-center justify-center text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] transition-colors">
+  {/* LEFT SIDE: ICON + INFO */}
+  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+    
+    {/* ICON - Slightly refined background for better separation */}
+    <div className="w-10 h-10 shrink-0 rounded-xl bg-[var(--color-background)] border border-[var(--border)]/10 flex items-center justify-center text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] transition-colors">
       <Icon size={18} />
     </div>
 
-    {/* TEXT */}
-    <div className="flex flex-col min-w-0 flex-1">
-
-      {/* ROW 1: TITLE + AMOUNT (mobile only inline) */}
-      <div className="flex items-center justify-between gap-2">
-
-        <span className="font-semibold text-[15px] text-[var(--color-text-primary)] truncate">
+    {/* TEXT CONTAINER */}
+    <div className="flex flex-col min-w-0 flex-1 justify-center">
+      
+      {/* ROW 1: TITLE + MOBILE AMOUNT */}
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <span className="font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight truncate leading-tight">
           {title}
         </span>
 
-        {/* AMOUNT (mobile) */}
+        {/* AMOUNT (mobile) - Integrated into the top line */}
         <span
-          className={`md:hidden font-bold text-sm shrink-0 ${displayAmount < 0
-            ? "text-[var(--color-danger)]"
-            : displayAmount > 0
-              ? "text-[var(--color-success)]"
-              : "text-[var(--color-text-secondary)]"
-            }`}
+          className={`md:hidden font-black text-sm shrink-0 ${
+            displayAmount < 0
+              ? "text-[var(--color-danger)]"
+              : displayAmount > 0
+                ? "text-[var(--color-success)]"
+                : "text-[var(--color-text-secondary)]"
+          }`}
         >
           {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
           ₹{Math.abs(displayAmount).toLocaleString()}
         </span>
       </div>
 
-      {/* ROW 2: CATEGORY / ACCOUNT */}
-      <span className="text-[10px] font-bold text-[var(--color-text-secondary)] tracking-tight truncate uppercase max-w-40 md:max-w-96 mt-1">
-        {categoryLabel}
-      </span>
+      {/* ROW 2: CATEGORY / ACCOUNT + DATE (Merged for cleaner look) */}
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-[10px] font-black text-[var(--color-text-secondary)] tracking-wider uppercase truncate opacity-60 md:max-w-96">
+          {categoryLabel}
+        </span>
 
-      {/* ROW 3: DATE */}
-      <span className="text-[11px] text-[var(--color-text-secondary)] opacity-70 mt-1">
-        {displayDate}
-      </span>
+        {/* Separator Dot for mobile/desktop harmony */}
+        <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)] opacity-20 shrink-0" />
 
+        <span className="shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] tracking-wider uppercase opacity-40">
+          {displayDate}
+        </span>
+      </div>
     </div>
   </div>
 
-  {/* AMOUNT (desktop only) */}
+  {/* AMOUNT (desktop only) - Increased font weight for prominence */}
   <div
-    className={`hidden md:block font-black text-sm md:text-base shrink-0 ${displayAmount < 0
-      ? "text-[var(--color-danger)]"
-      : displayAmount > 0
-        ? "text-[var(--color-success)]"
-        : "text-[var(--color-text-secondary)]"
-      }`}
+    className={`hidden md:block font-black text-base shrink-0 ml-4 ${
+      displayAmount < 0
+        ? "text-[var(--color-danger)]"
+        : displayAmount > 0
+          ? "text-[var(--color-success)]"
+          : "text-[var(--color-text-secondary)]"
+    }`}
   >
     {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
     ₹{Math.abs(displayAmount).toLocaleString()}
   </div>
-
 </div>
 
             );
