@@ -23,20 +23,26 @@ type SortType = "latest" | "highest" | "lowest";
 type DateRangeType = "30" | "60" | "90" | "custom";
 
 
-
 function formatDisplayDate(dateString: string) {
-  const date = new Date(dateString);
 
-  if (Number.isNaN(date.getTime())) return dateString;
+const date = new Date(dateString);
 
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true, // Forces AM/PM format
-  }).format(date);
+
+
+if (Number.isNaN(date.getTime())) return dateString;
+
+
+
+return new Intl.DateTimeFormat("en-IN", {
+
+day: "2-digit",
+
+month: "short",
+
+year: "numeric",
+
+}).format(date);
+
 }
 
 function getTransactionTitle(transaction: ApiTransaction) {
@@ -44,8 +50,8 @@ function getTransactionTitle(transaction: ApiTransaction) {
 }
 
 function getTransactionCategoryLabel(transaction: ApiTransaction) {
-  if(transaction.type == 'expense' || transaction.type == 'income') return transaction.account_id.name
-  if(transaction.type == 'transfer') return 'Transfer' 
+  if (transaction.type == 'expense' || transaction.type == 'income') return transaction.account_id.name
+  if (transaction.type == 'transfer') return 'Transfer'
   // return (transaction.note ? `• ${transaction.note}` : '');
 }
 
@@ -147,7 +153,7 @@ export default function Transactions() {
 
 
       <button disabled={!isReady}
-  onClick={() => setSheetOpen(true)} className="flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40">
+        onClick={() => setSheetOpen(true)} className="flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40">
         <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
         <span className="hidden md:block text-sm">Record transaction</span>
         <span className="block md:hidden text-sm">Record</span>
@@ -267,7 +273,7 @@ export default function Transactions() {
 
     {/* TRANSACTION LIST */}
 
-    <div className="rounded-[1.5rem] bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden shadow-sm w-full">
+    <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden shadow-sm w-full">
 
       <div className="flex flex-col p-2 gap-1">
 
@@ -291,8 +297,8 @@ export default function Transactions() {
 
         ) : (
 
-          currentItems.map((t) => {
-
+          currentItems.map((t, index) => {
+            const isLast = index === currentItems.length - 1;
             const categoryLabel = getTransactionCategoryLabel(t);
             const title = getTransactionTitle(t);
             const displayDate = formatDisplayDate(t.date);
@@ -303,77 +309,90 @@ export default function Transactions() {
                 : t.type === "income"
                   ? Math.abs(t.amount)
                   : 0;
+
             return (
+              <div
+                key={t._id}
+                className="relative flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group gap-1 min-w-0 cursor-pointer"
+              >
+                {!isLast && (
+                  <div className="absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
+                )}
 
-            <div
-  key={t._id}
-  className="flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group gap-3"
->
-  {/* LEFT SIDE: ICON + INFO */}
-  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-    
-    {/* ICON - Slightly refined background for better separation */}
-    <div className="w-10 h-10 shrink-0 rounded-xl bg-[var(--color-background)] border border-[var(--border)]/10 flex items-center justify-center text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] transition-colors">
-      <Icon size={18} />
-    </div>
+                {/* LEFT SIDE: ICON + INFO */}
+                <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                  <div
+                    className="w-10 h-10 shrink-0 rounded-full border border-[var(--border)]/10 flex items-center justify-center text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] transition-colors"
+                    style={{
+                      backgroundColor: `${t.category_color}15`,
+                      color: t.category_color,
+                    }}
+                  >
+                    <Icon size={18} />
+                  </div>
 
-    {/* TEXT CONTAINER */}
-    <div className="flex flex-col min-w-0 flex-1 justify-center">
-      
-      {/* ROW 1: TITLE + MOBILE AMOUNT */}
-      <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight truncate leading-tight">
-          {title}
-        </span>
+                  <div className="flex flex-col min-w-0 flex-1 justify-center">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight truncate leading-tight">
+                        {title}
+                      </span>
 
-        {/* AMOUNT (mobile) - Integrated into the top line */}
-        <span
-          className={`md:hidden font-black text-sm shrink-0 ${
-            displayAmount < 0
-              ? "text-[var(--color-danger)]"
-              : displayAmount > 0
-                ? "text-[var(--color-success)]"
-                : "text-[var(--color-text-secondary)]"
-          }`}
-        >
-          {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
-          ₹{Math.abs(displayAmount).toLocaleString()}
-        </span>
-      </div>
+                      {/* AMOUNT (mobile only) */}
+                      <span
+                        className={`md:hidden font-black text-sm shrink-0 ${displayAmount < 0
+                          ? "text-[var(--color-danger)]"
+                          : displayAmount > 0
+                            ? "text-[var(--color-success)]"
+                            : "text-[var(--color-text-secondary)]"
+                          }`}
+                      >
+                        {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
+                        ₹{Math.abs(displayAmount).toLocaleString()}
+                      </span>
+                    </div>
 
-      {/* ROW 2: CATEGORY / ACCOUNT + DATE (Merged for cleaner look) */}
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="text-[10px] font-black text-[var(--color-text-secondary)] tracking-wider uppercase truncate opacity-60 md:max-w-96">
-          {categoryLabel}
-        </span>
+                    <div className="flex items-center justify-between md:justify-start md:gap-2 min-w-0">
+                      <span className="text-[10px] font-black text-[var(--color-text-secondary)] uppercase truncate flex-1 md:flex-none max-w-[120px] md:max-w-96 opacity-60">
+                        {categoryLabel}
+                      </span>
+                      <span className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)] opacity-20 shrink-0" />
+                      <span className="shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] uppercase opacity-40 ml-4 md:ml-0">
+                        {displayDate}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-        {/* Separator Dot for mobile/desktop harmony */}
-        <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)] opacity-20 shrink-0" />
+                {/* RIGHT SIDE: AMOUNT + INDICATOR */}
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                  <div
+                    className={`font-black text-sm md:text-base shrink-0 ${displayAmount < 0
+                      ? "text-[var(--color-danger)]"
+                      : displayAmount > 0
+                        ? "text-[var(--color-success)]"
+                        : "text-[var(--color-text-secondary)]"
+                      }`}
+                  >
+                    {/* Amount (hidden on mobile, shown on desktop as before) */}
+                    <span className="hidden md:block">
+                      {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
+                      ₹{Math.abs(displayAmount).toLocaleString()}
+                    </span>
+                  </div>
 
-        <span className="shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] tracking-wider uppercase opacity-40">
-          {displayDate}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  {/* AMOUNT (desktop only) - Increased font weight for prominence */}
-  <div
-    className={`hidden md:block font-black text-base shrink-0 ml-4 ${
-      displayAmount < 0
-        ? "text-[var(--color-danger)]"
-        : displayAmount > 0
-          ? "text-[var(--color-success)]"
-          : "text-[var(--color-text-secondary)]"
-    }`}
-  >
-    {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
-    ₹{Math.abs(displayAmount).toLocaleString()}
-  </div>
-</div>
-
+                  {/* INDICATOR CHEVRON - Refined for minimal footprint */}
+                  <ChevronRight
+                    size={14} // Small footprint
+                    strokeWidth={2.5}
+                    className={`
+                    text-[var(--color-text-secondary)] transition-all duration-300
+                    opacity-20 md:opacity-0 
+                    md:-translate-x-2 md:group-hover:translate-x-0 md:group-hover:opacity-100
+                  `}
+                  />
+                </div>
+              </div>
             );
-
           })
 
         )}
@@ -421,13 +440,13 @@ export default function Transactions() {
     </div>
 
     <TransactionSheet
-  open={sheetOpen}
-  onClose={() => setSheetOpen(false)}
-  categories={categories}
-  accounts={mappedAccounts}
-  onSubmit={handleCreateTransaction}
-  loading={createTransactionMutation.isPending}
-/>
+      open={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      categories={categories}
+      accounts={mappedAccounts}
+      onSubmit={handleCreateTransaction}
+      loading={createTransactionMutation.isPending}
+    />
   </div>
 
   );

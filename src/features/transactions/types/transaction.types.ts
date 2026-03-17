@@ -13,9 +13,9 @@ export interface Transaction {
   amount: number;
   signed_amount: number;
 
-  category_name?: string | null;
-  category_icon?: string | null;
-  category_color?: string | null;
+  category_name: string | null;
+  category_icon: string | null;
+  category_color: string | undefined;
 
   note?: string | null;
   date: string;
