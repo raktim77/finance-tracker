@@ -308,7 +308,7 @@ export default function Transactions() {
                 ? -Math.abs(t.amount)
                 : t.type === "income"
                   ? Math.abs(t.amount)
-                  : 0;
+                  : Math.abs(t.amount);
 
             return (
               <div
