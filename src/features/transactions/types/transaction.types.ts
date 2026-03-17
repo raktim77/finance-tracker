@@ -6,7 +6,7 @@ export interface Transaction {
   _id: string;
   user_id: string;
   account_id: Account;
-  to_account_id?: string | null;
+  to_account_id?: Account;
   category_id?: string | null;
 
   type: TransactionType;

@@ -46,12 +46,13 @@ year: "numeric",
 }
 
 function getTransactionTitle(transaction: ApiTransaction) {
-  return transaction.category_name || "Transaction";
+  if(transaction.type == 'expense' || transaction.type == 'income') return transaction.category_name || "Transaction";
+  if(transaction.type == 'transfer') return "Transfer";
 }
 
 function getTransactionCategoryLabel(transaction: ApiTransaction) {
   if (transaction.type == 'expense' || transaction.type == 'income') return transaction.account_id.name
-  if (transaction.type == 'transfer') return 'Transfer'
+  if (transaction.type == 'transfer') return `${transaction.account_id.name} ↔ ${transaction?.to_account_id?.name}`
   // return (transaction.note ? `• ${transaction.note}` : '');
 }
 
@@ -63,7 +64,7 @@ export default function Transactions() {
   const [dateRange, setDateRange] = useState<DateRangeType>("30");
   const [currentPage, setCurrentPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const itemsPerPage = 5;
+  const itemsPerPage = 20;
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -302,7 +303,7 @@ export default function Transactions() {
             const categoryLabel = getTransactionCategoryLabel(t);
             const title = getTransactionTitle(t);
             const displayDate = formatDisplayDate(t.date);
-            const Icon = resolveLucideIcon(t.category_icon);
+            const Icon = t.type == 'income' || t.type == 'expense' ? resolveLucideIcon(t.category_icon) : resolveLucideIcon('arrow-left-right');
             const displayAmount =
               t.type === "expense"
                 ? -Math.abs(t.amount)
@@ -323,9 +324,12 @@ export default function Transactions() {
                 <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
                   <div
                     className="w-10 h-10 shrink-0 rounded-full border border-[var(--border)]/10 flex items-center justify-center text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] transition-colors"
-                    style={{
+                    style={t.type == 'income' || t.type == 'expense' ? {
                       backgroundColor: `${t.category_color}15`,
                       color: t.category_color,
+                    } : {
+                      backgroundColor: `${'#0d9488'}15`,
+                      color: '#0d9488',
                     }}
                   >
                     <Icon size={18} />
@@ -339,24 +343,24 @@ export default function Transactions() {
 
                       {/* AMOUNT (mobile only) */}
                       <span
-                        className={`md:hidden font-black text-sm shrink-0 ${displayAmount < 0
-                          ? "text-[var(--color-danger)]"
-                          : displayAmount > 0
-                            ? "text-[var(--color-success)]"
-                            : "text-[var(--color-text-secondary)]"
-                          }`}
+                        className={`md:hidden font-black text-sm shrink-0 ${t.type === "expense" || t.type === "income" ?  (displayAmount < 0
+                      ? "text-[var(--color-danger)]"
+                      : displayAmount > 0
+                        ? "text-[var(--color-success)]"
+                        : "text-[var(--color-text-secondary)]"
+                      ) : "text-[var(--color-text-secondary)]"}`}
                       >
-                        {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
+                        {t.type === "expense" || t.type === "income" ? (displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : "") : ""}
                         ₹{Math.abs(displayAmount).toLocaleString()}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between md:justify-start md:gap-2 min-w-0">
-                      <span className="text-[10px] font-black text-[var(--color-text-secondary)] uppercase truncate flex-1 md:flex-none max-w-[120px] md:max-w-96 opacity-60">
+                      <span className="text-[10px] font-black text-[var(--color-text-secondary)] uppercase truncate flex-1 md:flex-none max-w-[120px] md:max-w-96 opacity-70">
                         {categoryLabel}
                       </span>
                       <span className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)] opacity-20 shrink-0" />
-                      <span className="shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] uppercase opacity-40 ml-4 md:ml-0">
+                      <span className="shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] uppercase opacity-70 ml-4 md:ml-0 tracking-wider">
                         {displayDate}
                       </span>
                     </div>
@@ -366,16 +370,16 @@ export default function Transactions() {
                 {/* RIGHT SIDE: AMOUNT + INDICATOR */}
                 <div className="flex items-center gap-1 md:gap-2 shrink-0">
                   <div
-                    className={`font-black text-sm md:text-base shrink-0 ${displayAmount < 0
+                    className={`font-black text-sm md:text-base shrink-0 ${t.type === "expense" || t.type === "income" ?  (displayAmount < 0
                       ? "text-[var(--color-danger)]"
                       : displayAmount > 0
                         ? "text-[var(--color-success)]"
                         : "text-[var(--color-text-secondary)]"
-                      }`}
+                      ) : "text-[var(--color-text-secondary)]"}`}
                   >
                     {/* Amount (hidden on mobile, shown on desktop as before) */}
                     <span className="hidden md:block">
-                      {displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : ""}
+                      {t.type === "expense" || t.type === "income" ? (displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : "") : ""}
                       ₹{Math.abs(displayAmount).toLocaleString()}
                     </span>
                   </div>
