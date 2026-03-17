@@ -13,53 +13,6 @@ import AccountDropdown, { type Account } from "./AccountDropdown";
 import DateField from "./DateField";
 import NoteInput from "./NoteInput";
 
-// --- DUMMY DATA ---
-const dummyCategories: Category[] = [
-  { _id: "1", name: "Housing & Rent", icon: "house", color: "#6366f1", type: "expense" },
-  { _id: "2", name: "Utilities & Bills", icon: "zap", color: "#eab308", type: "expense" },
-  { _id: "3", name: "Groceries", icon: "shopping-cart", color: "#22c55e", type: "expense" },
-  { _id: "4", name: "Healthcare", icon: "heart-pulse", color: "#ef4444", type: "expense" },
-  { _id: "5", name: "Salary", icon: "banknote", color: "#10b981", type: "income" },
-  { _id: "6", name: "Freelance", icon: "briefcase", color: "#8b5cf6", type: "income" },
-];
-const dummyAccounts: Account[] = [
-  {
-    _id: "acc_1",
-    name: "Cash Wallet",
-    type: "cash",
-    balance: 1250,
-  },
-  {
-    _id: "acc_2",
-    name: "HDFC Bank",
-    type: "bank",
-    balance: 18500,
-  },
-  {
-    _id: "acc_3",
-    name: "SBI Savings",
-    type: "bank",
-    balance: 42300,
-  },
-  {
-    _id: "acc_4",
-    name: "ICICI Credit Card",
-    type: "card",
-    balance: 7800,
-  },
-  {
-    _id: "acc_5",
-    name: "PhonePe",
-    type: "upi",
-    balance: 2100,
-  },
-  {
-    _id: "acc_6",
-    name: "Google Pay",
-    type: "upi",
-    balance: 950,
-  },
-];
 // --- TYPES ---
 
 type TransactionType = "expense" | "income" | "transfer";
@@ -79,6 +32,7 @@ type Props = {
   onClose: () => void;
   categories: Category[];
   accounts: Account[];
+  loading?: boolean;
   onSubmit: (data: {
     amount: number;
     type: TransactionType;
@@ -95,9 +49,10 @@ type Props = {
 export default function TransactionSheet({
   open,
   onClose,
-  // categories,
-  // accounts,
+  categories,
+  accounts,
   onSubmit,
+  loading = false,
 }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
@@ -192,6 +147,7 @@ export default function TransactionSheet({
     },
     exit: { opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }
   };
+  
 
   return (
     <AnimatePresence>
@@ -304,7 +260,7 @@ export default function TransactionSheet({
                 {/* Form Elements as Cards */}
                 <div className="flex flex-col gap-4">
                   <CategoryDropdown
-                    categories={dummyCategories}
+                    categories={categories}
                     type={draft.type}
                     value={draft.category_id}
                     onOpenChange={setCategoryPickerOpen}
@@ -312,7 +268,7 @@ export default function TransactionSheet({
                   />
 
                   <AccountDropdown
-                    accounts={dummyAccounts}
+                    accounts={accounts}
                     type={draft.type}
                     accountId={draft.account_id}
                     toAccountId={draft.to_account_id}
@@ -357,7 +313,7 @@ export default function TransactionSheet({
             <div className="p-8 border-t border-[var(--border)] bg-[var(--color-surface)]/80 backdrop-blur-xl shrink-0 relative z-10">
               <button
                 onClick={handleSubmit}
-                disabled={!isValid()}
+                disabled={!isValid() || loading}
                 className="
                   w-full h-16 rounded-[1.5rem] 
                   bg-[var(--color-accent)] 
@@ -369,7 +325,7 @@ export default function TransactionSheet({
                 "
               >
                 <span className="text-xs font-black uppercase tracking-[0.3em] text-white">
-                  Confirm Transaction
+                  {loading ? "Creating..." : "Confirm Transaction"}
                 </span>
               </button>
             </div>

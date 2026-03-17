@@ -3,10 +3,8 @@ import {
   PlusCircle,
   ArrowUpRight,
   ChevronRight,
-  HelpCircle,
   type LucideIcon,
 } from "lucide-react";
-import * as Icons from "lucide-react";
 import { useMemo, useState } from "react";
 import AddAccountModal from "../components/accounts/AccountFormModal";
 import {
@@ -15,6 +13,7 @@ import {
   useCreateAccount,
   useUpdateAccount,
 } from "../features/accounts/hooks/useAccounts";
+import resolveLucideIcon from "../utils/LucideIconsResolver";
 
 type UiAccount = {
   _id: string;
@@ -30,7 +29,7 @@ function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount);
 }
 
@@ -56,17 +55,6 @@ function formatRelativeUpdate(dateString: string) {
   });
 }
 
-function resolveLucideIcon(iconName?: string | null): LucideIcon {
-  const normalized = (iconName || "").trim().toLowerCase();
-
-  const pascalName = normalized
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("");
-
-  const IconLibrary = Icons as unknown as Record<string, LucideIcon>;
-  return IconLibrary[pascalName] || HelpCircle;
-}
 
 export default function Accounts() {
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);

@@ -28,7 +28,7 @@ export interface CreateTransactionPayload {
   to_account_id?: string;
   category_id?: string;
   note?: string;
-  date: string;
+  date: Date;
 }
 
 export interface UpdateTransactionPayload {
