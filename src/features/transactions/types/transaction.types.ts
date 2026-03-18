@@ -50,8 +50,8 @@ export interface GetTransactionsParams
   search?: string;
   type?: TransactionType;
   account_id?: string;
-  from?: string;
-  to?: string;
+  startDate?: string;
+  endDate?: string;
   sort?: "latest" | "oldest" | "highest" | "lowest";
 }
 

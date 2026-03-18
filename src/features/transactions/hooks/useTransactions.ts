@@ -11,6 +11,7 @@ import {
   updateTransaction,
 } from "../api/transactions.api";
 import { transactionKeys } from "../api/transaction.keys";
+import { accountKeys } from "../../accounts/api/account.keys";
 import type {
   CreateTransactionPayload,
   GetTransactionsParams,
@@ -56,6 +57,9 @@ export function useCreateTransaction(options: AuthOptions = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: transactionKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: accountKeys.all,
       });
     },
   });

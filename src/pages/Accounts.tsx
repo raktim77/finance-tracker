@@ -245,7 +245,7 @@ export default function Accounts() {
                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-60">
                       {acc.type}
                     </span>
-                    <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight group-hover:text-[var(--color-accent)] transition-colors">
+                    <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight group-hover:text-[var(--color-accent)] transition-colors capitalize">
                       {acc.name}
                     </h3>
                   </div>

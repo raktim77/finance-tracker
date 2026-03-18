@@ -20,14 +20,24 @@ type Props = {
   modalMode?: boolean;
 };
 
-const START_MONTH = new Date(1900, 0, 1);
-const END_MONTH = new Date(2100, 11, 31);
+const TODAY = new Date();
+const START_MONTH = new Date(1970, 0, 1);
+const END_MONTH = new Date(
+  TODAY.getFullYear(),
+  TODAY.getMonth(),
+  TODAY.getDate()
+);
+
+function getMonthStart(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function getInitialMonth(value?: Date) {
+  if (!value) return getMonthStart(TODAY);
+  return value > END_MONTH ? getMonthStart(END_MONTH) : getMonthStart(value);
+}
 
 const monthFormatter = new Intl.DateTimeFormat("en-IN", { month: "short" });
-const monthOptions = Array.from({ length: 12 }, (_, index) => ({
-  label: monthFormatter.format(new Date(2026, index, 1)),
-  value: String(index),
-}));
 const yearOptions = Array.from(
   { length: END_MONTH.getFullYear() - START_MONTH.getFullYear() + 1 },
   (_, index) => {
@@ -39,6 +49,18 @@ const yearOptions = Array.from(
 function CustomMonthCaption({ calendarMonth, ...props }: MonthCaptionProps) {
   const { goToMonth } = useDayPicker();
   const currentDate = calendarMonth.date;
+  const monthOptions = Array.from(
+    {
+      length:
+        currentDate.getFullYear() === END_MONTH.getFullYear()
+          ? END_MONTH.getMonth() + 1
+          : 12,
+    },
+    (_, index) => ({
+      label: monthFormatter.format(new Date(currentDate.getFullYear(), index, 1)),
+      value: String(index),
+    })
+  );
 
   return (
     <div
@@ -61,6 +83,9 @@ function CustomMonthCaption({ calendarMonth, ...props }: MonthCaptionProps) {
               );
             }}
             className="custom-day-picker__dropdown"
+            menuClassName="custom-day-picker__dropdown-menu"
+            optionClassName="custom-day-picker__dropdown-option"
+
           />
         </div>
 
@@ -94,6 +119,7 @@ export default function DatePicker({
 }: Props) {
   const [internalOpen, setInternalOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inlinePopoverRef = useRef<HTMLDivElement>(null);
 
   const isControlled =
     typeof controlledOpen === "boolean" && typeof onOpenChange === "function";
@@ -127,18 +153,61 @@ export default function DatePicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [modalMode, setOpen]);
 
+  useEffect(() => {
+    if (!modalMode) return;
+
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open, modalMode]);
+
+  useEffect(() => {
+    if (modalMode || !open) return;
+
+    const popover = inlinePopoverRef.current;
+    if (!popover) return;
+
+    const handleWheel = (event: globalThis.WheelEvent) => {
+      const target = event.target;
+
+      if (
+        target instanceof Element &&
+        target.closest(".custom-day-picker__dropdown-menu")
+      ) {
+        return;
+      }
+
+      event.stopPropagation();
+      event.preventDefault();
+    };
+
+    popover.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      popover.removeEventListener("wheel", handleWheel);
+    };
+  }, [open, modalMode]);
+
   const pickerContent = (
-    <div className="custom-day-picker">
+    <div className="custom-day-picker overscroll-contain">
       <DayPicker
         mode="single"
         selected={value}
+        defaultMonth={getInitialMonth(value)}
         navLayout="around"
         startMonth={START_MONTH}
         endMonth={END_MONTH}
+        disabled={{ after: END_MONTH }}
         components={{
           MonthCaption: CustomMonthCaption,
         }}
-        onSelect={(date) => {
+      onSelect={(date) => {
           onChange(date);
           setOpen(false);
         }}
@@ -163,10 +232,10 @@ export default function DatePicker({
         <span className="truncate text-sm font-bold text-[var(--color-text-primary)]">
           {value
             ? value.toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
             : "Select date"}
         </span>
       </button>
@@ -175,29 +244,30 @@ export default function DatePicker({
         (modalMode
           ? typeof document !== "undefined"
             ? createPortal(
-                <>
-                  <div
-                    className="fixed inset-0 z-[260] bg-black/20 backdrop-blur-sm"
-                    onClick={() => setOpen(false)}
-                  />
+              <>
+                <div
+                  className="fixed inset-0 z-[260] bg-black/20 backdrop-blur-sm"
+                  onClick={() => setOpen(false)}
+                />
 
-                  <div className="fixed inset-0 z-[270] flex items-center justify-center p-4">
-                    <div
-                      className="
+                <div className="fixed inset-0 z-[270] flex items-center justify-center p-4">
+                  <div
+                    className="
                         bg-[var(--color-surface)]
                         border border-[var(--border)]
                         rounded-[1.75rem] p-4
                         shadow-[0_25px_60px_rgba(0,0,0,0.22)]
                         animate-in fade-in zoom-in-95 duration-200
-                        max-w-[calc(100vw-2rem)]
+                        w-max max-w-[95vw]
+                        
                       "
-                    >
-                      {pickerContent}
-                    </div>
+                  >
+                    {pickerContent}
                   </div>
-                </>,
-                document.body
-              )
+                </div>
+              </>,
+              document.body
+            )
             : null
           : (
             <>
@@ -207,6 +277,7 @@ export default function DatePicker({
               />
 
               <div
+                ref={inlinePopoverRef}
                 className={`
                   absolute top-full mt-3 z-[120]
                   bg-[var(--color-surface)]
@@ -214,10 +285,9 @@ export default function DatePicker({
                   rounded-[1.5rem] p-3
                   shadow-[0_20px_50px_rgba(0,0,0,0.15)]
                   animate-in fade-in zoom-in-95 duration-200
-                  ${
-                    align === "right"
-                      ? "right-0 origin-top-right"
-                      : "left-0 origin-top-left"
+                  ${align === "right"
+                    ? "right-0 origin-top-right"
+                    : "left-0 origin-top-left"
                   }
                   max-sm:fixed
                   max-sm:left-1/2
@@ -251,7 +321,8 @@ export default function DatePicker({
         }
 
         .custom-day-picker .rdp-month {
-          min-width: min(100%, 320px);
+          min-width: 320px;
+          width: max-content;
         }
 
         .custom-day-picker .rdp-month_caption {
@@ -264,7 +335,7 @@ export default function DatePicker({
           justify-content: center;
           gap: 0.5rem;
           width: 100%;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
         }
 
         .custom-day-picker__caption-item {
@@ -313,6 +384,12 @@ export default function DatePicker({
 
         .custom-day-picker__dropdown-option {
           color: var(--color-text-primary);
+          border-radius: 0px !important
+        }
+
+        .custom-day-picker__dropdown-option[aria-selected="true"] {
+          background: var(--color-accent-soft);
+          color: var(--color-accent);
         }
 
         .custom-day-picker__dropdown-option:hover {

@@ -1,8 +1,9 @@
 import { useCreateTransaction, useTransactions } from "../features/transactions/hooks/useTransactions";
 import type { Transaction as ApiTransaction } from "../features/transactions/types/transaction.types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
+  X,
   Filter,
   ArrowUpDown,
   PlusCircle,
@@ -18,10 +19,25 @@ import { useAccounts } from "../features/accounts/hooks/useAccounts";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 
-type FilterType = "all" | "income" | "expense";
+type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
 type DateRangeType = "30" | "60" | "90" | "custom";
 
+function formatApiDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getPresetDateRange(range: Exclude<DateRangeType, "custom">) {
+  const endDate = new Date();
+  const startDate = new Date(endDate);
+  startDate.setDate(endDate.getDate() - (Number(range) - 1));
+
+  return { startDate, endDate };
+}
 
 function formatDisplayDate(dateString: string) {
 
@@ -59,6 +75,7 @@ function getTransactionCategoryLabel(transaction: ApiTransaction) {
 export default function Transactions() {
   const { accessToken, loading } = useAuth();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [sort, setSort] = useState<SortType>("latest");
   const [dateRange, setDateRange] = useState<DateRangeType>("30");
@@ -66,16 +83,18 @@ export default function Transactions() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const itemsPerPage = 20;
 
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-
-
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    getPresetDateRange("30").startDate
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    getPresetDateRange("30").endDate
+  );
   const { data: categoriesData } = useCategories();
   const { data: accountsData } = useAccounts();
 
   const categories = categoriesData?.categories ?? [];
   const accounts = accountsData?.accounts ?? [];
-
+  
   const mappedAccounts = accounts.map(acc => ({
     _id: acc._id,
     name: acc.name,
@@ -86,6 +105,29 @@ export default function Transactions() {
   const isReady = categories.length > 0 && accounts.length > 0;
 
   const createTransactionMutation = useCreateTransaction();
+
+  useEffect(() => {
+    if (dateRange === "custom") {
+      setStartDate(undefined);
+      setEndDate(undefined);
+      return;
+    }
+
+    const { startDate: nextStartDate, endDate: nextEndDate } =
+      getPresetDateRange(dateRange);
+    setStartDate(nextStartDate);
+    setEndDate(nextEndDate);
+  }, [dateRange]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [search]);
 
   const handleCreateTransaction = async (payload: {
     amount: number;
@@ -104,20 +146,21 @@ export default function Transactions() {
     }
   };
 
+  const formattedStartDate = startDate ? formatApiDate(startDate) : undefined;
+  const formattedEndDate = endDate ? formatApiDate(endDate) : undefined;
+  const isWaitingForCustomRange =
+    dateRange === "custom" && (!formattedStartDate || !formattedEndDate);
+  const canFetchTransactions =
+    !loading && !!accessToken && !!formattedStartDate && !!formattedEndDate;
+
   const queryParams = {
     page: currentPage,
     limit: itemsPerPage,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     type: filter === "all" ? undefined : filter,
     sort,
-    from:
-      dateRange === "custom" && startDate
-        ? startDate.toISOString()
-        : undefined,
-    to:
-      dateRange === "custom" && endDate
-        ? endDate.toISOString()
-        : undefined,
+    from: formattedStartDate,
+    to: formattedEndDate,
   };
 
   const {
@@ -127,12 +170,17 @@ export default function Transactions() {
     error,
   } = useTransactions(queryParams, {
     accessToken,
-    enabled: !loading && !!accessToken,
+    enabled: canFetchTransactions,
   });
 
   const currentItems = data?.transactions ?? [];
   const totalPages = Math.max(data?.pages ?? 1, 1);
   const totalRecords = data?.total ?? 0;
+
+  const handleClearSearch = () => {
+    setSearch("");
+    setDebouncedSearch("");
+  };
 
   return (<div className="p-1 flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}
@@ -179,8 +227,18 @@ export default function Transactions() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search transactions..."
-          className="w-full pl-11 pr-4 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
+          className="w-full pl-11 pr-11 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
         />
+        {search && (
+          <button
+            type="button"
+            onClick={handleClearSearch}
+            aria-label="Clear search"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-background)] hover:text-[var(--color-text-primary)] transition-colors"
+          >
+            <X size={14} />
+          </button>
+        )}
 
       </div>
 
@@ -243,7 +301,8 @@ export default function Transactions() {
               options={[
                 { label: "All Types", value: "all" },
                 { label: "Income", value: "income" },
-                { label: "Expense", value: "expense" }
+                { label: "Expense", value: "expense" },
+                { label: "Transfer", value: "transfer" }
               ]}
             />
           </div>
@@ -288,6 +347,12 @@ export default function Transactions() {
 
           <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
             {error instanceof Error ? error.message : "Failed to load transactions"}
+          </div>
+
+        ) : isWaitingForCustomRange ? (
+
+          <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
+            Select both start and end dates
           </div>
 
         ) : currentItems.length === 0 ? (
@@ -348,7 +413,7 @@ export default function Transactions() {
                       : displayAmount > 0
                         ? "text-[var(--color-success)]"
                         : "text-[var(--color-text-secondary)]"
-                      ) : "text-[var(--color-text-secondary)]"}`}
+                      ) : "text-[var(--color-text-primary)]"}`}
                       >
                         {t.type === "expense" || t.type === "income" ? (displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : "") : ""}
                         ₹{Math.abs(displayAmount).toLocaleString()}
@@ -375,7 +440,7 @@ export default function Transactions() {
                       : displayAmount > 0
                         ? "text-[var(--color-success)]"
                         : "text-[var(--color-text-secondary)]"
-                      ) : "text-[var(--color-text-secondary)]"}`}
+                      ) : "text-[var(--color-text-primary)]"}`}
                   >
                     {/* Amount (hidden on mobile, shown on desktop as before) */}
                     <span className="hidden md:block">
