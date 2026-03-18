@@ -1,4 +1,4 @@
-import { useCreateTransaction, useTransactions, useUpdateTransaction } from "../features/transactions/hooks/useTransactions";
+import { useCreateTransaction, useDeleteTransaction, useTransactions, useUpdateTransaction } from "../features/transactions/hooks/useTransactions";
 import type { Transaction as ApiTransaction, Transaction } from "../features/transactions/types/transaction.types";
 import { useEffect, useState } from "react";
 import {
@@ -19,6 +19,8 @@ import { useAccounts } from "../features/accounts/hooks/useAccounts";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 import TransactionDetails from "../components/transactions/TransactionDetails";
+import { useToast } from "../components/ui/confirm-modal/useToast";
+import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -86,6 +88,8 @@ export default function Transactions() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const confirm = useConfirm();
+  const toast = useToast();
   const itemsPerPage = 20;
 
   const [startDate, setStartDate] = useState<Date | undefined>(
@@ -111,6 +115,7 @@ export default function Transactions() {
 
   const createTransactionMutation = useCreateTransaction();
   const updateTransactionMutation = useUpdateTransaction();
+  const deleteTransactionMutation = useDeleteTransaction();
   useEffect(() => {
     if (dateRange === "custom") {
       setStartDate(undefined);
@@ -156,7 +161,7 @@ export default function Transactions() {
   }) => {
     console.log(payload);
     console.log(editingId);
-    
+
     try {
       if (editingTx && editingId) {
         await updateTransactionMutation.mutateAsync({
@@ -167,7 +172,7 @@ export default function Transactions() {
         await createTransactionMutation.mutateAsync(payload);
       }
 
-      // setSheetOpen(false);
+      setSheetOpen(false);
       setEditingTx(null);
       setSelectedTx(null);
       setEditingId(null);
@@ -572,8 +577,33 @@ export default function Transactions() {
         setEditingId(tx._id); // 👈 IMPORTANT
         setSheetOpen(true);
       }}
-      onDelete={(tx) => {
-        console.log("delete", tx);
+      onDelete={async (tx) => {
+        const ok = await confirm({
+          title: "Delete Transaction",
+          message: "This action cannot be undone.",
+          confirmText: "Delete",
+          cancelText: "Cancel",
+          variant: "danger",
+        });
+
+        if (!ok) return;
+
+        try {
+          // 🔥 Optimistic delete (already handled in hook)
+          await deleteTransactionMutation.mutateAsync(tx._id);
+
+          // close details modal
+          setDetailsOpen(false);
+          setSelectedTx(null);
+
+          // 🔥 success toast
+          toast.success("Transaction deleted successfully");
+        } catch (err) {
+          console.error(err);
+
+          // 🔥 error toast
+          toast.error("Failed to delete transaction");
+        }
       }}
     />
   </div>
