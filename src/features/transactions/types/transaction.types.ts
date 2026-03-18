@@ -34,13 +34,13 @@ export interface CreateTransactionPayload {
 }
 
 export interface UpdateTransactionPayload {
-  amount?: number;
-  type?: TransactionType;
-  account_id?: string;
+  amount: number;
+  type: TransactionType;
+  account_id: string;
   to_account_id?: string;
   category_id?: string;
   note?: string;
-  date?: string;
+  date: Date;
 }
 
 export interface GetTransactionsParams

@@ -1,5 +1,5 @@
-import { useCreateTransaction, useTransactions } from "../features/transactions/hooks/useTransactions";
-import type { Transaction as ApiTransaction } from "../features/transactions/types/transaction.types";
+import { useCreateTransaction, useTransactions, useUpdateTransaction } from "../features/transactions/hooks/useTransactions";
+import type { Transaction as ApiTransaction, Transaction } from "../features/transactions/types/transaction.types";
 import { useEffect, useState } from "react";
 import {
   Search,
@@ -13,11 +13,12 @@ import {
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
-import TransactionSheet from "../components/transactions/TransactionSheet";
+import TransactionSheet, { type TransactionDraft } from "../components/transactions/TransactionSheet";
 import { useAuth } from "../lib/context/useAuth";
 import { useAccounts } from "../features/accounts/hooks/useAccounts";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
+import TransactionDetails from "../components/transactions/TransactionDetails";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -41,29 +42,29 @@ function getPresetDateRange(range: Exclude<DateRangeType, "custom">) {
 
 function formatDisplayDate(dateString: string) {
 
-const date = new Date(dateString);
+  const date = new Date(dateString);
 
 
 
-if (Number.isNaN(date.getTime())) return dateString;
+  if (Number.isNaN(date.getTime())) return dateString;
 
 
 
-return new Intl.DateTimeFormat("en-IN", {
+  return new Intl.DateTimeFormat("en-IN", {
 
-day: "2-digit",
+    day: "2-digit",
 
-month: "short",
+    month: "short",
 
-year: "numeric",
+    year: "numeric",
 
-}).format(date);
+  }).format(date);
 
 }
 
 function getTransactionTitle(transaction: ApiTransaction) {
-  if(transaction.type == 'expense' || transaction.type == 'income') return transaction.category_name || "Transaction";
-  if(transaction.type == 'transfer') return "Transfer";
+  if (transaction.type == 'expense' || transaction.type == 'income') return transaction.category_name || "Transaction";
+  if (transaction.type == 'transfer') return "Transfer";
 }
 
 function getTransactionCategoryLabel(transaction: ApiTransaction) {
@@ -79,8 +80,12 @@ export default function Transactions() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [sort, setSort] = useState<SortType>("latest");
   const [dateRange, setDateRange] = useState<DateRangeType>("30");
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editingTx, setEditingTx] = useState<TransactionDraft | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const itemsPerPage = 20;
 
   const [startDate, setStartDate] = useState<Date | undefined>(
@@ -94,7 +99,7 @@ export default function Transactions() {
 
   const categories = categoriesData?.categories ?? [];
   const accounts = accountsData?.accounts ?? [];
-  
+
   const mappedAccounts = accounts.map(acc => ({
     _id: acc._id,
     name: acc.name,
@@ -105,7 +110,7 @@ export default function Transactions() {
   const isReady = categories.length > 0 && accounts.length > 0;
 
   const createTransactionMutation = useCreateTransaction();
-
+  const updateTransactionMutation = useUpdateTransaction();
   useEffect(() => {
     if (dateRange === "custom") {
       setStartDate(undefined);
@@ -129,7 +134,18 @@ export default function Transactions() {
     };
   }, [search]);
 
-  const handleCreateTransaction = async (payload: {
+  function mapToDraft(tx: ApiTransaction): TransactionDraft {
+    return {
+      amount: tx.amount,
+      type: tx.type,
+      account_id: tx.account_id?._id || null,
+      to_account_id: tx.to_account_id?._id || null,
+      category_id: tx.category_id || null,
+      note: tx.note || "",
+      date: new Date(tx.date),
+    };
+  }
+  const handleSubmitTransaction = async (payload: {
     amount: number;
     type: "expense" | "income" | "transfer";
     account_id: string;
@@ -138,9 +154,23 @@ export default function Transactions() {
     note?: string;
     date: Date;
   }) => {
+    console.log(payload);
+    console.log(editingId);
+    
     try {
-      await createTransactionMutation.mutateAsync(payload);
-      setSheetOpen(false); // ✅ FIXED
+      if (editingTx && editingId) {
+        await updateTransactionMutation.mutateAsync({
+          id: editingId,
+          payload: payload,
+        });
+      } else {
+        await createTransactionMutation.mutateAsync(payload);
+      }
+
+      // setSheetOpen(false);
+      setEditingTx(null);
+      setSelectedTx(null);
+      setEditingId(null);
     } catch (err) {
       console.error("Transaction failed", err);
     }
@@ -378,6 +408,12 @@ export default function Transactions() {
 
             return (
               <div
+                onClick={() => {
+                  setSelectedTx(t);
+                  setDetailsOpen(true);
+                }}
+
+
                 key={t._id}
                 className="relative flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group gap-1 min-w-0 cursor-pointer"
               >
@@ -408,12 +444,12 @@ export default function Transactions() {
 
                       {/* AMOUNT (mobile only) */}
                       <span
-                        className={`md:hidden font-black text-sm shrink-0 ${t.type === "expense" || t.type === "income" ?  (displayAmount < 0
-                      ? "text-[var(--color-danger)]"
-                      : displayAmount > 0
-                        ? "text-[var(--color-success)]"
-                        : "text-[var(--color-text-secondary)]"
-                      ) : "text-[var(--color-text-primary)]"}`}
+                        className={`md:hidden font-black text-sm shrink-0 ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
+                          ? "text-[var(--color-danger)]"
+                          : displayAmount > 0
+                            ? "text-[var(--color-success)]"
+                            : "text-[var(--color-text-secondary)]"
+                        ) : "text-[var(--color-text-primary)]"}`}
                       >
                         {t.type === "expense" || t.type === "income" ? (displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : "") : ""}
                         ₹{Math.abs(displayAmount).toLocaleString()}
@@ -435,12 +471,12 @@ export default function Transactions() {
                 {/* RIGHT SIDE: AMOUNT + INDICATOR */}
                 <div className="flex items-center gap-1 md:gap-2 shrink-0">
                   <div
-                    className={`font-black text-sm md:text-base shrink-0 ${t.type === "expense" || t.type === "income" ?  (displayAmount < 0
+                    className={`font-black text-sm md:text-base shrink-0 ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
                       ? "text-[var(--color-danger)]"
                       : displayAmount > 0
                         ? "text-[var(--color-success)]"
                         : "text-[var(--color-text-secondary)]"
-                      ) : "text-[var(--color-text-primary)]"}`}
+                    ) : "text-[var(--color-text-primary)]"}`}
                   >
                     {/* Amount (hidden on mobile, shown on desktop as before) */}
                     <span className="hidden md:block">
@@ -510,11 +546,35 @@ export default function Transactions() {
 
     <TransactionSheet
       open={sheetOpen}
-      onClose={() => setSheetOpen(false)}
+      onClose={() => {
+        setSheetOpen(false);
+        setEditingTx(null); // reset after close
+      }}
       categories={categories}
       accounts={mappedAccounts}
-      onSubmit={handleCreateTransaction}
-      loading={createTransactionMutation.isPending}
+      onSubmit={handleSubmitTransaction}
+      loading={
+        createTransactionMutation.isPending ||
+        updateTransactionMutation.isPending
+      }
+      initialData={editingTx} // 👈 IMPORTANT
+    />
+    <TransactionDetails
+      transaction={selectedTx}
+      open={detailsOpen}
+      onClose={() => {
+        setDetailsOpen(false);
+        setSelectedTx(null);
+      }}
+      onEdit={(tx) => {
+        //  setDetailsOpen(false);
+        setEditingTx(mapToDraft(tx));
+        setEditingId(tx._id); // 👈 IMPORTANT
+        setSheetOpen(true);
+      }}
+      onDelete={(tx) => {
+        console.log("delete", tx);
+      }}
     />
   </div>
 

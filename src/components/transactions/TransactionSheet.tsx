@@ -42,6 +42,7 @@ type Props = {
     note?: string;
     date: Date;
   }) => Promise<void>;
+  initialData?: TransactionDraft | null;
 };
 
 // --- COMPONENT ---
@@ -53,6 +54,7 @@ export default function TransactionSheet({
   accounts,
   onSubmit,
   loading = false,
+  initialData
 }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
@@ -80,21 +82,27 @@ export default function TransactionSheet({
   useEffect(() => {
     if (open) {
       if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
+
+      // 👇 PREFILL IF EDIT MODE
+      if (initialData) {
+        setDraft(initialData);
+      } else {
+        setDraft({
+          amount: "",
+          type: "expense",
+          account_id: null,
+          to_account_id: null,
+          category_id: null,
+          note: "",
+          date: new Date(),
+        });
+      }
+
       if (isMobile && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
-    } else {
-      setDraft({
-        amount: "",
-        type: "expense",
-        account_id: null,
-        to_account_id: null,
-        category_id: null,
-        note: "",
-        date: new Date(),
-      });
     }
-  }, [open, isMobile]);
+  }, [open, isMobile, initialData]);
 
   const isValid = () => {
     if (!draft.amount || draft.amount <= 0) return false;
@@ -147,7 +155,7 @@ export default function TransactionSheet({
     },
     exit: { opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }
   };
-  
+
 
   return (
     <AnimatePresence>
@@ -212,7 +220,7 @@ export default function TransactionSheet({
             <div className="flex items-center justify-between px-8 pt-8 pb-4 shrink-0 relative z-10">
               <div className="flex flex-col gap-1">
                 <h2 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tighter leading-none">
-                  New Transaction
+                  {initialData ? "Edit Transaction" : "New Transaction"}
                 </h2>
                 {/* <div className="h-1 w-6 rounded-full bg-[var(--color-accent)]" /> */}
               </div>
@@ -325,7 +333,13 @@ export default function TransactionSheet({
                 "
               >
                 <span className="text-xs font-black uppercase tracking-[0.3em] text-white">
-                  {loading ? "Creating..." : "Confirm Transaction"}
+                  {loading
+                    ? initialData
+                      ? "Updating..."
+                      : "Creating..."
+                    : initialData
+                      ? "Update Transaction"
+                      : "Confirm Transaction"}
                 </span>
               </button>
             </div>
