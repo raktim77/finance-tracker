@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Check, Shield, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type CSSVars = { [key: `--${string}`]: string | number };
 type CSSVarStyle = React.CSSProperties & CSSVars;
@@ -62,6 +63,11 @@ const marketingBullets = [
  * Heading OUTSIDE the card, card shows "Free Plan / For Individuals"
  */
 function PricingMobileBlock() {
+     const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
   return (
     <div>
       {/* Heading outside the card */}
@@ -120,7 +126,7 @@ function PricingMobileBlock() {
               Basic tools to manage your money at no cost.
             </p>
             <a
-              
+              onClick={handleLogin}
               className="mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3
                          bg-[var(--color-accent-teal)] text-white font-semibold hover:opacity-90 transition cursor-pointer"
             >
@@ -151,6 +157,11 @@ function PricingMobileBlock() {
 }
 
 export default function Pricing() {
+     const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
   return (
     <section id="pricing" className="relative bg-[var(--color-background)] py-16 lg:py-20 md:py-20 sm:py-12">
       {/* subtle section aura (respects --exp-auras) */}
@@ -198,9 +209,9 @@ export default function Pricing() {
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a
-                
+                onClick={handleLogin}
                 className="inline-flex items-center justify-center rounded-xl px-5 py-3
-                           bg-[var(--color-accent-teal)] text-white font-medium hover:opacity-90 transition cursor-pointer"
+                           bg-[var(--color-accent-teal)] text-white font-medium hover:opacity-90 transition cursor-pointer active:scale-95 transition-all"
               >
                 Get started — it’s free
               </a>
@@ -257,9 +268,9 @@ export default function Pricing() {
                 </p>
 
                 <a
-                  
+                  onClick={handleLogin}
                   className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-3
-                             bg-[var(--color-accent-teal)] text-white font-semibold hover:opacity-90 transition cursor-pointer"
+                             bg-[var(--color-accent-teal)] text-white font-semibold hover:opacity-90 transition cursor-pointer active:scale-95 transition-all"
                 >
                   Get Started
                 </a>

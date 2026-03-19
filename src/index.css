@@ -118,6 +118,25 @@
   .btn-header:hover { opacity: .9; }
 }
 
+/* Add to your index.css */
+@layer utilities {
+  .glass-card {
+    @apply backdrop-blur-xl bg-[var(--color-surface-elevated)]/60 border border-[var(--border)] shadow-2xl;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
 button {
   cursor: pointer;
 }
