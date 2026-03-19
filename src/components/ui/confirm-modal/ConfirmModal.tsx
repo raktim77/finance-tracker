@@ -23,58 +23,82 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }: Props) {
+
+  // Refined variants to match your Brand variables and shadow depth
   const variantStyles = {
-    default:
-      "bg-[var(--color-accent)] text-white shadow-[0_10px_25px_rgba(82,61,255,0.3)]",
-    danger:
-      "bg-red-500 text-white shadow-[0_10px_25px_rgba(239,68,68,0.3)]",
-    success:
-      "bg-green-500 text-white shadow-[0_10px_25px_rgba(34,197,94,0.3)]",
+    default: "bg-[var(--color-accent)] text-white shadow-[0_12px_24px_rgba(82,61,255,0.3)] hover:shadow-[0_16px_32px_rgba(82,61,255,0.4)]",
+    danger: "bg-red-500 text-white shadow-[0_12px_24px_rgba(239,68,68,0.3)] hover:shadow-[0_16px_32px_rgba(239,68,68,0.4)]",
+    success: "bg-emerald-500 text-white shadow-[0_12px_24px_rgba(16,185,129,0.3)] hover:shadow-[0_16px_32px_rgba(16,185,129,0.4)]",
   };
 
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+          {/* High-End Backdrop with heavier blur */}
           <motion.div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onCancel}
           />
 
-          {/* Modal */}
+          {/* Modal Container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="relative z-[310] w-full max-w-md rounded-[2rem] bg-[var(--color-surface)] border border-[var(--border)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.25)]"
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 350 }}
+            className="relative z-[310] w-full max-w-[360px] overflow-hidden rounded-[2.5rem] bg-[var(--color-surface)] border border-[var(--border)] p-8 shadow-[0_32px_64px_rgba(0,0,0,0.35)]"
           >
-            {title && (
-              <h3 className="text-lg font-black mb-2">{title}</h3>
-            )}
+            {/* Branding Glow (Top Glow logic from TransactionSheet) */}
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--color-accent-soft)] to-transparent pointer-events-none opacity-40 z-0" />
 
-            <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-              {message}
-            </p>
+            <div className="relative z-10 flex flex-col">
+              {title && (
+                <div className="mb-4">
+                  <h3 className="text-xl font-black text-[var(--color-text-primary)] tracking-tighter leading-none">
+                    {title}
+                  </h3>
+                </div>
+              )}
 
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={onCancel}
-                className="px-4 py-2 rounded-xl border text-sm font-bold hover:bg-[var(--color-background)]"
-              >
-                {cancelText}
-              </button>
+              <p className="text-sm font-medium text-[var(--color-text-secondary)] leading-relaxed mb-4">
+                {message}
+              </p>
 
-              <button
-                onClick={onConfirm}
-                className={`px-5 py-2 rounded-xl text-sm font-black transition-all active:scale-95 hover:scale-[1.03] ${variantStyles[variant]}`}
-              >
-                {confirmText}
-              </button>
+              <div className="flex items-center justify-end gap-3 mt-6 relative z-10">
+
+                {/* Cancel: Subtle Border & Ghost Background */}
+                <button
+                  onClick={onCancel}
+                  className="
+      px-6 py-3.5 rounded-[1.25rem] 
+      border border-[var(--border)] 
+      bg-[var(--color-background)]/50
+      text-[10px] font-black uppercase tracking-[0.2em] 
+      text-[var(--color-text-secondary)] opacity-70
+      hover:opacity-100 hover:bg-[var(--color-background)]
+      transition-all active:scale-[0.95]
+    "
+                >
+                  {cancelText}
+                </button>
+
+                {/* Confirm: Primary Action */}
+                <button
+                  onClick={onConfirm}
+                  className={`
+      px-8 py-3.5 rounded-[1.25rem] 
+      text-[10px] font-black uppercase tracking-[0.2em] 
+      transition-all active:scale-[0.95]
+      ${variantStyles[variant]}
+    `}
+                >
+                  {confirmText}
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>

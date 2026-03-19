@@ -4,11 +4,21 @@ type Props = {
 };
 
 export default function NoteInput({ value, onChange }: Props) {
+  const MAX_CHARS = 80; // Suggested limit
+
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-50 ml-1">
-        Note
-      </label>
+      <div className="flex justify-between items-center px-1">
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-50">
+          Note
+        </label>
+        {/* Character Counter */}
+        <span className={`text-[9px] font-bold tracking-widest uppercase transition-opacity ${
+          value.length >= MAX_CHARS ? "text-[var(--color-danger)]" : "opacity-30"
+        }`}>
+          {value.length} / {MAX_CHARS}
+        </span>
+      </div>
 
       <div
         className="
@@ -23,7 +33,8 @@ export default function NoteInput({ value, onChange }: Props) {
       >
         <textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value.slice(0, MAX_CHARS))}
+          maxLength={MAX_CHARS}
           placeholder="Add a note..."
           rows={3}
           className="

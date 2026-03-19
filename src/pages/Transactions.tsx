@@ -579,8 +579,8 @@ export default function Transactions() {
       }}
       onDelete={async (tx) => {
         const ok = await confirm({
-          title: "Delete Transaction",
-          message: "This action cannot be undone.",
+          title: "Delete Transaction?",
+          message: "This transaction will be permanently deleted from your history. This action is irreversible.",
           confirmText: "Delete",
           cancelText: "Cancel",
           variant: "danger",
