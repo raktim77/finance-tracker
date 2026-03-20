@@ -11,12 +11,14 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import resolveLucideIcon from "../../utils/LucideIconsResolver";
 
 export type Account = {
   _id: string;
   name: string;
   type: string;
   balance?: number;
+  icon: string;
 };
 
 type Props = {
@@ -104,7 +106,7 @@ function AccountPicker({
                   <div className="max-h-[60vh] overflow-y-auto p-4 no-scrollbar overscroll-contain">
                       <div className="grid grid-cols-2 gap-3">
                       {accounts.map((acc,index) => {
-                        const Icon = accountIconMap[acc.type?.toLowerCase()] || HelpCircle;
+                        const Icon = resolveLucideIcon(acc.icon);
                         const active = value === acc._id;
 
                         return (

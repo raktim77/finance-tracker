@@ -109,6 +109,7 @@ export default function Transactions() {
     name: acc.name,
     type: acc.account_category_group || "account", // or fallback
     balance: acc.current_balance,
+    icon: acc.account_category_icon,
   }));
 
   const isReady = categories.length > 0 && accounts.length > 0;
