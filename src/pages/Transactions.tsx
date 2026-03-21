@@ -65,8 +65,12 @@ function formatDisplayDate(dateString: string) {
 }
 
 function getTransactionTitle(transaction: ApiTransaction) {
-  if (transaction.type == 'expense' || transaction.type == 'income') return transaction.category_name || "Transaction";
-  if (transaction.type == 'transfer') return "Transfer";
+  if(transaction.note && transaction.note != '' && transaction.note != 'null') return transaction.note
+  if(!transaction.note || transaction.note == '' || transaction.note == 'null') {
+    if (transaction.type == 'expense' || transaction.type == 'income') return transaction.category_name || "Transaction";
+    if (transaction.type == 'transfer') return "Transfer";
+
+  }  
 }
 
 function getTransactionCategoryLabel(transaction: ApiTransaction) {
@@ -421,7 +425,7 @@ export default function Transactions() {
 
 
                 key={t._id}
-                className="relative flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group gap-1 min-w-0 cursor-pointer"
+                className="relative flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group gap-1 md:gap-8 min-w-0 cursor-pointer"
               >
                 {!isLast && (
                   <div className="absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
@@ -443,14 +447,14 @@ export default function Transactions() {
                   </div>
 
                   <div className="flex flex-col min-w-0 flex-1 justify-center">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight truncate leading-tight">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
+                      <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight leading-tight">
                         {title}
                       </span>
 
                       {/* AMOUNT (mobile only) */}
                       <span
-                        className={`md:hidden font-black text-sm shrink-0 ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
+                        className={`md:hidden font-black text-sm shrink-0 whitespace-nowrap ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
                           ? "text-[var(--color-danger)]"
                           : displayAmount > 0
                             ? "text-[var(--color-success)]"
@@ -475,9 +479,9 @@ export default function Transactions() {
                 </div>
 
                 {/* RIGHT SIDE: AMOUNT + INDICATOR */}
-                <div className="flex items-center gap-1 md:gap-2 shrink-0">
-                  <div
-                    className={`font-black text-sm md:text-base shrink-0 ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
+                    <div className="flex items-center gap-1 md:gap-2 shrink-0 min-w-fit">
+                      <div
+                    className={`font-black text-sm md:text-base shrink-0 whitespace-nowrap ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
                       ? "text-[var(--color-danger)]"
                       : displayAmount > 0
                         ? "text-[var(--color-success)]"
