@@ -43,6 +43,7 @@ type Props = {
     date: Date;
   }) => Promise<void>;
   initialData?: TransactionDraft | null;
+  defaultData?: Partial<TransactionDraft> | null;
 };
 
 // --- COMPONENT ---
@@ -54,7 +55,8 @@ export default function TransactionSheet({
   accounts,
   onSubmit,
   loading = false,
-  initialData
+  initialData,
+  defaultData,
 }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
@@ -83,18 +85,23 @@ export default function TransactionSheet({
     if (open) {
       if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
 
-      // 👇 PREFILL IF EDIT MODE
+      const baseDraft: TransactionDraft = {
+        amount: "",
+        type: "expense",
+        account_id: null,
+        to_account_id: null,
+        category_id: null,
+        note: "",
+        date: new Date(),
+      };
+
       if (initialData) {
         setDraft(initialData);
       } else {
         setDraft({
-          amount: "",
-          type: "expense",
-          account_id: null,
-          to_account_id: null,
-          category_id: null,
-          note: "",
-          date: new Date(),
+          ...baseDraft,
+          ...defaultData,
+          date: defaultData?.date ?? baseDraft.date,
         });
       }
 
@@ -102,7 +109,7 @@ export default function TransactionSheet({
         document.activeElement.blur();
       }
     }
-  }, [open, isMobile, initialData]);
+  }, [open, isMobile, initialData, defaultData]);
 
   const isValid = () => {
     if (!draft.amount || draft.amount <= 0) return false;

@@ -21,7 +21,7 @@ import resolveLucideIcon from "../utils/LucideIconsResolver";
 import TransactionDetails from "../components/transactions/TransactionDetails";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -82,6 +82,7 @@ function getTransactionCategoryLabel(transaction: ApiTransaction) {
 
 export default function Transactions() {
   const { account_id } = useParams<{ account_id?: string }>();
+  const navigate = useNavigate();
   const { accessToken, loading } = useAuth();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -109,6 +110,11 @@ export default function Transactions() {
 
   const categories = categoriesData?.categories ?? [];
   const accounts = accountsData?.accounts ?? [];
+  const isScopedToAccount = !!account_id;
+  const scopedAccount = accounts.find((account) => account._id === account_id);
+  const displayTitle = isScopedToAccount
+    ? scopedAccount?.name || "Transactions"
+    : "Transactions";
 
   const mappedAccounts = accounts.map(acc => ({
     _id: acc._id,
@@ -117,6 +123,12 @@ export default function Transactions() {
     balance: acc.current_balance,
     icon: acc.account_category_icon || 'help',
   }));
+  const defaultTransactionDraft: Partial<TransactionDraft> | null =
+    isScopedToAccount && scopedAccount
+      ? {
+        account_id: scopedAccount._id,
+      }
+      : null;
 
   const isReady = categories.length > 0 && accounts.length > 0;
 
@@ -226,32 +238,52 @@ export default function Transactions() {
   };
 
   return (<div className="p-1 flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
-    {/* HEADER */}
-    <div className="flex items-start justify-between gap-2 w-full">
-
-      <div className="flex flex-col min-w-0 gap-2">
-
-        <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
-          <span className="hidden md:block">Transactions</span>
-          <span className="md:hidden block">History</span>
-
-        </h2>
-
-        <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
-          {totalRecords} records found
-        </p>
-
-      </div>
-
-
-      <button disabled={!isReady}
-        onClick={() => setSheetOpen(true)} className="flex group items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40">
-        <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
-        <span className="hidden md:block text-sm">Record transaction</span>
-        <span className="block md:hidden text-sm">Record</span>
+  {/* HEADER */}
+<div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
+  {/* TOP ROW: Back Button (Only shows when scoped) */}
+  {isScopedToAccount && (
+    <div className="flex animate-in slide-in-from-left-2 duration-500">
+      <button
+        onClick={() => navigate("/accounts")}
+        className="group inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-3 py-1.5 text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_10px_20px_-5px_rgba(82,61,255,0.3)]"
+        aria-label="Back to accounts"
+      >
+        <ChevronLeft size={14} strokeWidth={3} />
+        <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+          Back to Accounts
+        </span>
       </button>
-
     </div>
+  )}
+
+  {/* MAIN TITLE ROW */}
+  <div className="flex w-full min-w-0 items-start justify-between gap-4 md:gap-6">
+    <div className="flex min-w-0 max-w-[calc(100%-5.5rem)] flex-1 flex-col gap-1.5 md:max-w-[calc(100%-12rem)]">
+      <h2 className="min-w-0 max-w-full text-3xl font-black leading-tight tracking-tighter text-[var(--color-text-primary)] md:text-5xl">
+        <span className="block w-full break-words whitespace-normal md:hidden">
+          {isScopedToAccount ? displayTitle : "History"}
+        </span>
+        <span className="hidden w-full break-words whitespace-normal md:block">
+          {displayTitle}
+        </span>
+      </h2>
+
+      <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
+        {totalRecords} records found
+      </p>
+    </div>
+
+    <button 
+      disabled={!isReady}
+      onClick={() => setSheetOpen(true)} 
+      className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-2.5 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
+    >
+      <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+      <span className="hidden md:block">Record transaction</span>
+      <span className="block md:hidden">Record</span>
+    </button>
+  </div>
+</div>
 
     {/* CONTROLS */}
 
@@ -571,6 +603,7 @@ export default function Transactions() {
         updateTransactionMutation.isPending
       }
       initialData={editingTx} // 👈 IMPORTANT
+      defaultData={editingTx ? null : defaultTransactionDraft}
     />
     <TransactionDetails
       transaction={selectedTx}
