@@ -1,11 +1,13 @@
 import {
   Pencil,
+  Trash2,
   PlusCircle,
   ArrowUpRight,
   ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AddAccountModal from "../components/accounts/AccountFormModal";
 import {
   useAccounts,
@@ -14,12 +16,16 @@ import {
   useUpdateAccount,
 } from "../features/accounts/hooks/useAccounts";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
+import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
+import { useToast } from "../components/ui/confirm-modal/useToast";
 
 type UiAccount = {
   _id: string;
   name: string;
+  note?: string | null;
   type: string;
   balance: string;
+  account_category_id: string;
   icon: LucideIcon;
   color: string;
   lastUpdated: string;
@@ -59,6 +65,9 @@ function formatRelativeUpdate(dateString: string) {
 export default function Accounts() {
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const confirm = useConfirm();
+  const toast = useToast();
 
   const { data: accountsData, isLoading: accountsLoading } = useAccounts();
   const { data: categoriesData, isLoading: categoriesLoading } =
@@ -76,7 +85,9 @@ export default function Accounts() {
     return rawAccounts.map((acc) => ({
       _id: acc._id,
       name: acc.name,
+      note: acc.note,
       type: acc.account_category_name || acc.account_category_group || "Account",
+      account_category_id: acc.account_category_id,
       balance: formatCurrency(acc.current_balance),
       icon: resolveLucideIcon(acc.account_category_icon),
       color: acc.account_category_color || "#7c6cff",
@@ -123,6 +134,35 @@ export default function Accounts() {
       setEditingAccountId(null);
     } catch (error) {
       console.error("Update account failed:", error);
+    }
+  };
+
+  const handleArchiveAccount = async (account: UiAccount) => {
+    const ok = await confirm({
+      title: "Delete Account?",
+      message:
+        "This account will be deleted and removed from your active accounts list.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!ok) return;
+
+    try {
+      await updateAccountMutation.mutateAsync({
+        id: account._id,
+        payload: {
+          name: account.name,
+          account_category_id: account.account_category_id, 
+          note: account.note ?? "",
+          is_archived: true,
+        },
+      });
+      toast.success("Account deleted successfully");
+    } catch (error) {
+      console.error("Archive account failed:", error);
+      toast.error("Failed to delete account");
     }
   };
 
@@ -214,6 +254,7 @@ export default function Accounts() {
             return (
               <div
                 key={acc._id}
+                onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
                 className="shadow-sm group relative flex flex-col justify-between rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] transition-all duration-300 hover:shadow-lg hover:cursor-pointer hover:border-[var(--color-accent)]/30 overflow-hidden"
               >
                 <div
@@ -233,12 +274,28 @@ export default function Accounts() {
                       <Icon size={22} strokeWidth={2.5} />
                     </div>
 
-                    <button
-                      onClick={() => setEditingAccountId(acc._id)}
-                      className="p-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] transition-colors"
-                    >
-                      <Pencil size={14} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setEditingAccountId(acc._id);
+                        }}
+                        className="p-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] transition-colors"
+                        aria-label={`Edit ${acc.name}`}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleArchiveAccount(acc);
+                        }}
+                        className="p-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--color-danger)]/10 hover:text-[var(--color-danger)] transition-colors"
+                        aria-label={`Delete ${acc.name}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-1 mb-6">

@@ -36,6 +36,7 @@ export interface UpdateAccountPayload {
   opening_balance?: number;
   account_category_id?: string;
   note?: string;
+  is_archived?: boolean;
 }
 
 export interface GetAccountsParams

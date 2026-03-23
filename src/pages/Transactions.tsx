@@ -21,6 +21,7 @@ import resolveLucideIcon from "../utils/LucideIconsResolver";
 import TransactionDetails from "../components/transactions/TransactionDetails";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
+import { useParams } from "react-router-dom";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -80,6 +81,7 @@ function getTransactionCategoryLabel(transaction: ApiTransaction) {
 }
 
 export default function Transactions() {
+  const { account_id } = useParams<{ account_id?: string }>();
   const { accessToken, loading } = useAuth();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -198,6 +200,7 @@ export default function Transactions() {
     limit: itemsPerPage,
     search: debouncedSearch || undefined,
     type: filter === "all" ? undefined : filter,
+    account_id,
     sort,
     startDate: formattedStartDate,
     endDate: formattedEndDate,

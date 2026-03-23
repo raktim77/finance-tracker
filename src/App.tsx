@@ -84,6 +84,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/accounts/transactions/:account_id"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Transactions />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
         {/* Wallets */}
         <Route
           path="/accounts"
