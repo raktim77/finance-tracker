@@ -199,8 +199,8 @@ export default function Transactions() {
     search: debouncedSearch || undefined,
     type: filter === "all" ? undefined : filter,
     sort,
-    from: formattedStartDate,
-    to: formattedEndDate,
+    startDate: formattedStartDate,
+    endDate: formattedEndDate,
   };
 
   const {
