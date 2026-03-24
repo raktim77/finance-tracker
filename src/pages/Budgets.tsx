@@ -566,7 +566,8 @@ export default function Budgets() {
                       <div className="p-4 border-b border-[var(--border)] bg-[var(--color-background)]/50 flex items-center gap-3">
                         <Search size={14} className="text-[var(--color-text-secondary)] opacity-40" />
                         <input
-                          autoFocus
+                                      autoFocus={false}
+
                           placeholder="Search categories..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
