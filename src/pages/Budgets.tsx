@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   PlusCircle,
   Pencil,
@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Flame,
   Sparkles,
+  Search,
 } from "lucide-react";
 
 import {
@@ -15,28 +16,118 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  useBudget,
+  useBudgetSuggestions,
+  useUpsertBudget,
+} from "../features/budgets/hooks/useBudgets";
+import resolveLucideIcon from "../utils/LucideIconsResolver";
 
 export default function Budgets() {
   const [month, setMonth] = useState(new Date());
+  const monthString = month.toISOString().slice(0, 7);
+  const currentMonth = new Date();
+  currentMonth.setDate(1);
+  currentMonth.setHours(0, 0, 0, 0);
 
-  const totalBudget = 30000;
+  const selectedMonth = new Date(month);
+  selectedMonth.setDate(1);
+  selectedMonth.setHours(0, 0, 0, 0);
 
-  const groups = [
-    { category: "Food", allocated: 8000, spent: 7200, color: "#f97316" },
-    { category: "Transport", allocated: 3000, spent: 1200, color: "#06b6d4" },
-    { category: "Shopping", allocated: 5000, spent: 4500, color: "#8b5cf6" },
-    { category: "Entertainment", allocated: 4000, spent: 2800, color: "#22c55e" }
-  ];
+  const nextMonth = new Date(currentMonth);
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-  const budgets = groups.flatMap(g => g);
-  const allocatedTotal = budgets.reduce((a, b) => a + b.allocated, 0);
-  const spentTotal = budgets.reduce((a, b) => a + b.spent, 0);
-  const remainingToAllocate = totalBudget - allocatedTotal;
+  const isCurrentMonth =
+    selectedMonth.getFullYear() === currentMonth.getFullYear() &&
+    selectedMonth.getMonth() === currentMonth.getMonth();
+  const isNextMonth =
+    selectedMonth.getFullYear() === nextMonth.getFullYear() &&
+    selectedMonth.getMonth() === nextMonth.getMonth();
+  const canCreateBudget = isCurrentMonth || isNextMonth;
+  const canGoToNextMonth = selectedMonth < nextMonth;
+
+  const { data: budget, isLoading } = useBudget(monthString);
+
+  const { data: suggestions, isLoading: suggestionsLoading } =
+    useBudgetSuggestions(monthString, {
+      enabled: canCreateBudget && !budget?.exists,
+    });
+
+  const { mutateAsync, isPending } = useUpsertBudget();
+
+  const [draftTotal, setDraftTotal] = useState(0);
+  const [draftTotalInput, setDraftTotalInput] = useState("");
+  const [draftCategories, setDraftCategories] = useState<
+    { category_id: string; name: string; limit: number; icon?: string; color?: string }[]
+  >([]);
+  const [draftCategoryInputs, setDraftCategoryInputs] = useState<Record<string, string>>({});
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+ 
+  useEffect(() => {
+    if (suggestions && !budget?.exists) {
+      setDraftTotal(suggestions.suggested_total);
+      setDraftTotalInput(String(suggestions.suggested_total));
+
+      const initialCategories = suggestions.categories
+        .filter(c => c.suggested_limit > 0)
+        .map((c) => ({
+          category_id: c.category_id,
+          name: c.name,
+          limit: c.suggested_limit,
+          icon: c.icon,
+          color: c.color
+        }));
+
+      setDraftCategories(initialCategories);
+      setDraftCategoryInputs(
+        Object.fromEntries(
+          initialCategories.map((category) => [
+            category.category_id,
+            String(category.limit),
+          ])
+        )
+      );
+    }
+  }, [suggestions, budget]);
+
+  useEffect(() => {
+    if (!canCreateBudget && !budget?.exists) {
+      setIsSelectorOpen(false);
+      setSearchQuery("");
+    }
+  }, [budget, canCreateBudget]);
+
+  const availableToAdd = useMemo(() => {
+    if (!suggestions) return [];
+    return suggestions.categories
+      .filter((c) => !draftCategories.find((dc) => dc.category_id === c.category_id))
+      .filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [suggestions, draftCategories, searchQuery]);
+
+  const totalBudget = budget?.total_limit ?? 0;
+
+  const groups =
+    budget?.categories?.map((c) => ({
+      category: c.name,
+      allocated: c.limit,
+      spent: c.spent,
+      color: c.color,
+    })) ?? [];
+
+  const allocatedTotal = budget?.allocated ?? 0;
+  const spentTotal = budget?.spent ?? 0;
+  const remainingToAllocate = budget?.unallocated ?? 0;
 
   const donutData = [
     { name: "Spent", value: spentTotal, color: "white" },
-    { name: "Remaining", value: totalBudget - spentTotal, color: "rgba(255,255,255,0.2)" }
+    {
+      name: "Remaining",
+      value: totalBudget - spentTotal,
+      color: "rgba(255,255,255,0.2)",
+    },
   ];
 
   const getProgressColor = (spent: number, allocated: number) => {
@@ -46,29 +137,447 @@ export default function Budgets() {
     return "var(--color-danger)";
   };
 
-  const riskyBudgets = budgets.filter(b => (b.spent / b.allocated) * 100 > 90);
+  const riskyBudgets = groups.filter(
+    (b) => b.allocated > 0 && (b.spent / b.allocated) * 100 > 90
+  );
 
+  if (isLoading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  if (!budget?.exists && !canCreateBudget) {
+    return (
+      <div className="p-1 flex flex-col gap-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700 mx-auto w-full">
+        <div className="flex flex-col gap-4 px-2">
+          <div className="flex flex-col gap-1">
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--color-accent)]">
+              Budget Archive
+            </span>
+            <h2 className="text-2xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
+              {month.toLocaleString("default", { month: "long" })} Budget
+            </h2>
+            <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
+              No budget was created for this past month.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-[var(--color-surface)] p-1.5 rounded-2xl border border-[var(--border)] self-start">
+            <button
+              onClick={() =>
+                setMonth((prev) => {
+                  const d = new Date(prev);
+                  d.setMonth(d.getMonth() - 1);
+                  return d;
+                })
+              }
+              className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <span className="text-[9px] font-black uppercase tracking-widest px-2">
+              {month.toLocaleString("default", { month: "short", year: "numeric" })}
+            </span>
+            <button
+              onClick={() =>
+                setMonth((prev) => {
+                  const d = new Date(prev);
+                  d.setMonth(d.getMonth() + 1);
+                  return d;
+                })
+              }
+              disabled={!canGoToNextMonth}
+              className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-12 text-center shadow-sm relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(124,108,255,0.08),transparent_35%)]" />
+          <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center">
+              <Sparkles size={28} />
+            </div>
+            <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
+              No Budget Found
+            </h3>
+            <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
+              Budget creation is only available for the current month and next month. You can still browse older months here whenever budget data exists.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 🔥 PREMIUM CREATE BUDGET UI - MOBILE OPTIMIZED
+  if (!budget?.exists) {
+    if (suggestionsLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 animate-pulse px-6 text-center">
+          <div className="w-16 h-16 bg-[var(--color-accent-soft)] rounded-full mb-4 flex items-center justify-center">
+            <Sparkles className="text-[var(--color-accent)] animate-bounce" size={32} />
+          </div>
+          <p className="text-sm font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-60">
+            Analyzing your spending...
+          </p>
+        </div>
+      );
+    }
+
+    const allocated = draftCategories.reduce((sum, c) => sum + c.limit, 0);
+    const allocationPercent = draftTotal > 0 ? (allocated / draftTotal) * 100 : 0;
+    const isInvalid = allocated > draftTotal;
+
+    const isPositiveCommittedValue = (value: string) => {
+      if (!/^\d+(\.\d{1,2})?$/.test(value)) return false;
+      return Number(value) > 0;
+    };
+
+    const validateNumericInput = (
+      rawValue: string,
+      onValidNumber: (num: number) => void,
+      onRawValueChange: (value: string) => void
+    ) => {
+      if (rawValue !== "" && !/^\d*\.?\d*$/.test(rawValue)) return;
+      if (rawValue.includes(".") && rawValue.split(".")[1].length > 2) return;
+
+      onRawValueChange(rawValue);
+
+      if (!isPositiveCommittedValue(rawValue)) return;
+
+      onValidNumber(Number(rawValue));
+    };
+
+    const hasInvalidCategoryInputs = draftCategories.some((category) => {
+      const rawValue = draftCategoryInputs[category.category_id] ?? String(category.limit);
+      return !isPositiveCommittedValue(rawValue);
+    });
+
+    const isDraftTotalInputInvalid = !isPositiveCommittedValue(draftTotalInput);
+
+    return (
+      <div className="p-1 flex flex-col gap-6 md:gap-8 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700  w-full">
+
+        <div className="flex flex-col gap-4 px-2">
+          <div className="flex flex-col gap-1">
+            {/* <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--color-accent)]">Step 1: Planning</span> */}
+            <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
+              {month.toLocaleString("default", { month: "long" })} Budget
+            </h2>
+            <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
+              Fine-tune your suggested monthly limits below.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-[var(--color-surface)] p-1.5 rounded-2xl border border-[var(--border)] self-start">
+            <button onClick={() => setMonth(prev => { const d = new Date(prev); d.setMonth(d.getMonth() - 1); return d; })} className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"><ChevronLeft size={14} /></button>
+            <span className="text-[9px] font-black uppercase tracking-widest px-2">{month.toLocaleString("default", { month: "short", year: "numeric" })}</span>
+            <button
+              onClick={() => setMonth(prev => { const d = new Date(prev); d.setMonth(d.getMonth() + 1); return d; })}
+              disabled={!canGoToNextMonth}
+              className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+
+          <div className="lg:col-span-5 flex flex-col gap-6 lg:sticky lg:top-6">
+            <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-accent)]/5 rounded-full blur-3xl -mr-8 -mt-8 pointer-events-none" />
+
+              <label className="text-[9px] uppercase font-black text-[var(--color-text-secondary)] tracking-widest opacity-60 block mb-3">
+                Target Monthly Limit
+              </label>
+              <div className="flex items-center gap-2 group min-w-0">
+                <span className="text-2xl md:text-4xl font-black text-[var(--color-text-primary)] opacity-30 group-focus-within:text-[var(--color-accent)] group-focus-within:opacity-100 transition-all shrink-0">₹</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  autoFocus={false}
+                  value={draftTotalInput}
+                  onChange={(e) =>
+                    validateNumericInput(
+                      e.target.value,
+                      setDraftTotal,
+                      setDraftTotalInput
+                    )
+                  }
+                  onBlur={() => setDraftTotalInput(String(draftTotal))}
+                  className="text-4xl md:text-6xl font-black bg-transparent outline-none w-full tracking-tighter text-[var(--color-text-primary)] min-w-0"
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-[var(--border)] border-dashed">
+                <div className="flex justify-between items-end mb-3 gap-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">Allocation Status</span>
+                  <span className={`text-[10px] font-black whitespace-nowrap ${isInvalid ? 'text-[var(--color-danger)]' : 'text-[var(--color-text-primary)]'}`}>
+                    ₹{allocated.toLocaleString()} / ₹{draftTotal.toLocaleString()}
+                  </span>
+                </div>
+                <div className="h-3 w-full bg-[var(--color-background)] rounded-full border border-[var(--border)] p-0.5 overflow-hidden">
+                  <motion.div
+                    animate={{
+                      width: `${Math.min(allocationPercent, 100)}%`,
+                      backgroundColor: isInvalid ? 'var(--color-danger)' : 'var(--color-accent)'
+                    }}
+                    className="h-full rounded-full shadow-sm"
+                  />
+                </div>
+                <p className="mt-3 text-[9px] font-bold text-[var(--color-text-secondary)] opacity-60 leading-tight">
+                  {isInvalid
+                    ? "⚠️ Warning: Total allocation exceeds your monthly limit."
+                    : `You have ₹${(draftTotal - allocated).toLocaleString()} left to allocate.`}
+                </p>
+              </div>
+            </div>
+
+            <button
+              disabled={
+                isInvalid ||
+                isPending ||
+                draftTotal <= 0 ||
+                isDraftTotalInputInvalid ||
+                hasInvalidCategoryInputs
+              }
+              onClick={async () => {
+                await mutateAsync({
+                  month: monthString,
+                  total_limit: draftTotal,
+                  categories: draftCategories.map((c) => ({
+                    category_id: c.category_id,
+                    limit: c.limit,
+                  })),
+                });
+              }}
+              className="group relative w-full px-6 py-5 md:py-6 rounded-2xl md:rounded-[2rem] bg-[var(--color-text-primary)] text-[var(--color-background)] font-black uppercase tracking-[0.2em] text-[10px] md:text-xs transition-all active:scale-95 disabled:opacity-20 hover:shadow-2xl overflow-hidden"
+            >
+              <span className="relative z-10">{isPending ? "Finalizing..." : "Initialize Budget"}</span>
+              <div className="absolute inset-0 bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
+
+          <div className="lg:col-span-7 flex flex-col gap-4">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">Active Distribution</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-40">{draftCategories.length} Categories</span>
+            </div>
+
+            <div className="grid gap-3">
+              <AnimatePresence mode="popLayout">
+                {draftCategories.map((c, i) => {
+                  // const categoryPercent = draftTotal > 0 ? (c.limit / draftTotal) * 100 : 0;
+                  const CategoryIcon = resolveLucideIcon(c.icon || 'help');
+
+                  return (
+                    <motion.div
+                      key={c.category_id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="group bg-[var(--color-surface)] border border-[var(--border)] p-4 md:p-5 rounded-2xl md:rounded-[2rem] hover:border-[var(--color-accent)]/30 transition-all flex items-center gap-4"
+                    >
+                      <div
+                        className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
+                        style={{ backgroundColor: `${c.color}15`, color: c.color }}
+                      >
+                        <CategoryIcon size={18} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-0.5">
+                          <span className="font-black text-sm text-[var(--color-text-primary)] truncate">{c.name}</span>
+                          <button
+                            onClick={() => {
+                              setDraftCategories((prev) =>
+                                prev.filter((dc) => dc.category_id !== c.category_id)
+                              );
+                              setDraftCategoryInputs((prev) => {
+                                const next = { ...prev };
+                                delete next[c.category_id];
+                                return next;
+                              });
+                            }}
+                            className="text-[8px] font-black uppercase text-[var(--color-danger)] opacity-0 group-hover:opacity-100 transition-all px-2 py-1 bg-[var(--color-danger)]/10 rounded-lg"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className="relative flex items-center group/input">
+                          <span className="absolute left-0 text-[10px] font-black opacity-30 group-focus-within/input:opacity-100 transition-opacity">₹</span>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={draftCategoryInputs[c.category_id] ?? String(c.limit)}
+                            onChange={(e) =>
+                              validateNumericInput(
+                                e.target.value,
+                                (value) => {
+                                  setDraftCategories((prev) => {
+                                    const next = [...prev];
+                                    next[i] = { ...next[i], limit: value };
+                                    return next;
+                                  });
+                                },
+                                (value) =>
+                                  setDraftCategoryInputs((prev) => ({
+                                    ...prev,
+                                    [c.category_id]: value,
+                                  }))
+                              )
+                            }
+                            onBlur={() =>
+                              setDraftCategoryInputs((prev) => ({
+                                ...prev,
+                                [c.category_id]: String(c.limit),
+                              }))
+                            }
+                            className="w-full pl-3 py-0.5 text-base md:text-lg font-black bg-transparent outline-none text-[var(--color-text-primary)] border-b border-transparent focus:border-[var(--color-accent)]/20 transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setDraftCategories(prev => {
+                            const next = [...prev];
+                            next[i] = { ...next[i], limit: next[i].limit + 500 };
+                            return next;
+                          });
+                          setDraftCategoryInputs((prev) => ({
+                            ...prev,
+                            [c.category_id]: String(c.limit + 500),
+                          }));
+                        }}
+                        className="p-2.5 bg-[var(--color-background)] rounded-xl hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] transition-colors shrink-0"
+                      >
+                        <PlusCircle size={14} strokeWidth={3} />
+                      </button>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+
+              {/* HIGH-FIDELITY SEARCHABLE SELECTOR */}
+              <div className="relative mt-2">
+                <button
+                  onClick={() => setIsSelectorOpen(!isSelectorOpen)}
+                  className="w-full p-4 border border-dashed border-[var(--border)] rounded-2xl md:rounded-[2rem] bg-[var(--color-surface)]/50 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] transition-all flex items-center justify-center gap-2"
+                >
+                  <PlusCircle size={14} />
+                  Add More Categories
+                </button>
+
+                <AnimatePresence>
+                  {isSelectorOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setIsSelectorOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute bottom-full mb-4 left-0 right-0 z-50 bg-[var(--color-surface)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[350px]"
+                      >
+                        <div className="p-4 border-b border-[var(--border)] bg-[var(--color-background)]/50 flex items-center gap-3">
+                          <Search size={14} className="text-[var(--color-text-secondary)] opacity-40" />
+                          <input
+                            autoFocus
+                            placeholder="Search categories..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-transparent border-none outline-none text-xs font-bold w-full text-[var(--color-text-primary)]"
+                          />
+                        </div>
+                        <div className="overflow-y-auto p-2 no-scrollbar">
+                          {availableToAdd.length === 0 ? (
+                            <div className="py-8 text-center text-[10px] font-black uppercase text-[var(--color-text-secondary)] opacity-40">No categories found</div>
+                          ) : (
+                            availableToAdd.map(cat => {
+                              const Icon = resolveLucideIcon(cat.icon || 'help');
+                              return (
+                                <button
+                                  key={cat.category_id}
+                                  onClick={() => {
+                                    setDraftCategories(prev => [...prev, {
+                                      category_id: cat.category_id,
+                                      name: cat.name,
+                                      limit: cat.suggested_limit || 0,
+                                      icon: cat.icon,
+                                      color: cat.color
+                                    }]);
+                                    setDraftCategoryInputs((prev) => ({
+                                      ...prev,
+                                      [cat.category_id]: String(cat.suggested_limit || 0),
+                                    }));
+                                    setSearchQuery("");
+                                    setIsSelectorOpen(false);
+                                  }}
+                                  className="w-full p-3 flex items-center gap-4 hover:bg-[var(--color-background)] rounded-2xl transition-colors group"
+                                >
+                                  <div
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+                                    style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
+                                  >
+                                    <Icon size={16} />
+                                  </div>
+                                  <span className="text-xs font-bold text-[var(--color-text-primary)]">{cat.name}</span>
+                                  <PlusCircle size={14} className="ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
+                                </button>
+                              );
+                            })
+                          )}
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- STANDARD BUDGET VIEW REMAINS UNTOUCHED ---
   return (
     <div className="p-1 flex flex-col gap-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-1000 mx-auto w-full">
 
-      {/* 1. HEADER SECTION - Fixed for Mobile Wrap */}
       <div className="flex flex-col items-start justify-between gap-10">
         <div className="flex flex-rpw gap-4 md:gap-6 w-full justify-between">
           <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
             Budgets
           </h2>
 
-          <button className="group flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)]">
+          <button
+            disabled={!canCreateBudget}
+            className="group flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 disabled:hover:bg-[var(--color-accent-soft)] disabled:hover:text-[var(--color-accent)] disabled:hover:shadow-none disabled:cursor-not-allowed"
+          >
             <PlusCircle size={18} strokeWidth={2.5} />
-            <span className="text-sm md:block hidden">Create Budget</span>
-            <span className="text-sm block md:hidden">Create</span>
+            <span className="text-sm md:block hidden">
+              {canCreateBudget ? "Create Budget" : "Creation Locked"}
+            </span>
+            <span className="text-sm block md:hidden">
+              {canCreateBudget ? "Create" : "Locked"}
+            </span>
           </button>
-
         </div>
-        {/* Month Switcher: Centered and sized for mobile */}
+
         <div className="flex items-center justify-between md:justify-start gap-1 py-0.5 w-full md:w-auto">
           <button
-            onClick={() => setMonth(new Date(month.setMonth(month.getMonth() - 1)))}
+            onClick={() =>
+              setMonth((prev) => {
+                const d = new Date(prev);
+                d.setMonth(d.getMonth() - 1);
+                return d;
+              })
+            }
             className="bg-[var(--color-accent)] text-[var(--color-surface)] transition-colors p-2 rounded-lg border border-[var(--border)] shrink-0"
           >
             <ChevronLeft size={16} />
@@ -77,15 +586,21 @@ export default function Budgets() {
             {month.toLocaleString("default", { month: "long", year: "numeric" })}
           </span>
           <button
-            onClick={() => setMonth(new Date(month.setMonth(month.getMonth() + 1)))}
-            className="bg-[var(--color-accent)] text-[var(--color-surface)] transition-colors p-2 rounded-lg border border-[var(--border)] shrink-0"
+            onClick={() =>
+              setMonth((prev) => {
+                const d = new Date(prev);
+                d.setMonth(d.getMonth() + 1);
+                return d;
+              })
+            }
+            disabled={!canGoToNextMonth}
+            className="bg-[var(--color-accent)] text-[var(--color-surface)] transition-colors p-2 rounded-lg border border-[var(--border)] shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronRight size={16} />
           </button>
         </div>
       </div>
 
-      {/* 2. PREMIUM OVERVIEW CARD - Optimized Height for Mobile */}
       <div className="relative w-full" style={{ isolation: 'isolate' }}>
         <div
           className="
@@ -96,14 +611,11 @@ export default function Budgets() {
       z-10
     "
         >
-          {/* Decorative Circles - Inner Overflow Control */}
           <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] pointer-events-none">
             <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-white/10 rounded-full blur-[60px] md:blur-[80px] -mr-20 -mt-20 md:-mr-32 md:-mt-32 animate-pulse" />
           </div>
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 text-center md:text-left">
-
-            {/* Donut Logic */}
             <div className="relative w-40 h-40 md:w-48 md:h-48 shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -145,7 +657,6 @@ export default function Budgets() {
         </div>
       </div>
 
-      {/* 3. UNDERLAP CARDS */}
       <div className="relative z-10 flex flex-col gap-6 md:gap-8">
         {riskyBudgets.length === 0 ? (
           <div className="bg-[var(--color-surface)] border border-[var(--color-success)]/20 p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-between animate-in zoom-in-95 duration-500">
@@ -187,7 +698,6 @@ export default function Budgets() {
           </div>
         )}
 
-        {/* GROUPED BUDGETS */}
         <div className="space-y-6 md:space-y-12">
           <div className="flex flex-col gap-6">
             <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
