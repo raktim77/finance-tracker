@@ -147,7 +147,7 @@ export default function Budgets() {
 
   if (!budget?.exists && !canCreateBudget) {
     return (
-      <div className="p-1 flex flex-col gap-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700 mx-auto w-full">
+      <div className="p-1 flex flex-col gap-8 pb-24 animate-in mx-auto w-full">
         <div className="flex flex-col gap-4 px-2">
           <div className="flex flex-col gap-1">
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--color-accent)]">
@@ -258,7 +258,7 @@ export default function Budgets() {
     const isDraftTotalInputInvalid = !isPositiveCommittedValue(draftTotalInput);
 
     return (
-      <div className="p-1 flex flex-col gap-6 md:gap-8 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700  w-full">
+      <div className="p-1 flex flex-col gap-6 md:gap-8 pb-24 duration-700  w-full">
 
         <div className="flex flex-col gap-4 px-2">
           <div className="flex flex-col gap-1">
@@ -547,7 +547,7 @@ export default function Budgets() {
 
   // --- STANDARD BUDGET VIEW REMAINS UNTOUCHED ---
   return (
-    <div className="p-1 flex flex-col gap-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-1000 mx-auto w-full">
+    <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
 
       <div className="flex flex-col items-start justify-between gap-10">
         <div className="flex flex-rpw gap-4 md:gap-6 w-full justify-between">
