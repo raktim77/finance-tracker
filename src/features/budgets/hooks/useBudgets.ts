@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  deleteBudget,
   getBudget,
   getBudgetSuggestions,
   upsertBudget,
@@ -53,6 +54,29 @@ export function useUpsertBudget(options: AuthOptions = {}) {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: budgetKeys.list(variables.month),
+      });
+      queryClient.invalidateQueries({
+        queryKey: budgetKeys.suggestion(variables.month),
+      });
+    },
+  });
+}
+
+export function useDeleteBudget(options: AuthOptions = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (month: string) =>
+      deleteBudget(month, {
+        accessToken: options.accessToken,
+      }),
+
+    onSuccess: (_, month) => {
+      queryClient.invalidateQueries({
+        queryKey: budgetKeys.list(month),
+      });
+      queryClient.invalidateQueries({
+        queryKey: budgetKeys.suggestion(month),
       });
     },
   });

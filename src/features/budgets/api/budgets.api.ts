@@ -40,3 +40,16 @@ export async function upsertBudget(
     authToken: options.accessToken,
   });
 }
+
+export async function deleteBudget(
+  month: string,
+  options: AuthOptions = {}
+): Promise<{ ok: boolean; message: string }> {
+  return apiClient.delete<{ ok: boolean; message: string }>(
+    "/budgets",
+    {
+      query: { month },
+      authToken: options.accessToken,
+    }
+  );
+}
