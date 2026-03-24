@@ -368,7 +368,7 @@ export default function Budgets() {
               <label className="text-[9px] uppercase font-black text-[var(--color-text-secondary)] tracking-widest opacity-60 block mb-3">
                 Target Monthly Limit
               </label>
-              <div className={`flex items-center gap-2 group min-w-0 relative pr-8 ${fontSizeClass}`}>
+              <label className={`flex items-center gap-2 group min-w-0 relative cursor-text ${fontSizeClass}`}>
                 <span className="font-black text-[var(--color-text-primary)] opacity-30 group-focus-within:text-[var(--color-accent)] group-focus-within:opacity-100 transition-all shrink-0">₹</span>
                 <input
                   type="text"
@@ -382,14 +382,14 @@ export default function Budgets() {
                     )
                   }
                   onBlur={() => setDraftTotalInput(String(draftTotal))}
-                  className="font-black bg-transparent outline-none w-full tracking-tighter text-[var(--color-text-primary)] min-w-0"
+                  className="font-black bg-transparent outline-none w-full tracking-tighter text-[var(--color-text-primary)] min-w-0 pr-8"
                   placeholder="0"
                 />
                 <Pencil
                   size={16}
-                  className="pointer-events-none absolute right-0 text-[var(--color-text-secondary)] opacity-35 group-focus-within:opacity-80 transition-opacity"
+                  className="cursor-pointer absolute right-0 text-[var(--color-text-secondary)] opacity-35 group-focus-within:opacity-80 transition-opacity"
                 />
-              </div>
+              </label>
 
               <div className="mt-8 pt-6 border-t border-[var(--border)] border-dashed">
                 <div className="flex justify-between items-end mb-3 gap-2">
@@ -505,7 +505,7 @@ export default function Budgets() {
                     </div>
 
                     {/* Bottom Row: Input Field */}
-                    <div className="relative flex items-center group/input rounded-[1.15rem] border border-[var(--border)] bg-[var(--color-background)] px-4 py-3 transition-all focus-within:border-[var(--color-accent)]/40 focus-within:bg-[var(--color-surface)] focus-within:ring-4 focus-within:ring-[var(--color-accent)]/5">
+                    <label className="relative flex items-center group/input rounded-[1.15rem] border border-[var(--border)] bg-[var(--color-background)] px-4 py-3 transition-all focus-within:border-[var(--color-accent)]/40 focus-within:bg-[var(--color-surface)] focus-within:ring-4 focus-within:ring-[var(--color-accent)]/5 cursor-pointer">
                       <span className="absolute left-4 text-[11px] font-black opacity-30 group-focus-within/input:opacity-100 transition-opacity">₹</span>
                       <input
                         type="text"
@@ -539,9 +539,9 @@ export default function Budgets() {
                       />
                       <Pencil
                         size={14}
-                        className="pointer-events-none absolute right-4 text-[var(--color-text-secondary)] opacity-30 group-focus-within/input:opacity-80 transition-opacity"
+                        className="cursor-pointer absolute right-4 text-[var(--color-text-secondary)] opacity-30 group-focus-within/input:opacity-80 transition-opacity"
                       />
-                    </div>
+                    </label>
                   </div>
                 );
               })}
@@ -668,7 +668,7 @@ export default function Budgets() {
             <div className="absolute top-5 right-5 md:top-6 md:right-6 z-20 flex items-center gap-2">
               <button
                 onClick={() => setIsEditingBudget(true)}
-                className="p-2.5 rounded-xl bg-white/15 text-white border border-white/15 hover:bg-white/20 transition-colors"
+                className="p-2.5 rounded-xl bg-white/15 text-white border border-white/15  hover:border-[var(--input-border)] hover:bg-white/20 transition-colors"
                 aria-label="Edit budget"
               >
                 <Pencil size={15} />
@@ -676,7 +676,7 @@ export default function Budgets() {
               <button
                 onClick={handleDeleteBudget}
                 disabled={isDeletingBudget}
-                className="p-2.5 rounded-xl bg-white/15 text-white border border-white/15 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2.5 rounded-xl bg-[rgba(239,68,68,0.14)] text-white border border-[rgba(255,255,255,0.18)] shadow-[inset_0_0_0_1px_rgba(239,68,68,0.18)] hover:bg-[rgba(239,68,68,0.14)] hover:border-[var(--input-border)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Delete budget"
               >
                 <Trash2 size={15} />
@@ -784,9 +784,9 @@ export default function Budgets() {
                         <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-50 mb-0.5 md:mb-1">Category</span>
                         <h4 className="font-black text-base md:text-lg text-[var(--color-text-primary)]">{b.category}</h4>
                       </div>
-                      <button className="p-2 rounded-xl bg-[var(--color-background)] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)]">
+                      {/* <button className="p-2 rounded-xl bg-[var(--color-background)] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)]">
                         <Pencil size={14} />
-                      </button>
+                      </button> */}
                     </div>
 
                     <div className="flex justify-between items-end mb-2">
