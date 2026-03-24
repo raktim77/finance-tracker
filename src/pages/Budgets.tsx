@@ -7,6 +7,7 @@ import {
   Flame,
   Sparkles,
   Search,
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -16,7 +17,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { motion, AnimatePresence } from "framer-motion";
 import {
   useBudget,
   useBudgetSuggestions,
@@ -93,6 +93,15 @@ export default function Budgets() {
     }
   }, [suggestions, budget]);
 
+  const getFontSize = (val: string) => {
+    const len = val.length;
+    if (len < 7) return "text-6xl";
+    if (len < 10) return "text-4xl";
+    return "text-3xl";
+  };
+
+  const fontSizeClass = getFontSize(draftTotalInput);
+
   useEffect(() => {
     if (!canCreateBudget && !budget?.exists) {
       setIsSelectorOpen(false);
@@ -141,18 +150,43 @@ export default function Budgets() {
     (b) => b.allocated > 0 && (b.spent / b.allocated) * 100 > 90
   );
 
+  const isPositiveCommittedValue = (value: string) => {
+    if (!/^\d+(\.\d{1,2})?$/.test(value)) return false;
+    return Number(value) >= 0;
+  };
+
+  const validateNumericInput = (
+    rawValue: string,
+    onValidNumber: (num: number) => void,
+    onRawValueChange: (value: string) => void
+  ) => {
+    if (rawValue !== "" && !/^\d*\.?\d*$/.test(rawValue)) return;
+    if (rawValue.includes(".") && rawValue.split(".")[1].length > 2) return;
+
+    onRawValueChange(rawValue);
+
+    if (rawValue === "" || rawValue === ".") {
+      onValidNumber(0);
+      return;
+    }
+
+    if (!isPositiveCommittedValue(rawValue)) return;
+
+    onValidNumber(Number(rawValue));
+  };
+
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
   }
 
   if (!budget?.exists && !canCreateBudget) {
     return (
-      <div className="p-1 flex flex-col gap-8 pb-24 animate-in mx-auto w-full">
+      <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
         <div className="flex flex-col gap-4 px-2">
           <div className="flex flex-col gap-1">
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--color-accent)]">
+            {/* <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--color-accent)]">
               Budget Archive
-            </span>
+            </span> */}
             <h2 className="text-2xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
               {month.toLocaleString("default", { month: "long" })} Budget
             </h2>
@@ -211,13 +245,12 @@ export default function Budgets() {
     );
   }
 
-  // 🔥 PREMIUM CREATE BUDGET UI - MOBILE OPTIMIZED
   if (!budget?.exists) {
     if (suggestionsLoading) {
       return (
         <div className="flex flex-col items-center justify-center py-20 animate-pulse px-6 text-center">
           <div className="w-16 h-16 bg-[var(--color-accent-soft)] rounded-full mb-4 flex items-center justify-center">
-            <Sparkles className="text-[var(--color-accent)] animate-bounce" size={32} />
+            <Sparkles className="text-[var(--color-accent)]" size={32} />
           </div>
           <p className="text-sm font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-60">
             Analyzing your spending...
@@ -230,26 +263,6 @@ export default function Budgets() {
     const allocationPercent = draftTotal > 0 ? (allocated / draftTotal) * 100 : 0;
     const isInvalid = allocated > draftTotal;
 
-    const isPositiveCommittedValue = (value: string) => {
-      if (!/^\d+(\.\d{1,2})?$/.test(value)) return false;
-      return Number(value) > 0;
-    };
-
-    const validateNumericInput = (
-      rawValue: string,
-      onValidNumber: (num: number) => void,
-      onRawValueChange: (value: string) => void
-    ) => {
-      if (rawValue !== "" && !/^\d*\.?\d*$/.test(rawValue)) return;
-      if (rawValue.includes(".") && rawValue.split(".")[1].length > 2) return;
-
-      onRawValueChange(rawValue);
-
-      if (!isPositiveCommittedValue(rawValue)) return;
-
-      onValidNumber(Number(rawValue));
-    };
-
     const hasInvalidCategoryInputs = draftCategories.some((category) => {
       const rawValue = draftCategoryInputs[category.category_id] ?? String(category.limit);
       return !isPositiveCommittedValue(rawValue);
@@ -258,16 +271,15 @@ export default function Budgets() {
     const isDraftTotalInputInvalid = !isPositiveCommittedValue(draftTotalInput);
 
     return (
-      <div className="p-1 flex flex-col gap-6 md:gap-8 pb-24 duration-700  w-full">
+      <div className="p-1 flex flex-col gap-6 md:gap-8 pb-32 w-full">
 
         <div className="flex flex-col gap-4 px-2">
           <div className="flex flex-col gap-1">
-            {/* <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--color-accent)]">Step 1: Planning</span> */}
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
               {month.toLocaleString("default", { month: "long" })} Budget
             </h2>
             <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
-              Fine-tune your suggested monthly limits below.
+              We've suggested limits based on your history. Fine-tune them below.
             </p>
           </div>
 
@@ -293,12 +305,11 @@ export default function Budgets() {
               <label className="text-[9px] uppercase font-black text-[var(--color-text-secondary)] tracking-widest opacity-60 block mb-3">
                 Target Monthly Limit
               </label>
-              <div className="flex items-center gap-2 group min-w-0">
-                <span className="text-2xl md:text-4xl font-black text-[var(--color-text-primary)] opacity-30 group-focus-within:text-[var(--color-accent)] group-focus-within:opacity-100 transition-all shrink-0">₹</span>
+              <div className={`flex items-center gap-2 group min-w-0 ${fontSizeClass}`}>
+                <span className="font-black text-[var(--color-text-primary)] opacity-30 group-focus-within:text-[var(--color-accent)] group-focus-within:opacity-100 transition-all shrink-0">₹</span>
                 <input
                   type="text"
                   inputMode="decimal"
-                  autoFocus={false}
                   value={draftTotalInput}
                   onChange={(e) =>
                     validateNumericInput(
@@ -308,7 +319,7 @@ export default function Budgets() {
                     )
                   }
                   onBlur={() => setDraftTotalInput(String(draftTotal))}
-                  className="text-4xl md:text-6xl font-black bg-transparent outline-none w-full tracking-tighter text-[var(--color-text-primary)] min-w-0"
+                  className="font-black bg-transparent outline-none w-full tracking-tighter text-[var(--color-text-primary)] min-w-0"
                   placeholder="0"
                 />
               </div>
@@ -321,12 +332,12 @@ export default function Budgets() {
                   </span>
                 </div>
                 <div className="h-3 w-full bg-[var(--color-background)] rounded-full border border-[var(--border)] p-0.5 overflow-hidden">
-                  <motion.div
-                    animate={{
+                  <div
+                    className="h-full rounded-full shadow-sm transition-all duration-300"
+                    style={{
                       width: `${Math.min(allocationPercent, 100)}%`,
-                      backgroundColor: isInvalid ? 'var(--color-danger)' : 'var(--color-accent)'
+                      backgroundColor: isInvalid ? "var(--color-danger)" : "var(--color-accent)",
                     }}
-                    className="h-full rounded-full shadow-sm"
                   />
                 </div>
                 <p className="mt-3 text-[9px] font-bold text-[var(--color-text-secondary)] opacity-60 leading-tight">
@@ -362,190 +373,171 @@ export default function Budgets() {
             </button>
           </div>
 
-          <div className="lg:col-span-7 flex flex-col gap-4">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">Active Distribution</span>
-              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-40">{draftCategories.length} Categories</span>
+        {/* RIGHT: Category Breakdown */}
+<div className="lg:col-span-7 flex flex-col gap-4">
+  <div className="flex items-center justify-between px-2">
+    <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">Active Distribution</span>
+    <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-40">{draftCategories.length} Categories</span>
+  </div>
+
+  <div className="grid gap-3">
+    {draftCategories.map((c, i) => {
+      const CategoryIcon = resolveLucideIcon(c.icon || 'help');
+
+      return (
+        <div
+          key={c.category_id}
+          className="group relative bg-[var(--color-surface)] border border-[var(--border)] p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] hover:border-[var(--color-accent)]/30 transition-all flex flex-col gap-4"
+        >
+          {/* Top Row: Icon + Name + Delete (Mobile friendly) */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105"
+                style={{ backgroundColor: `${c.color}15`, color: c.color }}
+              >
+                <CategoryIcon size={20} />
+              </div>
+              <span className="font-black text-sm md:text-base text-[var(--color-text-primary)] truncate">
+                {c.name}
+              </span>
             </div>
 
-            <div className="grid gap-3">
-              <AnimatePresence mode="popLayout">
-                {draftCategories.map((c, i) => {
-                  // const categoryPercent = draftTotal > 0 ? (c.limit / draftTotal) * 100 : 0;
-                  const CategoryIcon = resolveLucideIcon(c.icon || 'help');
+            <button
+              onClick={() => {
+                setDraftCategories((prev) => prev.filter((dc) => dc.category_id !== c.category_id));
+                setDraftCategoryInputs((prev) => {
+                  const next = { ...prev };
+                  delete next[c.category_id];
+                  return next;
+                });
+              }}
+              aria-label={`Remove ${c.name}`}
+              className="p-2.5 bg-[var(--color-danger)]/10 text-[var(--color-danger)] rounded-xl hover:bg-[var(--color-danger)]/20 transition-all shrink-0 active:scale-90"
+            >
+              <Trash2 size={16} strokeWidth={2.5} />
+            </button>
+          </div>
 
+          {/* Bottom Row: Input Field */}
+          <div className="relative flex items-center group/input rounded-[1.15rem] border border-[var(--border)] bg-[var(--color-background)] px-4 py-3 transition-all focus-within:border-[var(--color-accent)]/40 focus-within:bg-[var(--color-surface)] focus-within:ring-4 focus-within:ring-[var(--color-accent)]/5">
+            <span className="absolute left-4 text-[11px] font-black opacity-30 group-focus-within/input:opacity-100 transition-opacity">₹</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={draftCategoryInputs[c.category_id] ?? String(c.limit)}
+              onChange={(e) =>
+                validateNumericInput(
+                  e.target.value,
+                  (value) => {
+                    setDraftCategories((prev) => {
+                      const next = [...prev];
+                      next[i] = { ...next[i], limit: value };
+                      return next;
+                    });
+                  },
+                  (value) =>
+                    setDraftCategoryInputs((prev) => ({
+                      ...prev,
+                      [c.category_id]: value,
+                    }))
+                )
+              }
+              onBlur={() =>
+                setDraftCategoryInputs((prev) => ({
+                  ...prev,
+                  [c.category_id]: String(c.limit),
+                }))
+              }
+              className="w-full pl-5 pr-10 text-xl md:text-2xl font-black bg-transparent outline-none text-[var(--color-text-primary)] tracking-tight"
+              placeholder="0"
+            />
+            <Pencil
+              size={14}
+              className="pointer-events-none absolute right-4 text-[var(--color-text-secondary)] opacity-30 group-focus-within/input:opacity-80 transition-opacity"
+            />
+          </div>
+        </div>
+      );
+    })}
+
+    {/* ADD CATEGORY SELECTOR BUTTON */}
+    <div className="relative mt-2">
+      <button
+        onClick={() => setIsSelectorOpen(!isSelectorOpen)}
+        className="w-full p-4 border border-dashed border-[var(--border)] rounded-2xl md:rounded-[2rem] bg-[var(--color-surface)]/50 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] transition-all flex items-center justify-center gap-2"
+      >
+        <PlusCircle size={14} />
+        Add More Categories
+      </button>
+
+      {isSelectorOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+            onClick={() => setIsSelectorOpen(false)}
+          />
+          <div className="absolute bottom-full mb-4 left-0 right-0 z-50 bg-[var(--color-surface)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[350px]">
+            <div className="p-4 border-b border-[var(--border)] bg-[var(--color-background)]/50 flex items-center gap-3">
+              <Search size={14} className="text-[var(--color-text-secondary)] opacity-40" />
+              <input
+                autoFocus
+                placeholder="Search categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent border-none outline-none text-xs font-bold w-full text-[var(--color-text-primary)]"
+              />
+            </div>
+            <div className="overflow-y-auto p-2 no-scrollbar">
+              {availableToAdd.length === 0 ? (
+                <div className="py-8 text-center text-[10px] font-black uppercase text-[var(--color-text-secondary)] opacity-40">No categories found</div>
+              ) : (
+                availableToAdd.map(cat => {
+                  const Icon = resolveLucideIcon(cat.icon || 'help');
                   return (
-                    <motion.div
-                      key={c.category_id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="group bg-[var(--color-surface)] border border-[var(--border)] p-4 md:p-5 rounded-2xl md:rounded-[2rem] hover:border-[var(--color-accent)]/30 transition-all flex items-center gap-4"
+                    <button
+                      key={cat.category_id}
+                      onClick={() => {
+                        setDraftCategories(prev => [...prev, {
+                          category_id: cat.category_id,
+                          name: cat.name,
+                          limit: cat.suggested_limit || 0,
+                          icon: cat.icon,
+                          color: cat.color
+                        }]);
+                        setDraftCategoryInputs((prev) => ({
+                          ...prev,
+                          [cat.category_id]: String(cat.suggested_limit || 0),
+                        }));
+                        setSearchQuery("");
+                        setIsSelectorOpen(false);
+                      }}
+                      className="w-full p-3 flex items-center gap-4 hover:bg-[var(--color-background)] rounded-2xl transition-colors group"
                     >
                       <div
-                        className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
-                        style={{ backgroundColor: `${c.color}15`, color: c.color }}
+                        className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+                        style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
                       >
-                        <CategoryIcon size={18} />
+                        <Icon size={16} />
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center mb-0.5">
-                          <span className="font-black text-sm text-[var(--color-text-primary)] truncate">{c.name}</span>
-                          <button
-                            onClick={() => {
-                              setDraftCategories((prev) =>
-                                prev.filter((dc) => dc.category_id !== c.category_id)
-                              );
-                              setDraftCategoryInputs((prev) => {
-                                const next = { ...prev };
-                                delete next[c.category_id];
-                                return next;
-                              });
-                            }}
-                            className="text-[8px] font-black uppercase text-[var(--color-danger)] opacity-0 group-hover:opacity-100 transition-all px-2 py-1 bg-[var(--color-danger)]/10 rounded-lg"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        <div className="relative flex items-center group/input">
-                          <span className="absolute left-0 text-[10px] font-black opacity-30 group-focus-within/input:opacity-100 transition-opacity">₹</span>
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={draftCategoryInputs[c.category_id] ?? String(c.limit)}
-                            onChange={(e) =>
-                              validateNumericInput(
-                                e.target.value,
-                                (value) => {
-                                  setDraftCategories((prev) => {
-                                    const next = [...prev];
-                                    next[i] = { ...next[i], limit: value };
-                                    return next;
-                                  });
-                                },
-                                (value) =>
-                                  setDraftCategoryInputs((prev) => ({
-                                    ...prev,
-                                    [c.category_id]: value,
-                                  }))
-                              )
-                            }
-                            onBlur={() =>
-                              setDraftCategoryInputs((prev) => ({
-                                ...prev,
-                                [c.category_id]: String(c.limit),
-                              }))
-                            }
-                            className="w-full pl-3 py-0.5 text-base md:text-lg font-black bg-transparent outline-none text-[var(--color-text-primary)] border-b border-transparent focus:border-[var(--color-accent)]/20 transition-all"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          setDraftCategories(prev => {
-                            const next = [...prev];
-                            next[i] = { ...next[i], limit: next[i].limit + 500 };
-                            return next;
-                          });
-                          setDraftCategoryInputs((prev) => ({
-                            ...prev,
-                            [c.category_id]: String(c.limit + 500),
-                          }));
-                        }}
-                        className="p-2.5 bg-[var(--color-background)] rounded-xl hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] transition-colors shrink-0"
-                      >
-                        <PlusCircle size={14} strokeWidth={3} />
-                      </button>
-                    </motion.div>
+                      <span className="text-xs font-bold text-[var(--color-text-primary)]">{cat.name}</span>
+                      <PlusCircle size={14} className="ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
+                    </button>
                   );
-                })}
-              </AnimatePresence>
-
-              {/* HIGH-FIDELITY SEARCHABLE SELECTOR */}
-              <div className="relative mt-2">
-                <button
-                  onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-                  className="w-full p-4 border border-dashed border-[var(--border)] rounded-2xl md:rounded-[2rem] bg-[var(--color-surface)]/50 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] transition-all flex items-center justify-center gap-2"
-                >
-                  <PlusCircle size={14} />
-                  Add More Categories
-                </button>
-
-                <AnimatePresence>
-                  {isSelectorOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setIsSelectorOpen(false)} />
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute bottom-full mb-4 left-0 right-0 z-50 bg-[var(--color-surface)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[350px]"
-                      >
-                        <div className="p-4 border-b border-[var(--border)] bg-[var(--color-background)]/50 flex items-center gap-3">
-                          <Search size={14} className="text-[var(--color-text-secondary)] opacity-40" />
-                          <input
-                            autoFocus
-                            placeholder="Search categories..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-none outline-none text-xs font-bold w-full text-[var(--color-text-primary)]"
-                          />
-                        </div>
-                        <div className="overflow-y-auto p-2 no-scrollbar">
-                          {availableToAdd.length === 0 ? (
-                            <div className="py-8 text-center text-[10px] font-black uppercase text-[var(--color-text-secondary)] opacity-40">No categories found</div>
-                          ) : (
-                            availableToAdd.map(cat => {
-                              const Icon = resolveLucideIcon(cat.icon || 'help');
-                              return (
-                                <button
-                                  key={cat.category_id}
-                                  onClick={() => {
-                                    setDraftCategories(prev => [...prev, {
-                                      category_id: cat.category_id,
-                                      name: cat.name,
-                                      limit: cat.suggested_limit || 0,
-                                      icon: cat.icon,
-                                      color: cat.color
-                                    }]);
-                                    setDraftCategoryInputs((prev) => ({
-                                      ...prev,
-                                      [cat.category_id]: String(cat.suggested_limit || 0),
-                                    }));
-                                    setSearchQuery("");
-                                    setIsSelectorOpen(false);
-                                  }}
-                                  className="w-full p-3 flex items-center gap-4 hover:bg-[var(--color-background)] rounded-2xl transition-colors group"
-                                >
-                                  <div
-                                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
-                                    style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
-                                  >
-                                    <Icon size={16} />
-                                  </div>
-                                  <span className="text-xs font-bold text-[var(--color-text-primary)]">{cat.name}</span>
-                                  <PlusCircle size={14} className="ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
-                                </button>
-                              );
-                            })
-                          )}
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
+                })
+              )}
             </div>
           </div>
+        </>
+      )}
+    </div>
+  </div>
+</div>
         </div>
       </div>
     );
   }
 
-  // --- STANDARD BUDGET VIEW REMAINS UNTOUCHED ---
   return (
     <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
 
@@ -555,9 +547,9 @@ export default function Budgets() {
             Budgets
           </h2>
 
-          <button
+          {/* <button
             disabled={!canCreateBudget}
-            className="group flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 disabled:hover:bg-[var(--color-accent-soft)] disabled:hover:text-[var(--color-accent)] disabled:hover:shadow-none disabled:cursor-not-allowed"
+            className="group flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm transition-all active:scale-95 bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40"
           >
             <PlusCircle size={18} strokeWidth={2.5} />
             <span className="text-sm md:block hidden">
@@ -566,7 +558,7 @@ export default function Budgets() {
             <span className="text-sm block md:hidden">
               {canCreateBudget ? "Create" : "Locked"}
             </span>
-          </button>
+          </button> */}
         </div>
 
         <div className="flex items-center justify-between md:justify-start gap-1 py-0.5 w-full md:w-auto">
@@ -612,7 +604,7 @@ export default function Budgets() {
     "
         >
           <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] pointer-events-none">
-            <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-white/10 rounded-full blur-[60px] md:blur-[80px] -mr-20 -mt-20 md:-mr-32 md:-mt-32 animate-pulse" />
+            <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-white/10 rounded-full blur-[60px] md:blur-[80px] -mr-20 -mt-20 md:-mr-32 md:-mt-32" />
           </div>
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 text-center md:text-left">
@@ -659,10 +651,10 @@ export default function Budgets() {
 
       <div className="relative z-10 flex flex-col gap-6 md:gap-8">
         {riskyBudgets.length === 0 ? (
-          <div className="bg-[var(--color-surface)] border border-[var(--color-success)]/20 p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-between animate-in zoom-in-95 duration-500">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-success)]/20 p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-between">
             <div className="flex items-center gap-3 md:gap-4">
               <div className="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-[var(--color-success)]/10 flex items-center justify-center text-[var(--color-success)] shadow-inner">
-                <Sparkles size={20} className="animate-pulse" />
+                <Sparkles size={20} />
               </div>
               <div>
                 <h3 className="font-black text-xs md:text-sm text-[var(--color-text-primary)] tracking-tight mb-1">
@@ -681,7 +673,7 @@ export default function Budgets() {
           <div className="bg-[var(--color-surface)] border border-[var(--color-danger)]/20 p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-between">
             <div className="flex items-center gap-3 md:gap-4">
               <div className="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-[var(--color-danger)]/10 flex items-center justify-center text-[var(--color-danger)]">
-                <Flame size={20} className="animate-bounce" />
+                <Flame size={20} />
               </div>
               <div>
                 <h3 className="font-black text-xs md:text-sm text-[var(--color-text-primary)] mb-1">Budget Warnings</h3>
@@ -723,12 +715,9 @@ export default function Budgets() {
                     </div>
 
                     <div className="h-3 md:h-4 w-full bg-[var(--color-background)] rounded-full border border-[var(--border)] p-0.5 md:p-1 mb-3 md:mb-4">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${percent}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="h-full rounded-full shadow-sm"
-                        style={{ background: color }}
+                      <div
+                        className="h-full rounded-full shadow-sm transition-all duration-300"
+                        style={{ background: color, width: `${percent}%` }}
                       />
                     </div>
 
