@@ -1,18 +1,64 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 
-const categoryData = [
-  { name: "Food", value: 8200, color: "#f97316" },
-  { name: "Shopping", value: 5100, color: "#8b5cf6" },
-  { name: "Transport", value: 2400, color: "#06b6d4" },
-  { name: "Bills", value: 2500, color: "#22c55e" }
-];
+type Category = {
+  name: string;
+  value: number;
+  color: string;
+};
 
-export function SpendingDonut() {
+type Props = {
+  data?: Category[];
+  isLoading: boolean;
+};
+
+export function SpendingDonut({ data, isLoading }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const total = categoryData.reduce((sum, item) => sum + item.value, 0);
-  const activeItem = activeIndex !== null ? categoryData[activeIndex] : null;
 
+  // 🔥 SKELETON
+  if (isLoading) {
+    return (
+      <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6">
+        
+        {/* Title */}
+        <div className="h-5 w-40 bg-black/5 dark:bg-white/10 rounded animate-pulse" />
+
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          
+          {/* Donut skeleton */}
+          <div className="relative w-[380px] h-[200px] flex items-center justify-center">
+            <div className="w-[140px] h-[140px] rounded-full border-[16px] border-black/5 dark:border-white/10 animate-pulse" />
+          </div>
+
+          {/* Legend skeleton */}
+          <div className="flex flex-col gap-4 w-full">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-black/5 dark:bg-white/10 animate-pulse" />
+                  <div className="h-3 w-20 bg-black/5 dark:bg-white/10 rounded animate-pulse" />
+                </div>
+                <div className="h-3 w-12 bg-black/5 dark:bg-white/10 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) return null;
+
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  const activeItem = activeIndex !== null ? data[activeIndex] : null;
+
+  const formatCompactCurrency = (value: number) => {
+  if (value >= 1e7) return `₹${(value / 1e7).toFixed(1)}Cr`;
+  if (value >= 1e5) return `₹${(value / 1e5).toFixed(1)}L`;
+  if (value >= 1e3) return `₹${(value / 1e3).toFixed(1)}K`;
+  return `₹${value}`;
+};
   return (
     <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
       
@@ -22,11 +68,12 @@ export function SpendingDonut() {
 
       <div className="flex flex-col md:flex-row items-center gap-6">
         
+        {/* Donut */}
         <div className="relative w-[380px] h-[200px] flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={categoryData}
+                data={data}
                 innerRadius={60}
                 outerRadius={85}
                 paddingAngle={2}
@@ -36,7 +83,7 @@ export function SpendingDonut() {
                 onMouseEnter={(_, index) => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(null)}
               >
-                {categoryData.map((entry, index) => (
+                {data.map((entry, index) => (
                   <Cell
                     key={index}
                     fill={entry.color}
@@ -53,6 +100,7 @@ export function SpendingDonut() {
             </PieChart>
           </ResponsiveContainer>
 
+          {/* Center label */}
           <div className="absolute flex flex-col items-center justify-center pointer-events-none">
             {activeItem ? (
               <>
@@ -60,7 +108,7 @@ export function SpendingDonut() {
                   {activeItem.name}
                 </span>
                 <span className="text-lg font-black text-[var(--color-text-primary)]">
-                  ₹{activeItem.value.toLocaleString()}
+                  {formatCompactCurrency(activeItem.value)}
                 </span>
               </>
             ) : (
@@ -69,15 +117,16 @@ export function SpendingDonut() {
                   Total
                 </span>
                 <span className="text-xl font-black text-[var(--color-text-primary)]">
-                  ₹{total.toLocaleString()}
+                  {formatCompactCurrency(total)}
                 </span>
               </>
             )}
           </div>
         </div>
 
+        {/* Legend */}
         <div className="flex flex-col gap-4 w-full">
-          {categoryData.map((item, i) => (
+          {data.map((item, i) => (
             <div
               key={i}
               className={`flex items-center justify-between text-sm transition-all ${

@@ -19,17 +19,17 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
   // ✅ SKELETON
   if (isLoading) {
     return (
-      <div className="rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-br from-[#7c6cff]/70 to-[#c084fc]/70 animate-pulse">
+      <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl transition-all duration-500">
         <div className="flex flex-col gap-8">
 
           <div className="space-y-3">
-            <div className="h-6 w-24 bg-white/30 rounded" />
-            <div className="h-12 md:h-10 w-48 bg-white/40 rounded" />
+            <div className="h-6 w-24 bg-white/30 rounded animate-pulse" />
+            <div className="h-12 md:h-10 w-48 bg-white/40 rounded animate-pulse" />
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="h-10 w-full md:w-64 bg-white/30 rounded" />
-            <div className="h-16 w-full md:w-110 bg-white/30 rounded-2xl" />
+            <div className="h-10 w-full md:w-64 bg-white/30 rounded animate-pulse" />
+            <div className="h-16 w-full md:w-110 bg-white/30 rounded-2xl animate-pulse" />
           </div>
 
         </div>

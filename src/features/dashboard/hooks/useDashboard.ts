@@ -22,10 +22,12 @@ export function useDashboardSummary(options: AuthOptions = {}) {
 
 // 🔹 Analytics (charts + donut)
 export function useDashboardAnalytics(options: AuthOptions = {}) {
+  const today = new Date().toISOString().slice(0, 10);
+
   return useQuery({
-    queryKey: dashboardKeys.analytics(),
+    queryKey: dashboardKeys.analytics(today),
     queryFn: () =>
-      getDashboardAnalytics({ accessToken: options.accessToken }),
+      getDashboardAnalytics(today, { accessToken: options.accessToken }),
     enabled: options.enabled ?? true,
   });
 }

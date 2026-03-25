@@ -17,11 +17,16 @@ import TransactionSheet, { type TransactionDraft } from "../components/transacti
 import { useAuth } from "../lib/context/useAuth";
 import { useAccounts } from "../features/accounts/hooks/useAccounts";
 import { useCategories } from "../features/categories/hooks/useCategories";
-import resolveLucideIcon from "../utils/LucideIconsResolver";
 import TransactionDetails from "../components/transactions/TransactionDetails";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { useNavigate, useParams } from "react-router-dom";
+import TransactionListItem from "../components/transactions/TransactionListItem";
+import {
+  formatTransactionDisplayDate,
+  getTransactionCategoryLabel,
+  getTransactionTitle,
+} from "../features/transactions/utils/transactionDisplay";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -41,43 +46,6 @@ function getPresetDateRange(range: Exclude<DateRangeType, "custom">) {
   startDate.setDate(endDate.getDate() - (Number(range) - 1));
 
   return { startDate, endDate };
-}
-
-function formatDisplayDate(dateString: string) {
-
-  const date = new Date(dateString);
-
-
-
-  if (Number.isNaN(date.getTime())) return dateString;
-
-
-
-  return new Intl.DateTimeFormat("en-IN", {
-
-    day: "2-digit",
-
-    month: "short",
-
-    year: "numeric",
-
-  }).format(date);
-
-}
-
-function getTransactionTitle(transaction: ApiTransaction) {
-  if(transaction.note && transaction.note != '' && transaction.note != 'null') return transaction.note
-  if(!transaction.note || transaction.note == '' || transaction.note == 'null') {
-    if (transaction.type == 'expense' || transaction.type == 'income') return transaction.category_name || "Transaction";
-    if (transaction.type == 'transfer') return "Transfer";
-
-  }  
-}
-
-function getTransactionCategoryLabel(transaction: ApiTransaction) {
-  if (transaction.type == 'expense' || transaction.type == 'income') return transaction.account_id.name
-  if (transaction.type == 'transfer') return `${transaction.account_id.name} ↔ ${transaction?.to_account_id?.name}`
-  // return (transaction.note ? `• ${transaction.note}` : '');
 }
 
 export default function Transactions() {
@@ -442,106 +410,21 @@ export default function Transactions() {
             const isLast = index === currentItems.length - 1;
             const categoryLabel = getTransactionCategoryLabel(t);
             const title = getTransactionTitle(t);
-            const displayDate = formatDisplayDate(t.date);
-            const Icon = t.type == 'income' || t.type == 'expense' ? resolveLucideIcon(t.category_icon) : resolveLucideIcon('arrow-left-right');
-            const displayAmount =
-              t.type === "expense"
-                ? -Math.abs(t.amount)
-                : t.type === "income"
-                  ? Math.abs(t.amount)
-                  : Math.abs(t.amount);
+            const displayDate = formatTransactionDisplayDate(t.date);
 
             return (
-              <div
+              <TransactionListItem
+                key={t._id}
+                transaction={t}
+                title={title}
+                categoryLabel={categoryLabel}
+                displayDate={displayDate}
+                showDivider={!isLast}
                 onClick={() => {
                   setSelectedTx(t);
                   setDetailsOpen(true);
                 }}
-
-
-                key={t._id}
-                className="relative flex items-center justify-between p-3 md:p-4 hover:bg-[var(--color-background)] rounded-2xl transition-all group gap-1 md:gap-8 min-w-0 cursor-pointer"
-              >
-                {!isLast && (
-                  <div className="absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
-                )}
-
-                {/* LEFT SIDE: ICON + INFO */}
-                <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-                  <div
-                    className="w-10 h-10 shrink-0 rounded-full border border-[var(--border)]/10 flex items-center justify-center text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] transition-colors"
-                    style={t.type == 'income' || t.type == 'expense' ? {
-                      backgroundColor: `${t.category_color}15`,
-                      color: t.category_color,
-                    } : {
-                      backgroundColor: `${'#0d9488'}15`,
-                      color: '#0d9488',
-                    }}
-                  >
-                    <Icon size={18} />
-                  </div>
-
-                  <div className="flex flex-col min-w-0 flex-1 justify-center">
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
-                      <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight leading-tight">
-                        {title}
-                      </span>
-
-                      {/* AMOUNT (mobile only) */}
-                      <span
-                        className={`md:hidden font-black text-sm shrink-0 whitespace-nowrap ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
-                          ? "text-[var(--color-danger)]"
-                          : displayAmount > 0
-                            ? "text-[var(--color-success)]"
-                            : "text-[var(--color-text-secondary)]"
-                        ) : "text-[var(--color-text-primary)]"}`}
-                      >
-                        {t.type === "expense" || t.type === "income" ? (displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : "") : ""}
-                        ₹{Math.abs(displayAmount).toLocaleString()}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between md:justify-start md:gap-2 min-w-0">
-                      <span className="text-[10px] font-black text-[var(--color-text-secondary)] uppercase truncate flex-1 md:flex-none max-w-[120px] md:max-w-96 opacity-70">
-                        {categoryLabel}
-                      </span>
-                      <span className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)] opacity-20 shrink-0" />
-                      <span className="shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] uppercase opacity-70 ml-4 md:ml-0 tracking-wider">
-                        {displayDate}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* RIGHT SIDE: AMOUNT + INDICATOR */}
-                    <div className="flex items-center gap-1 md:gap-2 shrink-0 min-w-fit">
-                      <div
-                    className={`font-black text-sm md:text-base shrink-0 whitespace-nowrap ${t.type === "expense" || t.type === "income" ? (displayAmount < 0
-                      ? "text-[var(--color-danger)]"
-                      : displayAmount > 0
-                        ? "text-[var(--color-success)]"
-                        : "text-[var(--color-text-secondary)]"
-                    ) : "text-[var(--color-text-primary)]"}`}
-                  >
-                    {/* Amount (hidden on mobile, shown on desktop as before) */}
-                    <span className="hidden md:block">
-                      {t.type === "expense" || t.type === "income" ? (displayAmount < 0 ? "-" : displayAmount > 0 ? "+" : "") : ""}
-                      ₹{Math.abs(displayAmount).toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* INDICATOR CHEVRON - Refined for minimal footprint */}
-                  <ChevronRight
-                    size={14} // Small footprint
-                    strokeWidth={2.5}
-                    className={`
-                    text-[var(--color-text-secondary)] transition-all duration-300
-                    opacity-20 md:opacity-0 
-                    md:-translate-x-2 md:group-hover:translate-x-0 md:group-hover:opacity-100
-                  `}
-                  />
-                </div>
-              </div>
+              />
             );
           })
 

@@ -17,9 +17,11 @@ export async function getDashboardSummary(
 }
 
 export async function getDashboardAnalytics(
+  date: string,
   options: AuthOptions = {}
 ): Promise<DashboardAnalyticsResponse> {
   return apiClient.get<DashboardAnalyticsResponse>("/dashboard/analytics", {
     authToken: options.accessToken,
+    query: { date },
   });
 }

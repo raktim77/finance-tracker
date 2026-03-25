@@ -12,6 +12,7 @@ import {
 } from "../api/transactions.api";
 import { transactionKeys } from "../api/transaction.keys";
 import { accountKeys } from "../../accounts/api/account.keys";
+import { dashboardKeys } from "../../dashboard/api/dashboard.keys";
 import type {
   CreateTransactionPayload,
   GetTransactionsParams,
@@ -61,6 +62,9 @@ export function useCreateTransaction(options: AuthOptions = {}) {
       queryClient.invalidateQueries({
         queryKey: accountKeys.all,
       });
+      queryClient.invalidateQueries({
+        queryKey: dashboardKeys.all,
+      });
     },
   });
 }
@@ -83,6 +87,12 @@ export function useUpdateTransaction(options: AuthOptions = {}) {
       queryClient.invalidateQueries({
         queryKey: transactionKeys.all,
       });
+      queryClient.invalidateQueries({
+        queryKey: accountKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: dashboardKeys.all,
+      });
 
       queryClient.invalidateQueries({
         queryKey: transactionKeys.detail(variables.id),
@@ -100,6 +110,12 @@ export function useDeleteTransaction(options: AuthOptions = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: transactionKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: accountKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: dashboardKeys.all,
       });
     },
   });
