@@ -8,7 +8,7 @@ export const StatsGrid = () => {
         <div className="inline-flex items-baseline gap-2 px-4 py-2 rounded-full bg-[var(--color-surface)] border border-[var(--border)] backdrop-blur-md">
           <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
           <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-primary)]">
-            Current Month Overview
+            Monthly Overview
           </span>
         </div>
       </div>

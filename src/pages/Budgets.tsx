@@ -713,8 +713,8 @@ export default function Budgets() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col md:text-left text-center">
-                  <span className="text-[10px]  font-black uppercase text-white/50 tracking-widest">Allocated</span>
-                  <span className="text-[20px] font-bold text-white leading-tight">₹{allocatedTotal.toLocaleString()}</span>
+                  <span className="text-[10px]  font-black uppercase text-white/50 tracking-widest">Available</span>
+                  <span className="text-[20px] font-bold text-white leading-tight">₹{(allocatedTotal-spentTotal).toLocaleString()}</span>
                 </div>
                 <div className="flex flex-col md:text-left text-center">
                   <span className="text-[10px] font-black uppercase text-white/50 tracking-widest">Spent</span>

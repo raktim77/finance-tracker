@@ -8,7 +8,7 @@ export const HeroDashboard = () => {
   const greeting =
     hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
-  const displayName = user?.name?.split(" ")[0] || "Raktim";
+  const displayName = user?.name?.split(" ")[0];
 
   // 🔥 MOCK DATA (replace later with real values)
   const netChange = 12450;
@@ -33,7 +33,7 @@ export const HeroDashboard = () => {
       <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-black/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="relative z-10 flex flex-col gap-6 md:gap-8">
-        
+
         {/* 🔹 Greeting */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 text-white/70">
@@ -42,15 +42,14 @@ export const HeroDashboard = () => {
               {greeting}
             </span>
           </div>
-
-          <h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter leading-tight">
-            Hey, {displayName}!
-          </h1>
+<h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter leading-tight break-all">
+  Hey, {displayName}!
+</h1>
         </div>
 
         {/* 🔹 Bottom Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          
+
           {/* 🔸 Monthly Change */}
           <div className="flex flex-col gap-1 shrink-0">
             <span className="text-[9px] font-black uppercase tracking-widest text-white/60">
@@ -64,7 +63,7 @@ export const HeroDashboard = () => {
 
               <div className="flex items-center text-[9px] font-black bg-white/20 px-2 py-1 rounded-lg text-white backdrop-blur-md">
                 <ArrowUpRight size={10} strokeWidth={3} className="mr-0.5" />
-                {percentChange}% 
+                {percentChange}%
               </div>
             </div>
           </div>
