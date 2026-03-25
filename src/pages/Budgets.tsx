@@ -337,7 +337,7 @@ export default function Budgets() {
         <div className="flex flex-col gap-4 px-2">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
-              {month.toLocaleString("default", { month: "long" })} Budget
+              Create {month.toLocaleString("default", { month: "long" })} Budget
             </h2>
             <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
               {isEditingBudget
