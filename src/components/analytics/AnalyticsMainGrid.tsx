@@ -11,14 +11,16 @@ type AnalyticsMainGridProps = {
   savingsData: SavingsPoint[];
   barData: MonthlyBarPoint[];
   children?: ReactNode;
+  mode: "daily" | "monthly" | "weekly"
+
 };
 
-export function AnalyticsMainGrid({ trendData, pieData, savingsData, barData, children }: AnalyticsMainGridProps) {
+export function AnalyticsMainGrid({ trendData, pieData, savingsData, barData, children, mode }: AnalyticsMainGridProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
-      <SpendingTrendChart trendData={trendData} />
+      <SpendingTrendChart trendData={trendData} mode={mode} />
       <CategoryHeatmap pieData={pieData} />
-      <SavingsTrendChart savingsData={savingsData} />
+      <SavingsTrendChart savingsData={savingsData} mode={mode} />
       <QuarterlyBarChart barData={barData} />
       {children}
     </div>

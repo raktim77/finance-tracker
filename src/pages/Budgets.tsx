@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Flame,
   Sparkles,
-  Search,
   Trash2,
 } from "lucide-react";
 
@@ -334,7 +333,7 @@ export default function Budgets() {
     return (
       <div className="p-1 flex flex-col gap-6 md:gap-8 pb-32 w-full">
 
-        <div className="flex flex-col gap-4 px-2">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
               Create {month.toLocaleString("default", { month: "long" })} Budget
@@ -563,17 +562,7 @@ export default function Budgets() {
                       onClick={() => setIsSelectorOpen(false)}
                     />
                     <div className="absolute bottom-full mb-4 left-0 right-0 z-50 bg-[var(--color-surface)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[350px]">
-                      <div className="p-4 border-b border-[var(--border)] bg-[var(--color-background)]/50 flex items-center gap-3">
-                        <Search size={14} className="text-[var(--color-text-secondary)] opacity-40" />
-                        <input
-                                      autoFocus={false}
-
-                          placeholder="Search categories..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="bg-transparent border-none outline-none text-xs font-bold w-full text-[var(--color-text-primary)]"
-                        />
-                      </div>
+                     
                       <div className="overflow-y-auto p-2 no-scrollbar">
                         {availableToAdd.length === 0 ? (
                           <div className="py-8 text-center text-[10px] font-black uppercase text-[var(--color-text-secondary)] opacity-40">No categories found</div>

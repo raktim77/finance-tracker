@@ -16,7 +16,8 @@ export type CategorySlice = {
 
 export type MonthlyBarPoint = {
   month: string;
-  amount: number;
+  income: number;
+  expense: number;
 };
 
 export type AnalyticsMockData = {
@@ -25,4 +26,18 @@ export type AnalyticsMockData = {
   savingsData: SavingsPoint[];
   pieData: CategorySlice[];
   barData: MonthlyBarPoint[];
+};
+
+export type AnalyticsDatePreset =
+  | "last_3_months"
+  | "last_6_months"
+  | "last_9_months"
+  | "last_1_year"
+  | "this_year"
+  | "this_month"
+  | "custom";
+
+export type AnalyticsDateRange = {
+  from?: Date;
+  to?: Date;
 };

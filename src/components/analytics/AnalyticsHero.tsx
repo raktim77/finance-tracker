@@ -1,10 +1,24 @@
 import { TrendingUp } from "lucide-react";
 
 type AnalyticsHeroProps = {
-  budgetUsed: number;
+  data?: {
+    totalSpending: number;
+    spendingChangePercent: number;
+    efficiency: "High" | "Moderate" | "Low";
+    budgetUsedPercent: number;
+  };
+  isLoading: boolean;
 };
 
-export function AnalyticsHero({ budgetUsed }: AnalyticsHeroProps) {
+export function AnalyticsHero({ data }: AnalyticsHeroProps) {
+
+const totalSpending = data?.totalSpending ?? 0;
+const change = data?.spendingChangePercent ?? 0;
+const efficiency = data?.efficiency ?? "High";
+const budgetUsed = data?.budgetUsedPercent ?? 0;
+const safeBudget = Math.min(budgetUsed, 100);
+
+
   return (
     <div className="relative w-full max-w-full">
       <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50br transition-all duration-500">
@@ -16,10 +30,11 @@ export function AnalyticsHero({ budgetUsed }: AnalyticsHeroProps) {
           <div className="flex flex-col gap-2">
             <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/60">Total Cumulative Spending</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl md:text-6xl font-black tracking-tighter">₹48,200</span>
+              <span className="text-4xl md:text-6xl font-black tracking-tighter">₹{totalSpending.toLocaleString()}</span>
               <div className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-lg backdrop-blur-md">
                 <TrendingUp size={14} />
-                <span className="text-xs font-bold">+12.4%</span>
+                <span className="text-xs font-bold">{change >= 0 ? "+" : ""}
+{change.toFixed(1)}%</span>
               </div>
             </div>
           </div>
@@ -27,13 +42,13 @@ export function AnalyticsHero({ budgetUsed }: AnalyticsHeroProps) {
           <div className="flex items-center gap-6 bg-black/10 backdrop-blur-2xl border border-white/10 p-5 rounded-[2rem] shadow-inner shrink-0 w-full md:w-auto justify-between md:justify-start">
             <div className="flex flex-col gap-1">
               <span className="text-[9px] font-black uppercase text-white/50 tracking-widest text-left">Efficiency</span>
-              <span className="text-xl font-bold">High</span>
+              <span className="text-xl font-bold">{efficiency}</span>
             </div>
             <div className="w-px h-10 bg-white/10" />
             <div className="flex flex-col gap-2">
               <span className="text-[9px] font-black uppercase text-white/50 tracking-widest text-left">Budget Remaining</span>
               <div className="w-24 md:w-32 h-2 bg-white/20 rounded-full overflow-hidden">
-                <div className="h-full bg-white transition-all duration-1000" style={{ width: `${100 - budgetUsed}%` }} />
+                <div className="h-full bg-white transition-all duration-1000" style={{ width: `${safeBudget}%` }} />
               </div>
             </div>
           </div>
