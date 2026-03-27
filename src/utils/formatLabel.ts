@@ -10,7 +10,7 @@ export const formatChartLabel = (
   if (mode === "weekly") {
     // "2025-12" → "W12"
     const week = label.split("-")[1];
-    return `W${parseInt(week, 10)}`;
+    return `Week ${parseInt(week, 10)}`;
   }
 
   if (mode === "monthly") {

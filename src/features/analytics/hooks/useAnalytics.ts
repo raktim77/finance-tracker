@@ -8,14 +8,14 @@ interface AuthOptions {
 }
 
 export function useAnalytics(
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
   options: AuthOptions = {},
 ) {
   return useQuery({
-    queryKey: analyticsKeys.summary(from?.toISOString(), to?.toISOString()),
+    queryKey: analyticsKeys.summary(from, to),
     queryFn: () =>
-      getAnalyticsSummary(from!.toISOString(), to!.toISOString(), {
+      getAnalyticsSummary(from!, to!, {
         accessToken: options.accessToken,
       }),
     enabled: !!from && !!to && (options.enabled ?? true),

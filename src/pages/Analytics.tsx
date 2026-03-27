@@ -88,7 +88,7 @@ export default function Analytics() {
       return;
     }
 
-    if (pendingRange.from.getTime() > pendingRange.to.getTime()) {
+    if (pendingRange.from > pendingRange.to) {
       setCustomError("From date cannot be after To date.");
       return;
     }

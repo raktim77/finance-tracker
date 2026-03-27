@@ -25,8 +25,8 @@ export function SavingsTrendChart({ savingsData, mode }: SavingsTrendChartProps)
   return (
     <div className="lg:col-span-3 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6">
       <div className="flex flex-col">
-        <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight">Savings Growth</h3>
-        <p className="text-xs text-[var(--color-text-secondary)]">Retained surplus accumulated over time</p>
+        <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight">Savings Performance</h3>
+        <p className="text-xs text-[var(--color-text-secondary)]">Monthly surplus after income and expenses</p>
       </div>
 
       <div className="flex-1 min-h-[240px] w-full">

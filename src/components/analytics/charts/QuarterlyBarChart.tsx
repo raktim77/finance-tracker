@@ -5,7 +5,8 @@ import {
     ResponsiveContainer,
     BarChart,
     Bar,
-    CartesianGrid
+    CartesianGrid,
+    Legend
 } from "recharts";
 
 import type { MonthlyBarPoint } from "../data/types";
@@ -15,8 +16,8 @@ type QuarterlyBarChartProps = {
 };
 
 export function QuarterlyBarChart({ barData }: QuarterlyBarChartProps) {
-    return (<div className="lg:col-span-2 rounded-[2.5rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm"> <div className="flex flex-col mb-8"> <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight text-left">
-        Quarterly Velocity </h3> <p className="text-xs text-[var(--color-text-secondary)] text-left">
+    return (<div className="lg:col-span-2 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm"> <div className="flex flex-col mb-8"> <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight text-left">
+        Transactional Velocity </h3> <p className="text-xs text-[var(--color-text-secondary)] text-left">
             Income vs Expense comparison </p> </div>
 
         <div className="h-[260px]">
@@ -24,6 +25,7 @@ export function QuarterlyBarChart({ barData }: QuarterlyBarChartProps) {
                 <BarChart
                     data={barData}
                     margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    barGap={6}
                 >
                     {/* Grid */}
                     <CartesianGrid
@@ -56,10 +58,7 @@ export function QuarterlyBarChart({ barData }: QuarterlyBarChartProps) {
 
                     {/* Tooltip */}
                     <Tooltip
-                        cursor={{
-                            fill: "var(--color-accent-soft)",
-                            radius: 12
-                        }}
+                        cursor={{ fill: "var(--color-accent-soft)", radius: 12 }}
                         formatter={(value, name) => {
                             const num = typeof value === "number" ? value : 0;
 
@@ -75,22 +74,39 @@ export function QuarterlyBarChart({ barData }: QuarterlyBarChartProps) {
                         }}
                     />
 
-                    {/* EXPENSE (BOTTOM) */}
-                    <Bar
-                        dataKey="expense"
-                        stackId="a"
-                        fill="#ef4444" // red-500
-                        radius={[0, 0, 8, 8]}
-                        barSize={36}
+                    {/* Optional Legend */}
+                    <Legend
+                        verticalAlign="top"
+                        align="right"
+                        height={20}
+                        content={() => (
+                            <div className="flex gap-4 justify-end text-xs my-[-20px] mx-[-10px]">
+                                <div className="flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-[#22c55e]" />
+                                    <span>Income</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+                                    <span>Expense</span>
+                                </div>
+                            </div>
+                        )}
                     />
 
-                    {/* INCOME (TOP) */}
+                    {/* INCOME */}
                     <Bar
                         dataKey="income"
-                        stackId="a"
-                        fill="#22c55e" // green-500
+                        fill="#22c55e"
                         radius={[8, 8, 0, 0]}
-                        barSize={36}
+                        barSize={16}
+                    />
+
+                    {/* EXPENSE */}
+                    <Bar
+                        dataKey="expense"
+                        fill="#ef4444"
+                        radius={[8, 8, 0, 0]}
+                        barSize={16}
                     />
                 </BarChart>
             </ResponsiveContainer>

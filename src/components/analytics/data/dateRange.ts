@@ -15,47 +15,48 @@ export const analyticsDatePresetOptions: PresetOption[] = [
   { label: "Custom Range", value: "custom" }
 ];
 
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function today() {
-  return startOfDay(new Date());
+/**
+ * Helper to convert Date objects to "YYYY-MM-DD" string
+ */
+function toISODateString(date: Date): string {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 export function getPresetRange(preset: Exclude<AnalyticsDatePreset, "custom">): AnalyticsDateRange {
-  const endDate = today();
+  const now = new Date();
+  const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  let startDate: Date;
 
   if (preset === "this_month") {
-    return {
-      from: new Date(endDate.getFullYear(), endDate.getMonth(), 1),
-      to: endDate
-    };
+    startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+  } else if (preset === "this_year") {
+    startDate = new Date(endDate.getFullYear(), 0, 1);
+  } else {
+    const monthSpan =
+      preset === "last_3_months"
+        ? 3
+        : preset === "last_6_months"
+          ? 6
+          : preset === "last_9_months"
+            ? 9
+            : 12;
+    
+    // Goes back (monthSpan - 1) months and sets to the 1st of that month
+    startDate = new Date(endDate.getFullYear(), endDate.getMonth() - (monthSpan - 1), 1);
   }
-
-  if (preset === "this_year") {
-    return {
-      from: new Date(endDate.getFullYear(), 0, 1),
-      to: endDate
-    };
-  }
-
-  const monthSpan =
-    preset === "last_3_months"
-      ? 3
-      : preset === "last_6_months"
-        ? 6
-        : preset === "last_9_months"
-          ? 9
-          : 12;
 
   return {
-    from: new Date(endDate.getFullYear(), endDate.getMonth() - (monthSpan - 1), 1),
-    to: endDate
+    from: toISODateString(startDate),
+    to: toISODateString(endDate)
   };
 }
 
-function formatMonthYear(date: Date) {
+function formatMonthYear(dateString: string) {
+  const date = new Date(dateString);
   return date
     .toLocaleDateString("en-IN", {
       month: "short",
@@ -64,7 +65,7 @@ function formatMonthYear(date: Date) {
     .toUpperCase();
 }
 
-export function formatOverviewText(range: AnalyticsDateRange) {
+export function formatOverviewText(range: { from?: string; to?: string }) {
   if (!range.from || !range.to) {
     return "OVERVIEW";
   }

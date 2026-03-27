@@ -3,6 +3,7 @@ import { useAuth } from "../../lib/context/useAuth";
 import type { DashboardSummaryResponse } from "../../features/dashboard/types/dashboard.types";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import formatCompactCurrency from "../../utils/getCompactAmount";
 type Props = {
   data?: DashboardSummaryResponse;
   isLoading: boolean;
@@ -38,7 +39,7 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
   // ✅ SKELETON
   if (isLoading) {
     return (
-      <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl">
+      <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50">
         <div className="flex flex-col gap-8">
           <div className="space-y-3">
             <div className="h-6 w-24 bg-white/30 rounded animate-pulse" />
@@ -68,7 +69,7 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
   };
 
   return (
-    <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl">
+    <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50">
 
       <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-black/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
@@ -99,8 +100,11 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
             </span>
 
             <div className="flex items-center gap-2">
-              <span className="text-2xl md:text-3xl font-black text-white tracking-tight">
+              <span className="text-3xl md:text-4xl font-black text-white tracking-tight md:block hidden">
                 {netChange >= 0 ? "+" : "-"}₹{Math.abs(netChange).toLocaleString()}
+              </span>
+              <span className="text-3xl md:text-4xl font-black text-white tracking-tight md:hidden block">
+                {netChange >= 0 ? "+" : "-"}₹{formatCompactCurrency(netChange).toLocaleString()}
               </span>
 
               <div className="flex items-center text-[9px] font-black bg-white/20 px-2 py-1 rounded-lg text-white backdrop-blur-md">

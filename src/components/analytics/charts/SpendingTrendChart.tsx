@@ -35,14 +35,14 @@ export function SpendingTrendChart({ trendData, mode }: SpendingTrendChartProps)
         </div>
 
         {/* Controls Section: Full width on mobile for easier tapping */}
-        <div className="flex items-center gap-2 bg-[var(--color-background)] p-1 rounded-xl border border-[var(--border)] w-fit">
+        {/* <div className="flex items-center gap-2 bg-[var(--color-background)] p-1 rounded-xl border border-[var(--border)] w-fit">
           <button className="h-8 px-4 rounded-lg bg-[var(--color-surface)] shadow-sm border border-[var(--border)] text-[9px] font-black uppercase tracking-widest text-[var(--color-text-primary)] transition-all active:scale-95">
             Daily
           </button>
           <button className="h-8 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] opacity-40 hover:opacity-100 transition-all">
             Weekly
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Chart Container */}

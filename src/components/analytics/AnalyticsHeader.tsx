@@ -4,6 +4,14 @@ import DatePicker from "../ui/DatePicker";
 import type { AnalyticsDatePreset, AnalyticsDateRange } from "./data/types";
 import { analyticsDatePresetOptions } from "./data/dateRange";
 
+function toPickerDate(date?: string) {
+  return date ? new Date(`${date}T00:00:00`) : undefined;
+}
+
+function toDateString(date: Date | undefined) {
+  return date ? date.toISOString().slice(0, 10) : undefined;
+}
+
 type AnalyticsHeaderProps = {
   selectedPreset: AnalyticsDatePreset;
   overviewText: string;
@@ -11,8 +19,8 @@ type AnalyticsHeaderProps = {
   isCustomModalOpen: boolean;
   pendingRange: AnalyticsDateRange;
   customError: string | null;
-  onPendingFromChange: (date: Date | undefined) => void;
-  onPendingToChange: (date: Date | undefined) => void;
+  onPendingFromChange: (date?: string) => void;
+  onPendingToChange: (date?: string) => void;
   onCustomCancel: () => void;
   onCustomApply: () => void;
 };
@@ -75,7 +83,10 @@ export function AnalyticsHeader({
                     From
                   </span>
                   <div className="w-full px-4 h-11 bg-[var(--color-background)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30 flex items-center">
-                    <DatePicker value={pendingRange.from} onChange={onPendingFromChange} />
+                    <DatePicker
+                      value={toPickerDate(pendingRange.from)}
+                      onChange={(date) => onPendingFromChange(toDateString(date))}
+                    />
                   </div>
                 </div>
 
@@ -84,7 +95,10 @@ export function AnalyticsHeader({
                     To
                   </span>
                   <div className="w-full px-4 h-11 bg-[var(--color-background)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30 flex items-center">
-                    <DatePicker value={pendingRange.to} onChange={onPendingToChange} />
+                    <DatePicker
+                      value={toPickerDate(pendingRange.to)}
+                      onChange={(date) => onPendingToChange(toDateString(date))}
+                    />
                   </div>
                 </div>
               </div>

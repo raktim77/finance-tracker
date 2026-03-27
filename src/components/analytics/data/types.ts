@@ -38,6 +38,6 @@ export type AnalyticsDatePreset =
   | "custom";
 
 export type AnalyticsDateRange = {
-  from?: Date;
-  to?: Date;
+  from?: string;
+  to?: string;
 };

@@ -20,7 +20,7 @@ export function AnalyticsMainGrid({ trendData, pieData, savingsData, barData, ch
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
       <SpendingTrendChart trendData={trendData} mode={mode} />
       <CategoryHeatmap pieData={pieData} />
-      <SavingsTrendChart savingsData={savingsData} mode={mode} />
+      <SavingsTrendChart savingsData={savingsData} mode={'monthly'} />
       <QuarterlyBarChart barData={barData} />
       {children}
     </div>
