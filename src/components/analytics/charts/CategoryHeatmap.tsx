@@ -29,11 +29,11 @@ export function CategoryHeatmap({ pieData }: CategoryHeatmapProps) {
 
   const display = getDisplayData();
 
-  return (<div className="lg:col-span-2 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col"> <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight text-left">
+  return (<div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col"> <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight text-left">
     Category Heatmap </h3> <p className="text-xs text-[var(--color-text-secondary)] mb-8 text-left">
       Where your money actually goes </p>
 
-    <div className="h-[250px] relative mb-6">
+    <div className="h-[230px] relative mb-6">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -69,7 +69,7 @@ export function CategoryHeatmap({ pieData }: CategoryHeatmapProps) {
       </div>
     </div>
 
-    <div className="grid grid-cols-2 gap-3 mt-auto">
+    <div className="grid md:grid-cols-3 grid-cols-2 gap-3 mt-auto">
       {pieData.map((item, i) => (
         <div
           key={i}

@@ -17,11 +17,11 @@ type AnalyticsMainGridProps = {
 
 export function AnalyticsMainGrid({ trendData, pieData, savingsData, barData, children, mode }: AnalyticsMainGridProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 items-stretch">
       <SpendingTrendChart trendData={trendData} mode={mode} />
-      <CategoryHeatmap pieData={pieData} />
       <SavingsTrendChart savingsData={savingsData} mode={'monthly'} />
       <QuarterlyBarChart barData={barData} />
+      <CategoryHeatmap pieData={pieData} />
       {children}
     </div>
   );

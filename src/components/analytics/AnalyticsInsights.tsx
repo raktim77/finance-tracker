@@ -2,7 +2,7 @@ import { TrendingDown, Zap, Lightbulb, AlertTriangle } from "lucide-react";
 
 export function AnalyticsInsights() {
   return (
-    <div className="lg:col-span-5 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+    <div className="lg:col-span-6 rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
       <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-[var(--color-accent)] opacity-5 blur-3xl rounded-full" />
 
       <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight mb-6 flex items-center gap-2">
