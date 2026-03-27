@@ -1,4 +1,4 @@
-import { Zap, Target, PieChart as PieIcon, PiggyBank, BanknoteArrowUp } from "lucide-react";
+import { Zap, Target, PiggyBank, BanknoteArrowUp } from "lucide-react";
 
 type AnalyticsMetricsProps = {
     data?: {
@@ -15,7 +15,6 @@ export function AnalyticsMetrics({ data }: AnalyticsMetricsProps) {
     const thisMonth = data?.thisMonthSpending ?? 0;
     const savings = data?.totalSavings ?? 0;
     const avgDaily = data?.avgDailySpending ?? 0;
-    const budgetUsed = data?.budgetUsedPercent ?? 0;
     const totalIncome = data?.totalIncome ?? 0;
     return (
         <div className="relative z-10 -mt-11 md:px-8">
