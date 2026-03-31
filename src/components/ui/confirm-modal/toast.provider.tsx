@@ -49,7 +49,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 className={`
             pointer-events-auto flex items-center gap-3 px-6 py-4 
             rounded-[1.5rem] border backdrop-blur-md 
-            text-sm font-black tracking-tight
+            text-sm font-black
             ${variantStyles[t.type || "default"]}
           `}
               >

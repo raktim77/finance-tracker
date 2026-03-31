@@ -378,7 +378,7 @@ export default function Budgets() {
       <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <h2 className="text-2xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
               {pageTitle}
             </h2>
             <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">

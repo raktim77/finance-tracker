@@ -195,45 +195,93 @@ export default function Accounts() {
         </button>
       </div>
 
-      <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50 transition-all duration-500 hover:scale-[1.005]">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-[60px] -ml-20 -mb-20" />
+      {accountsLoading ? (
+        <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32 animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-[60px] -ml-20 -mb-20" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/60">
-              Total Balance
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-5xl font-black text-white tracking-tighter">
-                {formatCurrency(totalBalance)}
-              </span>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="flex flex-col gap-2">
+              <div className="h-4 w-28 bg-white/30 rounded animate-pulse" />
+              <div className="h-10 md:h-10 w-44 md:w-72 bg-white/40 rounded-lg animate-pulse" />
             </div>
-          </div>
 
-          <div className="flex items-center gap-4 bg-black/10 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-inner justify-between">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase text-white/50 tracking-widest">
-                Accounts
-              </span>
-              <span className="text-lg font-bold text-white leading-none">
-                {accounts.length}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <ArrowUpRight size={20} className="text-white" />
+            <div className="flex items-center gap-4 bg-black/10 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-inner justify-between min-w-[160px]">
+              <div className="flex flex-col gap-2">
+                <div className="h-3 w-16 bg-white/25 rounded animate-pulse" />
+                <div className="h-5 w-10 bg-white/35 rounded animate-pulse" />
+              </div>
+              <div className="w-10 h-10 rounded-full bg-white/20 animate-pulse" />
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] shadow-2xl/50 transition-all duration-500 hover:scale-[1.005]">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32 animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-[60px] -ml-20 -mb-20" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/60">
+                Total Balance
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl md:text-5xl font-black text-white tracking-tighter">
+                  {formatCurrency(totalBalance)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 bg-black/10 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-inner justify-between">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black uppercase text-white/50 tracking-widest">
+                  Accounts
+                </span>
+                <span className="text-lg font-bold text-white leading-none">
+                  {accounts.length}
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <ArrowUpRight size={20} className="text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {accountsLoading ? (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] h-[220px] animate-pulse"
-            />
+              className="shadow-sm rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] min-h-[220px] flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                    <div className="w-8 h-8 rounded-xl bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mb-6">
+                  <div className="h-3 w-20 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                  <div className="h-6 w-32 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                </div>
+              </div>
+
+              <div>
+                <div className="h-8 w-36 bg-[var(--color-text-secondary)]/10 rounded animate-pulse mb-4" />
+                <div className="flex items-center justify-between pt-4 border-t border-[var(--border)] border-dashed">
+                  <div className="h-3 w-24 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-8 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       ) : accounts.length === 0 ? (
