@@ -27,9 +27,14 @@ import { useToast } from "../components/ui/confirm-modal/useToast";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 
 export default function Budgets() {
-  const [month, setMonth] = useState(new Date());
+  const [month, setMonth] = useState(() => {
+    const initialMonth = new Date();
+    initialMonth.setDate(1);
+    initialMonth.setHours(0, 0, 0, 0);
+    return initialMonth;
+  });
   const [isEditingBudget, setIsEditingBudget] = useState(false);
-  const monthString = month.toISOString().slice(0, 7);
+  const monthString = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`;
   const currentMonth = new Date();
   currentMonth.setDate(1);
   currentMonth.setHours(0, 0, 0, 0);
@@ -235,50 +240,164 @@ export default function Budgets() {
     }
   };
 
+  const shiftMonth = (delta: number) => {
+    setMonth((prev) => {
+      const next = new Date(prev);
+      next.setDate(1);
+      next.setMonth(next.getMonth() + delta);
+      next.setHours(0, 0, 0, 0);
+      return next;
+    });
+  };
+
+  const monthLabelLong = month.toLocaleString("default", { month: "long" });
+  const monthLabelShort = month.toLocaleString("default", { month: "short", year: "numeric" });
+
+  let pageTitle = `${monthLabelLong} Budget`;
+  let pageSubtitle = `Your financial plan for ${monthLabelLong} is active. See how you're doing below.`;
+
   if (isLoading) {
-    return <div className="p-6">Loading...</div>;
+    pageSubtitle = "Loading budget details for this month.";
+  } else if (!budget?.exists && !canCreateBudget) {
+    pageSubtitle = "No budget was created for this past month.";
+  } else if (!budget?.exists || isEditingBudget) {
+    pageTitle = `Create ${monthLabelLong} Budget`;
+    pageSubtitle = isEditingBudget
+      ? "Update your monthly budget and category limits below."
+      : "We've suggested limits based on your history. Fine-tune them below.";
   }
 
-  if (!budget?.exists && !canCreateBudget) {
+  if (isLoading) {
     return (
       <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
-        <div className="flex flex-col gap-4 px-2">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            {/* <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--color-accent)]">
-              Budget Archive
-            </span> */}
-            <h2 className="text-2xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
-              {month.toLocaleString("default", { month: "long" })} Budget
+            <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
+              {pageTitle}
             </h2>
             <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
-              No budget was created for this past month.
+              {pageSubtitle}
             </p>
           </div>
 
           <div className="flex items-center gap-2 bg-[var(--color-surface)] p-1.5 rounded-2xl border border-[var(--border)] self-start">
             <button
-              onClick={() =>
-                setMonth((prev) => {
-                  const d = new Date(prev);
-                  d.setMonth(d.getMonth() - 1);
-                  return d;
-                })
-              }
+              onClick={() => shiftMonth(-1)}
               className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"
             >
               <ChevronLeft size={14} />
             </button>
             <span className="text-[12px] font-black uppercase tracking-widest px-2">
-              {month.toLocaleString("default", { month: "short", year: "numeric" })}
+              {monthLabelShort}
             </span>
             <button
-              onClick={() =>
-                setMonth((prev) => {
-                  const d = new Date(prev);
-                  d.setMonth(d.getMonth() + 1);
-                  return d;
-                })
-              }
+              onClick={() => shiftMonth(1)}
+              disabled={!canGoToNextMonth}
+              className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-8 animate-pulse">
+
+          {/* HERO CARD */}
+          <div className="rounded-[2.5rem] p-6 md:p-12 bg-[var(--color-text-secondary)]/5 border border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-10">
+
+            {/* DONUT SKELETON */}
+            <div className="w-40 h-40 rounded-full border-[14px] border-[var(--color-text-secondary)]/10 relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-4 w-12 bg-[var(--color-text-secondary)]/10 rounded" />
+              </div>
+            </div>
+
+            {/* RIGHT CONTENT */}
+            <div className="flex-1 flex flex-col gap-6 w-full">
+              <div className="flex flex-col gap-2">
+                <div className="h-4 w-32 bg-[var(--color-text-secondary)]/10 rounded" />
+                <div className="h-10 w-40 bg-[var(--color-text-secondary)]/10 rounded" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-10 bg-[var(--color-text-secondary)]/10 rounded" />
+                <div className="h-10 bg-[var(--color-text-secondary)]/10 rounded" />
+                <div className="col-span-2 h-12 bg-[var(--color-text-secondary)]/10 rounded-xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* STATUS CARD */}
+          <div className="bg-[var(--color-text-secondary)]/5 border border-[var(--border)] p-6 rounded-2xl flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-text-secondary)]/10" />
+            <div className="flex flex-col gap-2">
+              <div className="h-3 w-32 bg-[var(--color-text-secondary)]/10 rounded" />
+              <div className="h-3 w-48 bg-[var(--color-text-secondary)]/10 rounded" />
+            </div>
+          </div>
+
+          {/* CATEGORY CARDS GRID */}
+          <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-[var(--color-surface)] border border-[var(--border)] p-5 rounded-[2rem] flex flex-col gap-4"
+              >
+                {/* top */}
+                <div className="flex justify-between">
+                  <div className="flex flex-col gap-2">
+                    <div className="h-3 w-16 bg-[var(--color-text-secondary)]/10 rounded" />
+                    <div className="h-4 w-24 bg-[var(--color-text-secondary)]/10 rounded" />
+                  </div>
+                </div>
+
+                {/* numbers */}
+                <div className="flex justify-between">
+                  <div className="h-4 w-16 bg-[var(--color-text-secondary)]/10 rounded" />
+                  <div className="h-3 w-20 bg-[var(--color-text-secondary)]/10 rounded" />
+                </div>
+
+                {/* progress */}
+                <div className="h-3 w-full bg-[var(--color-text-secondary)]/10 rounded-full" />
+
+                {/* footer */}
+                <div className="flex justify-between">
+                  <div className="h-3 w-16 bg-[var(--color-text-secondary)]/10 rounded" />
+                  <div className="h-3 w-16 bg-[var(--color-text-secondary)]/10 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!budget?.exists && !canCreateBudget) {
+    return (
+      <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
+              {pageTitle}
+            </h2>
+            <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
+              {pageSubtitle}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-[var(--color-surface)] p-1.5 rounded-2xl border border-[var(--border)] self-start">
+            <button
+              onClick={() => shiftMonth(-1)}
+              className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <span className="text-[12px] font-black uppercase tracking-widest px-2">
+              {monthLabelShort}
+            </span>
+            <button
+              onClick={() => shiftMonth(1)}
               disabled={!canGoToNextMonth}
               className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
@@ -336,20 +455,18 @@ export default function Budgets() {
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
-              Create {month.toLocaleString("default", { month: "long" })} Budget
+              {pageTitle}
             </h2>
             <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
-              {isEditingBudget
-                ? "Update your monthly budget and category limits below."
-                : "We've suggested limits based on your history. Fine-tune them below."}
+              {pageSubtitle}
             </p>
           </div>
 
           <div className="flex items-center gap-2 bg-[var(--color-surface)] p-1.5 rounded-2xl border border-[var(--border)] self-start">
-            <button onClick={() => setMonth(prev => { const d = new Date(prev); d.setMonth(d.getMonth() - 1); return d; })} className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"><ChevronLeft size={14} /></button>
-            <span className="text-[12px] font-black uppercase tracking-widest px-2">{month.toLocaleString("default", { month: "short", year: "numeric" })}</span>
+            <button onClick={() => shiftMonth(-1)} className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"><ChevronLeft size={14} /></button>
+            <span className="text-[12px] font-black uppercase tracking-widest px-2">{monthLabelShort}</span>
             <button
-              onClick={() => setMonth(prev => { const d = new Date(prev); d.setMonth(d.getMonth() + 1); return d; })}
+              onClick={() => shiftMonth(1)}
               disabled={!canGoToNextMonth}
               className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
@@ -617,22 +734,22 @@ export default function Budgets() {
     <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
 
       <div className="flex flex-col items-start justify-between gap-10">
-        <div className="flex flex-col gap-4 px-2">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
-              {month.toLocaleString("default", { month: "long" })} Budget
+              {pageTitle}
             </h2>
             <p className="text-xs md:text-sm font-medium text-[var(--color-text-secondary)] opacity-70">
-              Your financial plan for {month.toLocaleString("default", { month: "long" })} is active. See how you're doing below.
+              {pageSubtitle}
             </p>
 
           </div>
 
           <div className="flex items-center gap-2 bg-[var(--color-surface)] p-1.5 rounded-2xl border border-[var(--border)] self-start">
-            <button onClick={() => setMonth(prev => { const d = new Date(prev); d.setMonth(d.getMonth() - 1); return d; })} className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"><ChevronLeft size={14} /></button>
-            <span className="text-[12px] font-black uppercase tracking-widest px-2">{month.toLocaleString("default", { month: "short", year: "numeric" })}</span>
+            <button onClick={() => shiftMonth(-1)} className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors"><ChevronLeft size={14} /></button>
+            <span className="text-[12px] font-black uppercase tracking-widest px-2">{monthLabelShort}</span>
             <button
-              onClick={() => setMonth(prev => { const d = new Date(prev); d.setMonth(d.getMonth() + 1); return d; })}
+              onClick={() => shiftMonth(1)}
               disabled={!canGoToNextMonth}
               className="p-2 hover:bg-[var(--color-background)] rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
@@ -649,7 +766,7 @@ export default function Budgets() {
           className="
       relative group rounded-[2.5rem] p-6 md:p-12 
       bg-gradient-to-br from-[#7c6cff] via-[#9c7cff] to-[#c084fc] 
-      transition-all duration-500 
+      transition-shadow duration-300 
       shadow-2xl/50
       z-10
     "
