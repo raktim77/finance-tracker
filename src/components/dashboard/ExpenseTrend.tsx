@@ -66,7 +66,26 @@ export const ExpenseTrend = ({ data, isLoading }: Props) => {
     );
   }
 
-  if (!data) return null;
+  const hasData = !!data && data.some((point) => point.amount > 0);
+
+  if (!hasData) {
+    return (
+      <div className="rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6 items-center justify-center text-center min-h-[320px] h-full">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center shadow-inner">
+          <span className="text-2xl">📈</span>
+        </div>
+
+        <div className="flex flex-col gap-2 max-w-sm">
+          <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
+            No Expense Trend For The Past Week
+          </h2>
+          <p className="text-xs text-[var(--color-text-secondary)]">
+            Add a few transactions and your spending pattern will start showing up here over the last week.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6 h-full">

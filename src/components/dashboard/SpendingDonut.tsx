@@ -21,13 +21,13 @@ export function SpendingDonut({ data, isLoading }: Props) {
       <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6">
         
         {/* Title */}
-        <div className="h-5 w-40 bg-black/5 dark:bg-white/10 rounded animate-pulse" />
+        <div className="h-5 w-40 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
 
         <div className="flex flex-col md:flex-row items-center gap-6">
           
           {/* Donut skeleton */}
           <div className="relative w-[380px] h-[200px] flex items-center justify-center">
-            <div className="w-[140px] h-[140px] rounded-full border-[16px] border-black/5 dark:border-white/10 animate-pulse" />
+            <div className="w-[140px] h-[140px] rounded-full border-[16px] border-[var(--color-text-secondary)]/10 animate-pulse" />
           </div>
 
           {/* Legend skeleton */}
@@ -35,10 +35,10 @@ export function SpendingDonut({ data, isLoading }: Props) {
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-black/5 dark:bg-white/10 animate-pulse" />
-                  <div className="h-3 w-20 bg-black/5 dark:bg-white/10 rounded animate-pulse" />
+                  <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                  <div className="h-3 w-20 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
                 </div>
-                <div className="h-3 w-12 bg-black/5 dark:bg-white/10 rounded animate-pulse" />
+                <div className="h-3 w-12 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
               </div>
             ))}
           </div>
@@ -48,7 +48,26 @@ export function SpendingDonut({ data, isLoading }: Props) {
     );
   }
 
-  if (!data || data.length === 0) return null;
+  const hasData = !!data && data.some((item) => item.value > 0);
+
+  if (!hasData) {
+    return (
+      <div className="h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6 items-center justify-center text-center min-h-[320px]">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center shadow-inner">
+          <span className="text-2xl">🍩</span>
+        </div>
+
+        <div className="flex flex-col gap-2 max-w-sm">
+          <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
+            No Spending Breakdown Yet
+          </h2>
+          <p className="text-xs text-[var(--color-text-secondary)]">
+            Once you record spending across categories, this chart will show where your money is going.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
   const activeItem = activeIndex !== null ? data[activeIndex] : null;
