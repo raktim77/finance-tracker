@@ -19,6 +19,7 @@ type AnalyticsHeaderProps = {
   isCustomModalOpen: boolean;
   pendingRange: AnalyticsDateRange;
   customError: string | null;
+
   onPendingFromChange: (date?: string) => void;
   onPendingToChange: (date?: string) => void;
   onCustomCancel: () => void;

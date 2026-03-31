@@ -12,11 +12,13 @@ import type { MonthlyBarPoint } from "../data/types";
 
 type QuarterlyBarChartProps = {
     barData: MonthlyBarPoint[];
+    isLoading: boolean;
+
 };
 
 type ChartIndex = number | string | null;
 
-export function QuarterlyBarChart({ barData }: QuarterlyBarChartProps) {
+export function QuarterlyBarChart({ barData, isLoading }: QuarterlyBarChartProps) {
     const pointCount = barData.length;
     const groupWidth =
         pointCount <= 3 ? 120 :
@@ -105,6 +107,78 @@ export function QuarterlyBarChart({ barData }: QuarterlyBarChartProps) {
             touchEndTimeoutRef.current = null;
         }, 180);
     };
+
+
+
+    const hasData =
+        barData.length > 0 &&
+        barData.some((d) => d.income !== 0 || d.expense !== 0);
+
+    if (isLoading) {
+        return (
+            <div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-8">
+
+                {/* Header Skeleton */}
+                <div className="flex flex-col gap-3">
+                    <div className="h-5 w-40 bg-[var(--color-text-secondary)]/10 rounded-lg animate-pulse" />
+                    <div className="h-3 w-56 bg-[var(--color-text-secondary)]/10 rounded-md animate-pulse" />
+                </div>
+
+                {/* BAR CHART SKELETON - Added flex-1 and min-h */}
+                <div className="flex-1 min-h-[260px] w-full flex items-end justify-between gap-4 px-2">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="flex-1 h-full flex items-end justify-center gap-1.5">
+
+                            {/* Income Bar Skeleton */}
+                            <div
+                                className="w-3 md:w-4 bg-[var(--color-text-secondary)]/10 rounded-t-lg animate-pulse"
+                                style={{
+                                    height: `${Math.floor(Math.random() * (80 - 40 + 1) + 40)}%`,
+                                    animationDelay: `${i * 0.1}s`
+                                }}
+                            />
+
+                            {/* Expense Bar Skeleton */}
+                            <div
+                                className="w-3 md:w-4 bg-[var(--color-text-secondary)]/10 rounded-t-lg animate-pulse opacity-60"
+                                style={{
+                                    height: `${Math.floor(Math.random() * (60 - 20 + 1) + 20)}%`,
+                                    animationDelay: `${i * 0.15}s`
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
+
+                {/* Optional: X-Axis Labels Skeleton */}
+                <div className="flex justify-between px-2 pt-2 border-t border-[var(--border)]/50">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="h-2 w-8 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (!hasData) {
+        return (
+            <div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col items-center justify-center text-center min-h-[300px]">
+
+                <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center mb-3">
+                    <span className="text-lg">📊</span>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <h3 className="text-sm font-bold text-[var(--color-text-primary)]">
+                        No transaction data yet
+                    </h3>
+                    <p className="text-xs text-[var(--color-text-secondary)] max-w-[240px]">
+                        Income and expense comparison will appear once transactions are recorded
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm overflow-hidden flex flex-col">

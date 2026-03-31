@@ -36,26 +36,21 @@ export default function Analytics() {
     activeRange.to
   );
 
-  // 🔥 LOADING
-  if (isLoading || !data) {
-    return <div className="p-6 text-sm">Loading analytics...</div>;
-  }
-
   // 🔥 MAPPING
   const trendData =
-    data.trend.spending.map((d) => ({
+    data?.trend?.spending?.map((d) => ({
       day: d.label,
       amount: d.amount,
     })) ?? [];
 
   const savingsData =
-    data.trend.savings.map((d) => ({
+    data?.trend?.savings?.map((d) => ({
       day: d.label,
       amount: d.amount,
     })) ?? [];
 
-  const pieData = data.categoryBreakdown ?? [];
-  const barData = data.monthlyComparison ?? [];
+  const pieData = data?.categoryBreakdown ?? [];
+  const barData = data?.monthlyComparison ?? [];
 
   // ===============================
 
@@ -101,7 +96,7 @@ export default function Analytics() {
   };
 
   const mode = getAnalyticsMode(activeRange.from, activeRange.to);
-
+  
   return (<div className="flex flex-col gap-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-1000 mx-auto w-full p-1">
     <AnalyticsHeader
       selectedPreset={selectedPreset}
@@ -131,7 +126,7 @@ export default function Analytics() {
       savingsData={savingsData}
       barData={barData}
       mode={mode}
-
+      isLoading={isLoading}
     >
       <AnalyticsInsights />
     </AnalyticsMainGrid>
