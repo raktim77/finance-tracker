@@ -40,9 +40,12 @@ export function CategoryHeatmap({ pieData, isLoading }: CategoryHeatmapProps) {
     if (!hasData) {
         return (
             <div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col items-center justify-center text-center min-h-[400px]">
-                <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center mb-4 text-2xl">🍩</div>
-                <h3 className="text-sm font-black text-[var(--color-text-primary)] uppercase tracking-widest">No Data Collected</h3>
-                <p className="text-xs text-[var(--color-text-secondary)] max-w-[200px] mt-2">Transactions will be categorized here once recorded.</p>
+                <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center mb-4 text-2xl">🍩</div>
+                <div className="flex flex-col gap-1">
+                <h3 className="text-sm font-bold text-[var(--color-text-primary)]">No Data Collected</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] max-w-[240px]">Transactions will be categorized here once recorded.</p>
+
+                </div>
             </div>
         );
     }

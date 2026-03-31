@@ -78,6 +78,7 @@ export default function Transactions() {
 
   const categories = categoriesData?.categories ?? [];
   const accounts = accountsData?.accounts ?? [];
+  const hasAccounts = accounts.length > 0;
   const isScopedToAccount = !!account_id;
   const scopedAccount = accounts.find((account) => account._id === account_id);
   const displayTitle = isScopedToAccount
@@ -97,8 +98,6 @@ export default function Transactions() {
         account_id: scopedAccount._id,
       }
       : null;
-
-  const isReady = categories.length > 0 && accounts.length > 0;
 
   const createTransactionMutation = useCreateTransaction();
   const updateTransactionMutation = useUpdateTransaction();
@@ -241,14 +240,23 @@ export default function Transactions() {
       </p>
     </div>
 
-    <button 
-      disabled={!isReady}
-      onClick={() => setSheetOpen(true)} 
+    <button
+      onClick={() => {
+        if (!hasAccounts) {
+          navigate("/accounts");
+          return;
+        }
+        setSheetOpen(true);
+      }}
       className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-2.5 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
     >
       <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
-      <span className="hidden md:block">Record transaction</span>
-      <span className="block md:hidden">Record</span>
+      <span className="hidden md:block">
+        {hasAccounts ? "Record transaction" : "Add Account"}
+      </span>
+      <span className="block md:hidden">
+        {hasAccounts ? "Record" : "Add"}
+      </span>
     </button>
   </div>
 </div>
@@ -381,9 +389,39 @@ export default function Transactions() {
       <div className="flex flex-col p-2 gap-1">
 
         {isLoading ? (
+          <div className="flex flex-col gap-1 p-1">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="relative flex items-center justify-between gap-3 md:gap-8 rounded-2xl p-3 md:p-4"
+              >
+                {index !== 7 && (
+                  <div className="absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
+                )}
 
-          <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
-            Loading transactions...
+                <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
+
+                  <div className="flex min-w-0 flex-1 flex-col justify-center">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
+                      <div className="h-4 w-32 md:w-44 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                      <div className="h-4 w-16 md:hidden bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                    </div>
+
+                    <div className="flex items-center justify-between min-w-0 md:justify-start md:gap-2">
+                      <div className="h-3 w-20 md:w-28 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                      <div className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                      <div className="h-3 w-16 bg-[var(--color-text-secondary)]/10 rounded animate-pulse ml-4 md:ml-0" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden md:flex items-center gap-2 shrink-0">
+                  <div className="h-5 w-20 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                  <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                </div>
+              </div>
+            ))}
           </div>
 
         ) : isError ? (
@@ -399,9 +437,42 @@ export default function Transactions() {
           </div>
 
         ) : currentItems.length === 0 ? (
-
-          <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
-            No transactions found
+          <div className="p-8 md:p-12">
+            <div className="relative overflow-hidden rounded-[2rem] text-center">
+              {/* <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(124,108,255,0.08),transparent_35%)]" /> */}
+              <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4">
+                {/* <div className="w-16 h-16 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center shadow-inner">
+                  <PlusCircle size={28} />
+                </div> */}
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
+                    {hasAccounts ? "No Transactions Yet" : "Add an Account First"}
+                  </h3>
+                  <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
+                    {hasAccounts
+                      ? "Start recording income, expenses, or transfers to build your transaction history here."
+                      : "You need at least one account before you can record transactions. Add an account to get started."}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (hasAccounts) {
+                      setSheetOpen(true);
+                      return;
+                    }
+                    navigate("/accounts");
+                  }}
+                  className="group mt-2 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-3 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
+                >
+                  <PlusCircle
+                    size={18}
+                    strokeWidth={2.5}
+                    className="group-hover:rotate-90 transition-transform"
+                  />
+                  {hasAccounts ? "Record Your First Transaction" : "Add Your First Account"}
+                </button>
+              </div>
+            </div>
           </div>
 
         ) : (

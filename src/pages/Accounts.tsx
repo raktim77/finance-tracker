@@ -285,13 +285,32 @@ export default function Accounts() {
           ))}
         </div>
       ) : accounts.length === 0 ? (
-        <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--color-surface)] p-10 text-center">
-          <p className="text-lg font-bold text-[var(--color-text-primary)]">
-            No accounts yet
-          </p>
-          <p className="text-sm text-[var(--color-text-secondary)] mt-2">
-            Create your first account to start tracking balances.
-          </p>
+        <div className="relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-[var(--border)] bg-[var(--color-surface)] p-8 md:p-12 text-center shadow-sm">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(124,108,255,0.08),transparent_35%)]" />
+          <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-4 md:gap-5">
+            {/* <div className="w-16 h-16 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center shadow-inner">
+              <PlusCircle size={28} />
+            </div> */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
+                No Accounts Yet
+              </h3>
+              <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
+                Create your first account to start tracking balances, cash flow, and activity across all your funds.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddAccountModal(true)}
+              className="group mt-2 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-3 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] md:text-sm"
+            >
+              <PlusCircle
+                size={18}
+                strokeWidth={2.5}
+                className="group-hover:rotate-90 transition-transform"
+              />
+              Add Your First Account
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
