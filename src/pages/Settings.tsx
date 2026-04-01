@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   User,
-  Bell,
   Palette,
   Shield,
   Database,
@@ -16,6 +15,12 @@ import {
   ChevronDown,
   type LucideIcon
 } from "lucide-react";
+import CropperModal from "../components/CropperModal";
+import getCroppedImg from "../utils/cropImage";
+import { useMe, useUpdateProfile } from "../features/user/hooks/useUsers";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary";
+import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
+import { useToast } from "../components/ui/confirm-modal/useToast";
 
 // --- TYPES & INTERFACES ---
 
@@ -39,6 +44,8 @@ interface ActionButtonProps {
   variant?: "default" | "danger";
   onClick?: () => void;
 }
+
+
 
 // --- SUB-COMPONENTS ---
 
@@ -113,20 +120,103 @@ export default function Settings() {
   const [monthlyReport, setMonthlyReport] = useState(true);
   const [activeTab, setActiveTab] = useState("profile");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [pendingAvatarImage, setPendingAvatarImage] = useState<string | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [savingName, setSavingName] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const updateProfileMutation = useUpdateProfile();
+  const confirm = useConfirm();
+  const toast = useToast();
 
   const tabs: Tab[] = [
     { id: "profile", label: "Profile", icon: User },
-    { id: "financial", label: "Financial", icon: Database },
-    { id: "notifications", label: "Alerts", icon: Bell },
+    // { id: "financial", label: "Financial", icon: Database },
+    // { id: "notifications", label: "Alerts", icon: Bell },
     { id: "appearance", label: "Interface", icon: Palette },
     { id: "security", label: "Data & Security", icon: Shield },
   ];
 
   const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
+  const { data } = useMe();
+  console.log(data);
+  const initialDisplayName = data?.user?.name ?? "";
+  const avatarUrl = data?.user?.profile?.avatar_url;
+  const hasAvatar =
+    typeof avatarUrl === "string"
+      ? avatarUrl.trim() !== "" && avatarUrl.trim().toLowerCase() !== "null"
+      : false;
+  const isDisplayNameDirty = displayName.trim() !== initialDisplayName.trim();
+
+  useEffect(() => {
+    setDisplayName(initialDisplayName);
+  }, [initialDisplayName]);
+
+  const resetAvatarSelection = () => {
+    setPendingAvatarImage(null);
+    setCropModalOpen(false);
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    const ok = await confirm({
+      title: "Delete Avatar?",
+      message: "Your current avatar will be removed from your profile.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!ok) return;
+
+    try {
+      setUploading(true);
+      await updateProfileMutation.mutateAsync({
+        avatar_url: null,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSaveDisplayName = async () => {
+    if (!isDisplayNameDirty) return;
+
+    try {
+      setSavingName(true);
+      await updateProfileMutation.mutateAsync({
+        name: displayName.trim(),
+      });
+      toast.success("Profile updated successfully");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update profile");
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-1">
 
+    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-1">
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        id="avatarInput"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setPendingAvatarImage(URL.createObjectURL(file));
+          setCropModalOpen(true);
+        }}
+      />
       {/* 1. HEADER - Static and Pinned */}
       <div className="flex flex-col gap-2 shrink-0  bg-[var(--color-background)] z-20">
         <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
@@ -204,24 +294,67 @@ export default function Settings() {
           {activeTab === "profile" && (
             <div className="settings-section-animate space-y-6">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-warm)] p-[2px]">
-                  <div className="w-full h-full rounded-[1.9rem] bg-[var(--color-surface)] flex items-center justify-center text-2xl font-black text-[var(--color-text-primary)]">
-                    RR
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-warm)] p-[2px]">
+                 
+                  <div className="w-full h-full rounded-full bg-[var(--color-surface)] flex items-center justify-center text-2xl font-black text-[var(--color-text-primary)]">
+                    {hasAvatar ? (
+                      <img
+                        src={avatarUrl as string}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      "RR"
+                    )}
                   </div>
                 </div>
-                <button type="button" className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-[var(--border)] hover:bg-[var(--color-background)] transition-all">
-                  Change Avatar
-                </button>
+                <div className="flex items-center gap-2">
+                  <button type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploading}
+                    className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-[var(--border)] hover:bg-[var(--color-background)] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    {hasAvatar ? "Change Avatar" : "Add Avatar"}
+                  </button>
+                  {hasAvatar && (
+                    <button
+                      type="button"
+                      aria-label="Delete avatar"
+                      disabled={uploading}
+                      onClick={handleDeleteAvatar}
+                      className="p-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--color-surface)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Display Name</label>
-                  <input type="text" defaultValue="Raktim Routh" className="settings-input" />
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="settings-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveDisplayName}
+                    disabled={!isDisplayNameDirty || savingName}
+                    className="mt-3 px-4 py-2 rounded-xl bg-[var(--color-primary)] text-white text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {savingName ? "Saving..." : "Save Changes"}
+                  </button>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Email Address</label>
-                  <input type="email" defaultValue="raktim@email.com" className="settings-input" />
+                  <input
+                    type="text"
+                    value={data?.user?.email}
+                    readOnly
+                    disabled
+                    className="settings-input settings-input-disabled"
+                  />
                 </div>
               </div>
             </div>
@@ -386,6 +519,14 @@ export default function Settings() {
           border-color: var(--color-primary);
           box-shadow: 0 0 0 4px var(--color-primary-soft);
         }
+        .settings-input:disabled,
+        .settings-input-disabled {
+          background: color-mix(in srgb, var(--color-background) 85%, #9ca3af 15%);
+          color: color-mix(in srgb, var(--color-text-secondary) 85%, #ffffff 15%);
+          border-color: color-mix(in srgb, var(--border) 70%, #9ca3af 30%);
+          cursor: not-allowed;
+          opacity: 0.8;
+        }
         .settings-section-animate {
           animation: slideUp 0.4s ease-out forwards;
         }
@@ -395,6 +536,40 @@ export default function Settings() {
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
+      {cropModalOpen && pendingAvatarImage && (
+        <CropperModal
+          image={pendingAvatarImage}
+          isSaving={uploading}
+          onClose={resetAvatarSelection}
+          onSave={async (croppedAreaPixels) => {
+            if (!pendingAvatarImage) return;
+
+            try {
+              setUploading(true);
+
+              // 1. crop → blob
+              const blob = await getCroppedImg(pendingAvatarImage, croppedAreaPixels);
+
+              // 2. upload to cloudinary
+              const url = await uploadToCloudinary(blob);
+
+              // 3. call mutation (IMPORTANT)
+              await updateProfileMutation.mutateAsync({
+                avatar_url: url,
+              });
+
+              resetAvatarSelection();
+            } catch (err) {
+              console.error(err);
+            } finally {
+              setUploading(false);
+            }
+          }}
+        />
+      )}
     </div>
+
   );
+
+
 }

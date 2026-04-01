@@ -22,5 +22,6 @@ export function useAuth() {
     login: actions.login,
     signup: actions.signup,
     logout: actions.logout,
+    state
   };
 }

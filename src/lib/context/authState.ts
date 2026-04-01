@@ -4,10 +4,17 @@ import React from "react";
 /**
  * Shared types for auth state & actions
  */
+
+export type Profile = {
+  avatar_url: string;
+  vio: string;
+}
+
 export type User = {
   id: string;
   email: string;
   name?: string;
+  profile?: Profile;
 } | null;
 
 export type AuthState = {

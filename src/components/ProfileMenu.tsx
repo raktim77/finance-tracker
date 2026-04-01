@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/context/useAuth";
+import { useMe } from "../features/user/hooks/useUsers";
 
 function initialsFromUser(user: { name?: string; email?: string } | null) {
   if (!user) return "";
@@ -16,6 +17,7 @@ function initialsFromUser(user: { name?: string; email?: string } | null) {
 
 export default function ProfileMenu() {
   const { user, logout } = useAuth();
+  const { data } = useMe();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -50,18 +52,32 @@ export default function ProfileMenu() {
     navigate(path);
   };
 
-  const initials = initialsFromUser(user);
+  const meUser = data?.user ?? user;
+  const avatarUrl = meUser?.profile?.avatar_url;
+  const hasAvatar =
+    typeof avatarUrl === "string" &&
+    avatarUrl.trim() !== "" &&
+    avatarUrl.trim().toLowerCase() !== "null";
+  const initials = initialsFromUser(meUser);
 
   return (
     <div className="relative" ref={rootRef}>
       <button
         aria-haspopup="true"
         aria-expanded={open}
-        className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-primary)] text-white font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]"
+        className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-primary)] text-white font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]"
         onClick={() => setOpen((s) => !s)}
-        title={user?.name ?? user?.email ?? "Account"}
+        title={meUser?.name ?? meUser?.email ?? "Account"}
       >
-        {initials || "U"}
+        {hasAvatar ? (
+          <img
+            src={avatarUrl}
+            alt={meUser?.name ?? "Profile avatar"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          initials || "U"
+        )}
       </button>
 
       <AnimatePresence>

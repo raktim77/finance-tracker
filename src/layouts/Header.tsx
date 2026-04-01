@@ -9,6 +9,7 @@ import LogoLight from "../assets/images/logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProfileMenu from "../components/ProfileMenu";
 import { useAuth } from "../lib/context/useAuth";
+import { useMe } from "../features/user/hooks/useUsers";
 
 type NavItem = { label: string; id: "home" | "features" | "benefits" | "pricing" };
 type HeaderProps = {
@@ -42,6 +43,8 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { data } = useMe();
+  const meUser = data?.user ?? user;
 
   const isHome = location.pathname === "/";
   const isLogin = location.pathname === "/login";
@@ -234,7 +237,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
                   <>
                     <div className="mt-4">
                       <div className="px-2 text-sm text-[var(--color-text-secondary)]">Signed in as</div>
-                      <div className="px-2 py-2 font-medium">{user?.name ?? user?.email}</div>
+                      <div className="px-2 py-2 font-medium">{meUser?.name ?? meUser?.email}</div>
                     </div>
                     <div className="mt-4 border-t border-black/5 pt-4">
                       <button onClick={() => { navigate("/profile"); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-2">Profile</button>

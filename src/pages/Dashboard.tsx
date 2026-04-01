@@ -8,10 +8,10 @@ import { StatsGrid } from "../components/dashboard/StatsGrid";
 import { useDashboardAnalytics, useDashboardSummary } from "../features/dashboard/hooks/useDashboard";
 
 export default function Dashboard() {
-
+  
   const { data, isLoading } = useDashboardSummary();
   const { data: analyticsData, isLoading: analyticsLoading } =
-    useDashboardAnalytics();
+  useDashboardAnalytics();
 
   return (
     <div className="p-1 flex flex-col gap-6 md:gap-8 pb-24 animate-in fade-in duration-700 mx-auto">
