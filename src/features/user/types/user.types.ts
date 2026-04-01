@@ -3,11 +3,17 @@ export type Profile =  {
     bio: string
 }
 
+type oAuthProvider = {
+    provider: string;
+    provider_id: string
+}
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
   profile:Profile;
+  oauth_providers: oAuthProvider[]
 }
 
 export interface UpdateProfilePayload {

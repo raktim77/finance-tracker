@@ -10,6 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ProfileMenu from "../components/ProfileMenu";
 import { useAuth } from "../lib/context/useAuth";
 import { useMe } from "../features/user/hooks/useUsers";
+import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 
 type NavItem = { label: string; id: "home" | "features" | "benefits" | "pricing" };
 type HeaderProps = {
@@ -42,8 +43,9 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { data } = useMe();
+  const confirm = useConfirm();
   const meUser = data?.user ?? user;
 
   const isHome = location.pathname === "/";
@@ -79,6 +81,26 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
     }
 
     setMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    const ok = await confirm({
+      title: "Logout?",
+      message: "You will be signed out from this device.",
+      confirmText: "Logout",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!ok) return;
+
+    try {
+      setMobileMenuOpen(false);
+      await logout();
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
   };
 
   return (
@@ -242,7 +264,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
                     <div className="mt-4 border-t border-black/5 pt-4">
                       <button onClick={() => { navigate("/profile"); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-2">Profile</button>
                       <button onClick={() => { navigate("/settings"); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-2">Settings</button>
-                      <button onClick={async () => { await (await import("../lib/context/useAuth")).useAuth().logout(); /* noop */ }} className="w-full text-left px-4 py-2 text-red-600">Logout</button>
+                      <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600">Logout</button>
                     </div>
                   </>
                 )}

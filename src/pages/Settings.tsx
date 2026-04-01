@@ -14,7 +14,6 @@ import {
   Download,
   ChevronDown,
   type LucideIcon,
-  ArrowUpDown,
   LayoutList
 } from "lucide-react";
 import CropperModal from "../components/CropperModal";
@@ -25,6 +24,7 @@ import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import { ThemeContext } from "../context/ThemeContext";
 import Dropdown from "../components/ui/Dropdown";
+import { useAuth } from "../lib/context/useAuth";
 
 // --- TYPES & INTERFACES ---
 
@@ -133,6 +133,7 @@ export default function Settings() {
   const confirm = useConfirm();
   const toast = useToast();
   const { theme, setTheme, sidebarLayout, setSidebarLayout } = useContext(ThemeContext);
+  const { logout } = useAuth();
 
   const tabs: Tab[] = [
     { id: "profile", label: "Profile", icon: User },
@@ -202,6 +203,24 @@ export default function Settings() {
       toast.error("Failed to update profile");
     } finally {
       setSavingName(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    const ok = await confirm({
+      title: "Logout?",
+      message: "You will be signed out from this device.",
+      confirmText: "Logout",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!ok) return;
+
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Logout failed", err);
     }
   };
 
@@ -299,7 +318,7 @@ export default function Settings() {
             <div className="settings-section-animate space-y-6">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-warm)] p-[2px]">
-                 
+
                   <div className="w-full h-full rounded-full bg-[var(--color-surface)] flex items-center justify-center text-2xl font-black text-[var(--color-text-primary)]">
                     {hasAvatar ? (
                       <img
@@ -433,14 +452,14 @@ export default function Settings() {
                     <div className="w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
                       <Globe className="text-[var(--color-accent)]" size={18} />
                     </div>
-                  <div>
+                    <div>
                       <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight">Sidebar Layout</p>
                       <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70">Choose your preferred navigation style and keep it synced across the app</p>
                     </div>
                   </div>
                   <div className="w-full md:w-[180px]">
                     <Dropdown
-                    icon={LayoutList}
+                      icon={LayoutList}
                       value={sidebarLayout}
                       onChange={(value) => setSidebarLayout(value as "expanded" | "icons")}
                       options={[
@@ -462,9 +481,10 @@ export default function Settings() {
                   <Lock size={16} /> Account Security
                 </h3>
                 <div className="flex flex-wrap gap-4">
-                  <ActionButton icon={<Lock size={14} />} label="Change Password" />
-                  <ActionButton icon={<Shield size={14} />} label="Two-Factor Auth" />
-                  <ActionButton icon={<LogOut size={14} />} label="Logout this device" variant="danger" />
+                  {data?.user?.oauth_providers.length == 0 && (<ActionButton icon={<Lock size={14} />} label="Change Password" />
+                  )}
+                  {/* <ActionButton icon={<Shield size={14} />} label="Two-Factor Auth" /> */}
+                  <ActionButton icon={<LogOut size={14} />} label="Logout this device" variant="danger" onClick={handleLogout} />
                 </div>
               </div>
 

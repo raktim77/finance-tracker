@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/context/useAuth";
 import { useMe } from "../features/user/hooks/useUsers";
+import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 
 function initialsFromUser(user: { name?: string; email?: string } | null) {
   if (!user) return "";
@@ -18,6 +19,7 @@ function initialsFromUser(user: { name?: string; email?: string } | null) {
 export default function ProfileMenu() {
   const { user, logout } = useAuth();
   const { data } = useMe();
+  const confirm = useConfirm();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -39,7 +41,18 @@ export default function ProfileMenu() {
   }, []);
 
   const handleLogout = async () => {
+    const ok = await confirm({
+      title: "Logout?",
+      message: "You will be signed out from this device.",
+      confirmText: "Logout",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!ok) return;
+
     try {
+      setOpen(false);
       await logout();
       navigate("/", { replace: true });
     } catch (err) {
