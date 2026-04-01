@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useContext } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Topbar from "../components/layout/Topbar";
 import BottomNav from "../components/layout/BottomNav";
+import { ThemeContext } from "../context/ThemeContext";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { sidebarLayout, toggleSidebarLayout } = useContext(ThemeContext);
+  const collapsed = sidebarLayout === "icons";
 
   return (
     <div className="flex h-screen bg-[var(--color-background)]">
@@ -16,7 +18,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex flex-col flex-1">
 
         {/* Topbar */}
-        <Topbar toggleSidebar={() => setCollapsed(!collapsed)} />
+        <Topbar toggleSidebar={toggleSidebarLayout} />
 
         {/* Page Content */}
         <main className="flex-1 p-4 overflow-auto md:p-6">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   User,
   Palette,
@@ -13,7 +13,9 @@ import {
   Globe,
   Download,
   ChevronDown,
-  type LucideIcon
+  type LucideIcon,
+  ArrowUpDown,
+  LayoutList
 } from "lucide-react";
 import CropperModal from "../components/CropperModal";
 import getCroppedImg from "../utils/cropImage";
@@ -21,6 +23,8 @@ import { useMe, useUpdateProfile } from "../features/user/hooks/useUsers";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { useToast } from "../components/ui/confirm-modal/useToast";
+import { ThemeContext } from "../context/ThemeContext";
+import Dropdown from "../components/ui/Dropdown";
 
 // --- TYPES & INTERFACES ---
 
@@ -75,7 +79,7 @@ function SessionItem({ device, location, current = false }: { device: string, lo
 
 function ToggleItem({ title, desc, value, onChange, icon }: ToggleItemProps) {
   return (
-    <div className="flex items-center justify-between p-8 hover:bg-[var(--color-background)] transition-colors">
+    <div className="flex items-center justify-between p-8 transition-colors">
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
           {icon}
@@ -116,7 +120,6 @@ function ActionButton({ icon, label, variant = "default", onClick }: ActionButto
 
 export default function Settings() {
   const [budgetAlerts, setBudgetAlerts] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [monthlyReport, setMonthlyReport] = useState(true);
   const [activeTab, setActiveTab] = useState("profile");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -129,6 +132,7 @@ export default function Settings() {
   const updateProfileMutation = useUpdateProfile();
   const confirm = useConfirm();
   const toast = useToast();
+  const { theme, setTheme, sidebarLayout, setSidebarLayout } = useContext(ThemeContext);
 
   const tabs: Tab[] = [
     { id: "profile", label: "Profile", icon: User },
@@ -415,13 +419,13 @@ export default function Settings() {
           {/* APPEARANCE */}
           {activeTab === "appearance" && (
             <div className="settings-section-animate space-y-4">
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] overflow-hidden">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] overflow-visible">
                 <ToggleItem
                   title="Dark Mode"
                   desc="Switch between light and high-contrast dark theme"
-                  value={darkMode}
-                  onChange={setDarkMode}
-                  icon={darkMode ? <Moon className="text-[var(--color-primary)]" size={18} /> : <Sun className="text-orange-400" size={18} />}
+                  value={theme === "dark"}
+                  onChange={(value) => setTheme(value ? "dark" : "light")}
+                  icon={theme === "dark" ? <Moon className="text-[var(--color-primary)]" size={18} /> : <Sun className="text-orange-400" size={18} />}
                 />
                 <div className="h-px bg-[var(--border)] mx-8 opacity-50" />
                 <div className="flex items-center justify-between p-8">
@@ -429,15 +433,22 @@ export default function Settings() {
                     <div className="w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
                       <Globe className="text-[var(--color-accent)]" size={18} />
                     </div>
-                    <div>
+                  <div>
                       <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight">Sidebar Layout</p>
-                      <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70">Choose your preferred navigation style</p>
+                      <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70">Choose your preferred navigation style and keep it synced across the app</p>
                     </div>
                   </div>
-                  <select className="bg-[var(--color-background)] border border-[var(--border)] rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest outline-none">
-                    <option>Expanded</option>
-                    <option>Icons Only</option>
-                  </select>
+                  <div className="w-full md:w-[180px]">
+                    <Dropdown
+                    icon={LayoutList}
+                      value={sidebarLayout}
+                      onChange={(value) => setSidebarLayout(value as "expanded" | "icons")}
+                      options={[
+                        { label: "Expanded", value: "expanded" },
+                        { label: "Icons Only", value: "icons" },
+                      ]}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

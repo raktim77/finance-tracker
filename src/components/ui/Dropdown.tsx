@@ -64,7 +64,7 @@ export default function Dropdown({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between bg-[var(--color-surface)] border border-[var(--input-border)] font-bold transition-all hover:border-[var(--color-accent)]/30 ${compact
+        className={`w-full flex items-center justify-between bg-[var(--color-surface)] border font-bold transition-all hover:border-[var(--color-accent)]/30 border-[var(--color-accent)]/20 ${compact
           ? "pl-3 pr-2 h-9 rounded-lg text-[13px]"
           : "pl-9 pr-3 h-11 rounded-xl text-[12px]"
           } ${buttonClassName ?? ""}`}
