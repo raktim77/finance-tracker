@@ -26,6 +26,11 @@ import { ThemeContext } from "../context/ThemeContext";
 import Dropdown from "../components/ui/Dropdown";
 import { useAuth } from "../lib/context/useAuth";
 import { useRevokeOtherSessions, useRevokeSession, useSessions } from "../features/session/hooks/useSession";
+import {
+  deleteAccount,
+  type DeleteAccountErrorData,
+} from "../features/user/api/user.api";
+import { API_ORIGIN } from "../lib/api/config";
 
 // --- TYPES & INTERFACES ---
 
@@ -72,14 +77,15 @@ function SessionItem({
           {device.includes("iPhone") ? <Globe size={18} /> : <Database size={18} />}
         </div>
         <div>
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-black text-[var(--color-text-primary)]">{device}</p>
-            {current && <span className="text-[8px] font-black uppercase text-[var(--color-primary)] tracking-widest">Active Now</span>}
-          </div>
+          <p className="text-xs font-black text-[var(--color-text-primary)]">{device}</p>
           <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-60">{location}</p>
         </div>
       </div>
-      {!current && (
+      {current ? (
+        <span className="text-[8px] font-black uppercase text-[var(--color-primary)] tracking-widest">
+          Active Now
+        </span>
+      ) : (
         <button
           type="button"
           onClick={onRevoke}
@@ -163,6 +169,7 @@ export default function Settings() {
   console.log(data);
   const initialDisplayName = data?.user?.name ?? "";
   const avatarUrl = data?.user?.profile?.avatar_url;
+  const oauthProviders = data?.user?.oauth_providers ?? [];
   const hasAvatar =
     typeof avatarUrl === "string"
       ? avatarUrl.trim() !== "" && avatarUrl.trim().toLowerCase() !== "null"
@@ -239,6 +246,66 @@ export default function Settings() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+  const ok = await confirm({
+    title: "Delete Account?",
+    message:
+      "This will permanently delete your account and ALL data. This cannot be undone.",
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    variant: "danger",
+  });
+
+  if (!ok) return;
+
+  try {
+    let password: string | undefined;
+
+    // 🧠 detect email vs google user
+    const isOAuth = oauthProviders.length > 0;
+
+    if (!isOAuth) {
+      // 👉 simple prompt for now (we can upgrade later)
+      password = window.prompt("Enter your password to confirm") || undefined;
+
+      if (!password) {
+        toast.error("Password is required");
+        return;
+      }
+    }
+
+    const res = await deleteAccount(password);
+
+    if (!res.ok) {
+      // 🔥 HANDLE REAUTH REQUIRED
+      const errorData = res.error.data as DeleteAccountErrorData | undefined;
+
+      if (errorData?.code === "REAUTH_REQUIRED") {
+        toast.error("Please re-authenticate with Google");
+
+        // 🔁 redirect to google login
+        window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
+        return;
+      }
+
+      toast.error(res.error.message || "Failed to delete account");
+      return;
+    }
+
+    // ✅ SUCCESS
+    toast.success("Account deleted");
+
+    await logout();
+
+    // redirect to home/login
+    window.location.href = "/";
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Something went wrong");
+  }
+};
+
   const { accessToken } = useAuth();
 
   const { data: sessionsData, isLoading: sessionsLoading } = useSessions({
@@ -248,7 +315,9 @@ export default function Settings() {
   const revokeSessionMutation = useRevokeSession({ accessToken });
   const revokeOthersMutation = useRevokeOtherSessions({ accessToken });
 
-  const sessions = sessionsData?.sessions || [];
+  const sessions = [...(sessionsData?.sessions || [])].sort(
+    (a, b) => Number(b.current) - Number(a.current)
+  );
 
   const handleRevokeSession = async (sessionId: string) => {
     const ok = await confirm({
@@ -523,7 +592,7 @@ export default function Settings() {
                   <Lock size={16} /> Account Security
                 </h3>
                 <div className="flex flex-wrap gap-4">
-                  {data?.user?.oauth_providers.length == 0 && (<ActionButton icon={<Lock size={14} />} label="Change Password" />
+                  {oauthProviders.length === 0 && (<ActionButton icon={<Lock size={14} />} label="Change Password" />
                   )}
                   {/* <ActionButton icon={<Shield size={14} />} label="Two-Factor Auth" /> */}
                   <ActionButton icon={<LogOut size={14} />} label="Logout this device" variant="danger" onClick={handleLogout} />
@@ -547,7 +616,7 @@ export default function Settings() {
                   {sessions.map((s) => (
                     <div key={s._id}>
                       <SessionItem
-                        device={s.device}
+                        device={`${s.os} • ${s.browser}`}
                         location={s.location || "Approximate location"}
                         current={s.current}
                         onRevoke={
@@ -585,7 +654,7 @@ export default function Settings() {
                   <Database size={16} /> Data & Privacy
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-5 rounded-2xl bg-[var(--color-background)] border border-[var(--border)] group hover:border-[var(--color-primary)] transition-all cursor-pointer">
+                  <div className="relative overflow-hidden p-5 rounded-2xl bg-[var(--color-background)] border border-[var(--border)] transition-all cursor-not-allowed opacity-80">
                     <div className="flex items-center gap-4 mb-2">
                       <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                         <Download size={20} />
@@ -593,8 +662,20 @@ export default function Settings() {
                       <p className="text-sm font-black text-[var(--color-text-primary)]">Export Data</p>
                     </div>
                     <p className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed">Download a full archive of your transactions, accounts, and budgets in JSON or CSV format.</p>
+                    <div className="absolute inset-0 bg-[var(--color-surface)]/55 backdrop-blur-[2px] flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-2xl border border-[var(--border)] bg-[var(--color-surface)]/95 shadow-sm">
+                        <div className="w-10 h-10 rounded-full bg-[var(--color-background)] border border-[var(--border)] flex items-center justify-center text-[var(--color-text-primary)]">
+                          <Lock size={18} />
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-primary)]">
+                          Coming Soon
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-5 rounded-2xl bg-[var(--color-background)] border border-[var(--border)] group hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
+                  <div
+                  onClick={handleDeleteAccount}
+                  className="p-5 rounded-2xl bg-[var(--color-background)] border border-[var(--border)] group hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
                     <div className="flex items-center gap-4 mb-2">
                       <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
                         <Trash2 size={20} />
