@@ -25,6 +25,7 @@ import { useToast } from "../components/ui/confirm-modal/useToast";
 import { ThemeContext } from "../context/ThemeContext";
 import Dropdown from "../components/ui/Dropdown";
 import { useAuth } from "../lib/context/useAuth";
+import { useRevokeOtherSessions, useRevokeSession, useSessions } from "../features/session/hooks/useSession";
 
 // --- TYPES & INTERFACES ---
 
@@ -53,7 +54,17 @@ interface ActionButtonProps {
 
 // --- SUB-COMPONENTS ---
 
-function SessionItem({ device, location, current = false }: { device: string, location: string, current?: boolean }) {
+function SessionItem({
+  device,
+  location,
+  current = false,
+  onRevoke,
+}: {
+  device: string;
+  location: string;
+  current?: boolean;
+  onRevoke?: () => void;
+}) {
   return (
     <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--color-background)] border border-[var(--border)]">
       <div className="flex items-center gap-4">
@@ -69,7 +80,11 @@ function SessionItem({ device, location, current = false }: { device: string, lo
         </div>
       </div>
       {!current && (
-        <button type="button" className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] transition-colors">
+        <button
+          type="button"
+          onClick={onRevoke}
+          className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] transition-colors"
+        >
           Revoke
         </button>
       )}
@@ -224,7 +239,34 @@ export default function Settings() {
     }
   };
 
+  const { accessToken } = useAuth();
+
+  const { data: sessionsData, isLoading: sessionsLoading } = useSessions({
+    accessToken,
+  });
+
+  const revokeSessionMutation = useRevokeSession({ accessToken });
+  const revokeOthersMutation = useRevokeOtherSessions({ accessToken });
+
+  const sessions = sessionsData?.sessions || [];
+
+  const handleRevokeSession = async (sessionId: string) => {
+    const ok = await confirm({
+      title: "Revoke Session?",
+      message: "This device will be logged out.",
+      confirmText: "Revoke",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!ok) return;
+
+    await revokeSessionMutation.mutateAsync(sessionId);
+    toast.success("Session revoked");
+  };
+
   return (
+
 
     <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-1">
       <input
@@ -491,14 +533,49 @@ export default function Settings() {
               <div className="bg-[var(--color-surface)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-sm font-black uppercase tracking-widest text-[var(--color-text-primary)]">Active Sessions</h3>
-                  <span className="px-3 py-1 bg-[var(--color-success)]/10 text-[var(--color-success)] text-[9px] font-black rounded-full uppercase">3 Devices Online</span>
+                  <span className="px-3 py-1 bg-[var(--color-success)]/10 text-[var(--color-success)] text-[9px] font-black rounded-full uppercase">{sessions.length} {sessions.length > 1 ? "Devices" : "Device"} Online</span>
                 </div>
                 <div className="space-y-4">
-                  <SessionItem device="iPhone 15 Pro" location="Tinsukia, Assam" current />
-                  <SessionItem device="MacBook Air M2" location="Tinsukia, Assam" />
-                  <SessionItem device="Chrome on Windows" location="Kolkata, WB" />
+                  {sessionsLoading && (
+                    <p className="text-xs text-[var(--color-text-secondary)]">Loading sessions...</p>
+                  )}
+
+                  {!sessionsLoading && sessions.length === 0 && (
+                    <p className="text-xs text-[var(--color-text-secondary)]">No active sessions</p>
+                  )}
+
+                  {sessions.map((s) => (
+                    <div key={s._id}>
+                      <SessionItem
+                        device={s.device}
+                        location={s.location || "Approximate location"}
+                        current={s.current}
+                        onRevoke={
+                          s.current ? undefined : () => void handleRevokeSession(s._id)
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
-                <button type="button" className="mt-6 text-[10px] font-black uppercase tracking-widest text-[var(--color-danger)] hover:opacity-70 transition-opacity">
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: "Terminate Other Sessions?",
+                      message: "All other devices will be logged out.",
+                      confirmText: "Terminate",
+                      cancelText: "Cancel",
+                      variant: "danger",
+                    });
+
+                    if (!ok) return;
+
+                    await revokeOthersMutation.mutateAsync();
+                    toast.success("Other sessions terminated");
+                  }}
+                  className="mt-6 text-[10px] font-black uppercase tracking-widest text-[var(--color-danger)] hover:opacity-70 transition-opacity"
+                >
                   Terminate all other sessions
                 </button>
               </div>

@@ -4,12 +4,18 @@ import { useNavigate } from "react-router-dom";
 import FullscreenLogoLoaderMotion from "../../components/loader/FullscreenLogoLoaderMotion";
 import { API_ORIGIN, warnIfCookieRefreshMayFail } from "../../lib/api/config";
 
+const finalizedOtts = new Set<string>();
+
 export default function OAuthFinish() {
   const navigate = useNavigate();
   const mounted = useRef(true);
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
     (async () => {
       try {
         const hash = window.location.hash.replace(/^#/, "");
@@ -20,6 +26,12 @@ export default function OAuthFinish() {
           return;
         }
 
+        if (finalizedOtts.has(ott)) {
+          if (mounted.current) navigate("/dashboard", { replace: true });
+          return;
+        }
+
+        finalizedOtts.add(ott);
         warnIfCookieRefreshMayFail();
 
         const res = await fetch(`${API_ORIGIN}/api/auth/google/finalize`, {
@@ -30,6 +42,7 @@ export default function OAuthFinish() {
         });
 
         if (!res.ok) {
+          finalizedOtts.delete(ott);
           if (mounted.current) navigate("/login?oauth=failed", { replace: true });
           return;
         }

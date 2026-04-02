@@ -6,6 +6,58 @@ import * as authApi from '../api/authApi';
 import { setAccessToken, subscribeToAccessToken } from '../fetchClient';
 import type { AuthResponse } from '../api/authApi';
 
+type BootstrapResult =
+  | { status: "authenticated"; user: NonNullable<UserType> }
+  | { status: "unauthenticated" }
+  | { status: "retryable-error" };
+
+let bootstrapInFlight: Promise<BootstrapResult> | null = null;
+
+async function performBootstrap(): Promise<BootstrapResult> {
+  const refreshResult = await authApi.refresh();
+
+  if (!refreshResult.ok) {
+    if (refreshResult.status === "auth-error") {
+      return { status: "unauthenticated" };
+    }
+
+    return { status: "retryable-error" };
+  }
+
+  const refreshedUser = refreshResult.data?.user;
+  if (refreshedUser) {
+    return {
+      status: "authenticated",
+      user: refreshedUser as NonNullable<UserType>,
+    };
+  }
+
+  const me = await authApi.me(refreshResult.data?.accessToken);
+
+  if (me.ok && me.data?.user) {
+    return {
+      status: "authenticated",
+      user: me.data.user as NonNullable<UserType>,
+    };
+  }
+
+  if (!me.ok && (me.error.status === 401 || me.error.status === 403)) {
+    return { status: "unauthenticated" };
+  }
+
+  return { status: "retryable-error" };
+}
+
+async function runBootstrapOnce(): Promise<BootstrapResult> {
+  if (bootstrapInFlight) return bootstrapInFlight;
+
+  bootstrapInFlight = performBootstrap().finally(() => {
+    bootstrapInFlight = null;
+  });
+
+  return bootstrapInFlight;
+}
+
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserType>(null);
   const [accessToken, setToken] = useState<string | null>(null);
@@ -31,51 +83,34 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
       while (attempts < maxAttempts) {
         try {
-          const r = await authApi.refresh();
-          console.log(`[Auth] refresh attempt ${attempts + 1} result`, r);
+          const result = await runBootstrapOnce();
+          console.log(`[Auth] bootstrap attempt ${attempts + 1} result`, result);
 
           if (cancelled) return;
 
-          if (!r.ok) {
-            const isAuthError = r.error?.status === 401 || r.error?.status === 403;
-            
-            if (isAuthError) {
-              console.warn('[Auth] Session definitively expired. Clearing state.');
-              setUser(null);
-              setAccessToken(null);
-              break; // Exit loop on definitive auth failure
-            }
+          if (result.status === "authenticated") {
+            setUser(result.user);
+            break;
+          }
 
-            // If it's a network/server error, wait and retry
+          if (result.status === "unauthenticated") {
+            console.warn('[Auth] Session definitively expired. Clearing state.');
+            setUser(null);
+            setAccessToken(null);
+            break;
+          }
+
+          if (result.status === "retryable-error") {
             attempts++;
             if (attempts < maxAttempts) {
               console.log(`[Auth] Network error. Retrying in 5s... (${attempts}/${maxAttempts})`);
               await new Promise(res => setTimeout(res, 5000));
               continue;
             }
-            
+
             console.log('[Auth] Max retries reached. Retaining local state.');
             break;
           }
-
-          // SUCCESS CASE
-          const resp = r.data as AuthResponse;
-          const token = resp.accessToken ?? null;
-          setAccessToken(token);
-
-          if (resp.user) {
-            setUser(resp.user);
-          } else if (token) {
-            const me = await authApi.me(token);
-            if (!cancelled) {
-              if (me.ok && me.data?.user) setUser(me.data.user);
-              else {
-                setUser(null);
-                setAccessToken(null);
-              }
-            }
-          }
-          break; // Exit loop on success
 
         } catch (err) {
           console.error('[Auth] bootstrap error', err);

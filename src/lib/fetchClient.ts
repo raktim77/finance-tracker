@@ -13,16 +13,23 @@ interface RefreshResponse {
   [key: string]: unknown;
 }
 
+export type RefreshResult =
+  | { ok: true; status: "refreshed"; data?: RefreshResponse }
+  | {
+      ok: false;
+      status: "auth-error" | "network-error";
+      httpStatus?: number;
+      data?: RefreshResponse;
+      error?: Error;
+    };
+
 const API_BASE = API_ORIGIN;
 const AUTH_REFRESH_URL = "/api/auth/refresh";
 
 // For legacy compatibility a separate BASE_URL was present; prefer API_BASE for all calls
 
 let accessToken: string | null = null;
-let refreshInFlight: Promise<{
-  ok: boolean;
-  data?: RefreshResponse;
-} | null> | null = null;
+let refreshInFlight: Promise<RefreshResult> | null = null;
 const accessTokenListeners = new Set<(token: string | null) => void>();
 
 export function setAccessToken(token: string | null) {
@@ -35,7 +42,7 @@ export function getAccessToken() {
 }
 
 export function subscribeToAccessToken(
-  listener: (token: string | null) => void
+  listener: (token: string | null) => void,
 ) {
   accessTokenListeners.add(listener);
   return () => {
@@ -50,19 +57,13 @@ function wait(ms: number) {
 /**
  * Deduped refresh helper.
  * If a refresh is already in-flight, callers will wait for the same promise.
- * Returns { ok: true, data } on success (data may contain accessToken), or { ok: false } on failure.
+ * Returns a typed result so callers can distinguish auth expiry from transient failures.
  */
-async function doRefreshOnce(): Promise<{
-  ok: boolean;
-  data?: RefreshResponse;
-} | null> {
+async function doRefreshOnce(): Promise<RefreshResult> {
   if (refreshInFlight) return refreshInFlight;
 
   refreshInFlight = (async () => {
     try {
-      // Uncomment for debugging who triggered refresh:
-      // console.trace("[fetchClient] doRefreshOnce start");
-
       warnIfCookieRefreshMayFail();
 
       const res = await fetch(`${API_BASE}${AUTH_REFRESH_URL}`, {
@@ -73,6 +74,7 @@ async function doRefreshOnce(): Promise<{
 
       const text = await res.text();
       let data: RefreshResponse | string | null = null;
+
       try {
         data = text ? JSON.parse(text) : null;
       } catch {
@@ -80,23 +82,21 @@ async function doRefreshOnce(): Promise<{
       }
 
       if (!res.ok) {
-        // clear local access token if refresh fails
-        if (
-          typeof data === "object" &&
-          data &&
-          "error" in data &&
-          data.error === "Invalid refresh token"
-        ) {
-          console.warn(
-            `[Auth] /api/auth/refresh failed with "Invalid refresh token". The request intentionally does not use an Authorization header; it expects a refresh cookie via credentials: include. Check whether login/OAuth finalize set the cookie and whether the browser is sending it for ${API_BASE}.`
-          );
-        }
+        console.warn("[Auth] Refresh failed:", res.status);
 
-        setAccessToken(null);
-        return { ok: false, data: data as RefreshResponse };
+        return {
+          ok: false,
+          status:
+            res.status === 401 || res.status === 403
+              ? "auth-error"
+              : "network-error",
+          httpStatus: res.status,
+          data:
+            data && typeof data === "object" ? (data as RefreshResponse) : undefined,
+        };
       }
 
-      // update accessToken if provided
+      // ✅ update accessToken if provided
       if (
         data &&
         typeof data === "object" &&
@@ -106,13 +106,21 @@ async function doRefreshOnce(): Promise<{
         setAccessToken(data.accessToken);
       }
 
-      return { ok: true, data: data as RefreshResponse };
+      return {
+        ok: true,
+        status: "refreshed",
+        data:
+          data && typeof data === "object" ? (data as RefreshResponse) : undefined,
+      };
     } catch (err) {
       console.error("[fetchClient] doRefreshOnce error", err);
-      setAccessToken(null);
-      return { ok: false, data: undefined };
+
+      return {
+        ok: false,
+        status: "network-error",
+        error: err instanceof Error ? err : new Error(String(err)),
+      };
     } finally {
-      // allow future refresh attempts
       refreshInFlight = null;
     }
   })();
@@ -207,16 +215,18 @@ export async function apiFetch<T = unknown>(
       if (res.status === 401 && !skipRefreshOn401) {
         const refreshRes = await doRefreshOnce();
 
-        if (refreshRes?.ok && refreshRes.data) {
-          // If accessToken updated, retry original request once with new header
+        if (refreshRes.ok) {
+          // retry request
           if (accessToken) {
             (init.headers as Record<string, string>).Authorization =
               `Bearer ${accessToken}`;
           }
 
           const retried = await fetch(url, init);
+
           const txt2 = await retried.text();
           let data2: unknown = null;
+
           try {
             data2 = txt2 ? JSON.parse(txt2) : null;
           } catch {
@@ -226,26 +236,19 @@ export async function apiFetch<T = unknown>(
           if (retried.ok) {
             return { ok: true, data: data2 as T };
           }
-
-          const errData =
-            (data2 as { error?: string; message?: string } | null) ?? null;
-          return {
-            ok: false,
-            error: {
-              status: retried.status,
-              message: errData?.error || errData?.message || retried.statusText,
-              data: data2,
-            },
-          };
         }
 
-        // refresh failed -> return original unauthorized info
+        if (refreshRes.status === "auth-error") {
+          setAccessToken(null);
+        }
+
         const errData =
           (data as { error?: string; message?: string } | null) ?? null;
+
         return {
           ok: false,
           error: {
-            status: 401,
+            status: refreshRes.ok ? res.status : (refreshRes.httpStatus ?? res.status),
             message: errData?.error || errData?.message || "Unauthorized",
             data,
           },

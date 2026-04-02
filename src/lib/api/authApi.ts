@@ -1,5 +1,5 @@
 // src/lib/api/authApi.ts
-import { apiFetch, setAccessToken } from "../fetchClient";
+import { apiFetch, refreshAccessToken, setAccessToken } from "../fetchClient";
 
 /**
  * Shared types used by the API and the frontend consumer
@@ -44,13 +44,7 @@ export async function login(payload: { email: string; password: string }) {
 }
 
 export async function refresh() {
-  const r = await apiFetch<AuthResponse>("/api/auth/refresh", {
-    method: "POST",
-    includeCredentials: true,
-    skipRefreshOn401: true,
-  });
-  if (r.ok && r.data.accessToken) setAccessToken(r.data.accessToken);
-  return r;
+  return refreshAccessToken();
 }
 
 export async function logout() {
