@@ -29,7 +29,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
   return (
     <aside
-      className={`hidden lg:block h-screen transition-all duration-300 ease-in-out sticky top-0
+      className={`hidden lg:block relative z-[120] h-screen transition-all duration-300 ease-in-out sticky top-0 overflow-visible
       bg-[var(--color-surface)] border-r border-[var(--input-border)]
       ${collapsed ? "w-[80px]" : "w-[260px]"}`}
     >
@@ -97,7 +97,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
                   {/* Tooltip for collapsed mode */}
                   {collapsed && (
-                    <div className="absolute left-16 scale-0 group-hover:scale-100 transition-all z-50 bg-[var(--color-text-primary)] text-[var(--color-surface)] text-xs px-2 py-1.5 rounded-md font-bold pointer-events-none">
+                    <div className="absolute left-16 z-[1300] scale-0 group-hover:scale-100 transition-all bg-[var(--color-text-primary)] text-[var(--color-surface)] text-xs px-2 py-1.5 rounded-md font-bold pointer-events-none whitespace-nowrap shadow-xl">
                       {item.name}
                     </div>
                   )}

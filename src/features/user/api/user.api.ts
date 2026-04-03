@@ -1,5 +1,4 @@
 import { apiClient } from "../../../lib/api/client";
-import { apiFetch } from "../../../lib/fetchClient";
 import type {
   UserProfile,
   UpdateProfilePayload,
@@ -18,6 +17,10 @@ export interface DeleteAccountResponse {
 export interface DeleteAccountErrorData {
   code?: string;
   error?: string;
+}
+
+interface DeleteAccountPayload {
+  password?: string;
 }
 
 export async function updateProfile(
@@ -41,9 +44,15 @@ export async function getMe(
   });
 }
 
-export async function deleteAccount(password?: string) {
-  return apiFetch<DeleteAccountResponse>("/api/users/me", {
-    method: "DELETE",
-    body: password ? { password } : undefined,
-  });
+export async function deleteAccount(
+  password?: string,
+  options: AuthOptions = {}
+): Promise<DeleteAccountResponse> {
+  return apiClient.delete<DeleteAccountResponse, DeleteAccountPayload>(
+    "/users/me",
+    password ? { password } : undefined,
+    {
+      authToken: options.accessToken,
+    }
+  );
 }

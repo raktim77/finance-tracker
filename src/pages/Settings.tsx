@@ -14,8 +14,12 @@ import {
   Download,
   ChevronDown,
   type LucideIcon,
-  LayoutList
+  LayoutList,
+  X,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+import * as authApi from "../lib/api/authApi";
 import CropperModal from "../components/CropperModal";
 import getCroppedImg from "../utils/cropImage";
 import { useMe, useUpdateProfile } from "../features/user/hooks/useUsers";
@@ -31,6 +35,7 @@ import {
   type DeleteAccountErrorData,
 } from "../features/user/api/user.api";
 import { API_ORIGIN } from "../lib/api/config";
+import { ApiError } from "../lib/api/errors";
 
 // --- TYPES & INTERFACES ---
 
@@ -54,6 +59,11 @@ interface ActionButtonProps {
   variant?: "default" | "danger";
   onClick?: () => void;
 }
+
+type PendingDeleteState = {
+  status: "awaiting_reauth" | "ready_to_resume";
+  returnTo: string;
+};
 
 
 
@@ -137,6 +147,49 @@ function ActionButton({ icon, label, variant = "default", onClick }: ActionButto
   );
 }
 
+
+function initialsFromUser(user: { name?: string; email?: string } | null) {
+  if (!user) return "";
+  if (user.name) {
+    const parts = user.name.split(" ").filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return (user.email?.[0] ?? "").toUpperCase();
+}
+
+const PENDING_DELETE_STORAGE_KEY = "xpensio:pending_delete";
+
+function readPendingDeleteState(): PendingDeleteState | null {
+  const stored = localStorage.getItem(PENDING_DELETE_STORAGE_KEY);
+  if (!stored) return null;
+
+  try {
+    const parsed = JSON.parse(stored) as PendingDeleteState;
+
+    if (
+      (parsed.status === "awaiting_reauth" || parsed.status === "ready_to_resume") &&
+      typeof parsed.returnTo === "string" &&
+      parsed.returnTo.length > 0
+    ) {
+      return parsed;
+    }
+  } catch (error) {
+    console.warn("Failed to parse pending delete state", error);
+  }
+
+  localStorage.removeItem(PENDING_DELETE_STORAGE_KEY);
+  return null;
+}
+
+function writePendingDeleteState(state: PendingDeleteState) {
+  localStorage.setItem(PENDING_DELETE_STORAGE_KEY, JSON.stringify(state));
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // --- MAIN COMPONENT ---
 
 export default function Settings() {
@@ -155,6 +208,27 @@ export default function Settings() {
   const toast = useToast();
   const { theme, setTheme, sidebarLayout, setSidebarLayout } = useContext(ThemeContext);
   const { logout } = useAuth();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [otpMode, setOtpMode] = useState<"delete" | "change_password">("delete");
+
+  // OTP STATES
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [otpStep, setOtpStep] = useState<1 | 2 | 3>(1);
+
+  const [otpDigits, setOtpDigits] = useState<string[]>(() => Array(6).fill(""));
+  const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
+
+  const [resendTimer, setResendTimer] = useState(0);
+  const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const otpCode = otpDigits.join("");
+
 
   const tabs: Tab[] = [
     { id: "profile", label: "Profile", icon: User },
@@ -166,6 +240,9 @@ export default function Settings() {
 
   const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
   const { data } = useMe();
+  const meUser = data?.user ?? null;
+  const initials = initialsFromUser(meUser);
+
   console.log(data);
   const initialDisplayName = data?.user?.name ?? "";
   const avatarUrl = data?.user?.profile?.avatar_url;
@@ -179,6 +256,31 @@ export default function Settings() {
   useEffect(() => {
     setDisplayName(initialDisplayName);
   }, [initialDisplayName]);
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+
+    const interval = setInterval(() => {
+      setResendTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+  useEffect(() => {
+    if (!otpModalOpen || otpStep !== 2) return;
+
+    otpInputRefs.current[0]?.focus();
+  }, [otpModalOpen, otpStep]);
+  useEffect(() => {
+    const pendingDelete = readPendingDeleteState();
+    if (!pendingDelete || pendingDelete.status !== "ready_to_resume") return;
+
+    const run = async () => {
+      localStorage.removeItem(PENDING_DELETE_STORAGE_KEY);
+      await executeDelete();
+    };
+
+    run();
+  }, []);
 
   const resetAvatarSelection = () => {
     setPendingAvatarImage(null);
@@ -247,64 +349,248 @@ export default function Settings() {
   };
 
   const handleDeleteAccount = async () => {
-  const ok = await confirm({
-    title: "Delete Account?",
-    message:
-      "This will permanently delete your account and ALL data. This cannot be undone.",
-    confirmText: "Delete",
-    cancelText: "Cancel",
-    variant: "danger",
-  });
+    const ok = await confirm({
+      title: "Delete Account?",
+      message:
+        "You are about to erase all Xpensio data. In line with our privacy-first commitment, this process is total and final. All transactions, budgets, and personal records will be permanently deleted from our servers. This action cannot be undone. Proceed with caution",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
 
-  if (!ok) return;
-
-  try {
-    let password: string | undefined;
+    if (!ok) return;
 
     // 🧠 detect email vs google user
     const isOAuth = oauthProviders.length > 0;
-
-    if (!isOAuth) {
-      // 👉 simple prompt for now (we can upgrade later)
-      password = window.prompt("Enter your password to confirm") || undefined;
-
-      if (!password) {
-        toast.error("Password is required");
-        return;
-      }
-    }
-
-    const res = await deleteAccount(password);
-
-    if (!res.ok) {
-      // 🔥 HANDLE REAUTH REQUIRED
-      const errorData = res.error.data as DeleteAccountErrorData | undefined;
-
-      if (errorData?.code === "REAUTH_REQUIRED") {
-        toast.error("Please re-authenticate with Google");
-
-        // 🔁 redirect to google login
-        window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
-        return;
-      }
-
-      toast.error(res.error.message || "Failed to delete account");
+    // 🟡 GOOGLE USER → directly try delete
+    if (isOAuth) {
+      await executeDelete();
       return;
     }
 
-    // ✅ SUCCESS
-    toast.success("Account deleted");
+    // 🔵 EMAIL USER → open password modal
+    setDeletePassword("");
+    setShowDeletePassword(false);
+    setDeleteModalOpen(true);
+  };
 
-    await logout();
+  const executeDelete = async (password?: string) => {
+    try {
+      setDeleting(true);
 
-    // redirect to home/login
-    window.location.href = "/";
+      await deleteAccount(password);
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Something went wrong");
-  }
-};
+      toast.success("Account deleted. Please wait while we log you out.");
+      
+      await wait(2000);
+
+      await logout();
+      window.location.href = "/";
+    } catch (err) {
+      console.error(err);
+
+      if (err instanceof ApiError) {
+        const errorData = err.details as DeleteAccountErrorData | undefined;
+
+        if (err.code === "REAUTH_REQUIRED" || errorData?.code === "REAUTH_REQUIRED") {
+          toast.error("Please re-authenticate with Google");
+
+          writePendingDeleteState({
+            status: "awaiting_reauth",
+            returnTo: "/settings",
+          });
+          window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
+          return;
+        }
+
+        toast.error(err.message || "Failed to delete account");
+        return;
+      }
+
+      toast.error("Something went wrong");
+    } finally {
+      setDeleting(false);
+      setDeleteModalOpen(false);
+    }
+  };
+
+  const handleConfirmDeleteWithPassword = async () => {
+    if (!deletePassword) {
+      toast.error("Password is required");
+      return;
+    }
+
+    await executeDelete(deletePassword);
+  };
+
+  // 🔐 OTP FLOW
+
+  const handleOpenOtpFlow = () => {
+    setOtpMode("delete"); // 🔥 important
+    setDeleteModalOpen(false);
+    setOtpModalOpen(true);
+    setOtpStep(1);
+    setOtpDigits(Array(6).fill(""));
+    setNewPassword("");
+    setShowNewPassword(false);
+  };
+
+  const handleSendOtp = async () => {
+    try {
+      setSendingOtp(true);
+
+      const res = await authApi.sendOtp({
+        email: data?.user?.email ?? '',
+        purpose: "password_reset",
+      });
+
+      if (!res.ok) {
+        toast.error(res.error?.message || "Failed to send OTP");
+        return;
+      }
+
+      toast.success("OTP sent");
+      setOtpStep(2);
+      setResendTimer(60);
+    } catch {
+      toast.error("Failed to send OTP");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      setVerifyingOtp(true);
+
+      const res = await authApi.verifyOtp({
+        email: data?.user?.email ?? '',
+        code: otpCode,
+        purpose: "password_reset",
+      });
+
+      if (!res.ok) {
+        toast.error(res.error?.message || "Invalid OTP");
+        return;
+      }
+
+      toast.success("OTP verified");
+      setOtpStep(3);
+    } catch {
+      toast.error("Invalid OTP");
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    try {
+      setResettingPassword(true);
+
+      const res = await authApi.resetPassword({
+        email: data?.user?.email ?? '',
+        code: otpCode,
+        new_password: newPassword,
+      });
+
+      if (!res.ok) {
+        toast.error(res.error?.message || "Failed to reset password");
+        return;
+      }
+
+      // toast.success("Password updated");
+
+      setOtpModalOpen(false);
+
+      if (otpMode === "delete") {
+        // 🔥 delete flow
+        await executeDelete(newPassword);
+      } else {
+        // 🔵 normal password change
+        toast.success("Password changed successfully");
+      }
+    } catch {
+      toast.error("Failed to reset password");
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
+
+  const handleOpenChangePassword = () => {
+    setOtpMode("change_password");
+    setOtpModalOpen(true);
+    setOtpStep(1);
+    setOtpDigits(Array(6).fill(""));
+    setNewPassword("");
+    setShowNewPassword(false);
+  };
+
+  const handleCloseOtpModal = () => {
+    setOtpModalOpen(false);
+
+    if (otpMode === "delete") {
+      setDeleteModalOpen(true);
+    }
+  };
+
+  const handleOtpInputChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const nextOtpDigits = [...otpDigits];
+    nextOtpDigits[index] = digit;
+    setOtpDigits(nextOtpDigits);
+
+    if (digit && index < otpInputRefs.current.length - 1) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (
+    index: number,
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === "Backspace") {
+      if (otpDigits[index]) {
+        const nextOtpDigits = [...otpDigits];
+        nextOtpDigits[index] = "";
+        setOtpDigits(nextOtpDigits);
+        return;
+      }
+
+      if (index > 0) {
+        event.preventDefault();
+        otpInputRefs.current[index - 1]?.focus();
+      }
+      return;
+    }
+
+    if (event.key === "ArrowLeft" && index > 0) {
+      event.preventDefault();
+      otpInputRefs.current[index - 1]?.focus();
+    }
+
+    if (event.key === "ArrowRight" && index < otpInputRefs.current.length - 1) {
+      event.preventDefault();
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const pastedCode = event.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+
+    if (!pastedCode) return;
+
+    setOtpDigits(
+      Array.from({ length: 6 }, (_, index) => pastedCode[index] ?? "")
+    );
+
+    const focusIndex = Math.min(pastedCode.length, 6) - 1;
+    otpInputRefs.current[Math.max(focusIndex, 0)]?.focus();
+  };
 
   const { accessToken } = useAuth();
 
@@ -436,9 +722,7 @@ export default function Settings() {
                         src={avatarUrl as string}
                         className="w-full h-full object-cover rounded-full"
                       />
-                    ) : (
-                      "RR"
-                    )}
+                    ) : initials}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -592,7 +876,7 @@ export default function Settings() {
                   <Lock size={16} /> Account Security
                 </h3>
                 <div className="flex flex-wrap gap-4">
-                  {oauthProviders.length === 0 && (<ActionButton icon={<Lock size={14} />} label="Change Password" />
+                  {oauthProviders.length === 0 && (<ActionButton icon={<Lock size={14} />} label="Change Password" onClick={handleOpenChangePassword} />
                   )}
                   {/* <ActionButton icon={<Shield size={14} />} label="Two-Factor Auth" /> */}
                   <ActionButton icon={<LogOut size={14} />} label="Logout this device" variant="danger" onClick={handleLogout} />
@@ -674,8 +958,8 @@ export default function Settings() {
                     </div>
                   </div>
                   <div
-                  onClick={handleDeleteAccount}
-                  className="p-5 rounded-2xl bg-[var(--color-background)] border border-[var(--border)] group hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
+                    onClick={handleDeleteAccount}
+                    className="p-5 rounded-2xl bg-[var(--color-background)] border border-[var(--border)] group hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
                     <div className="flex items-center gap-4 mb-2">
                       <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
                         <Trash2 size={20} />
@@ -755,6 +1039,249 @@ export default function Settings() {
             }
           }}
         />
+      )}
+      {deleteModalOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[999] animate-in fade-in duration-300"
+            onClick={() => !deleting && setDeleteModalOpen(false)}
+          />
+
+          <div className="fixed inset-0 flex items-center justify-center z-[1000] p-4">
+            <div className="relative w-full max-w-md bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+              <button
+                type="button"
+                aria-label="Close modal"
+                onClick={() => setDeleteModalOpen(false)}
+                disabled={deleting}
+                className="absolute top-5 right-5 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--color-background)] text-[var(--color-text-secondary)] transition-all hover:text-[var(--color-text-primary)] hover:border-[var(--color-primary)] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <X size={18} strokeWidth={2.5} />
+              </button>
+
+              <div className="flex flex-col items-center text-center mb-8">
+                <div className="w-16 h-16 rounded-[1.5rem] bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
+                  <Shield size={32} />
+                </div>
+                <h3 className="text-xl font-black text-[var(--color-text-primary)] tracking-tight">
+                  Security Verification
+                </h3>
+                <p className="text-[11px] font-bold text-[var(--color-text-secondary)] mt-2 uppercase tracking-widest opacity-60">
+                  Confirm identity to proceed with deletion
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">
+                    Account Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showDeletePassword ? "text" : "password"}
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="settings-input pr-12 h-14"
+                    />
+                    <button
+                      type="button"
+                      aria-label={showDeletePassword ? "Hide password" : "Show password"}
+                      onClick={() => setShowDeletePassword((current) => !current)}
+                      className="absolute right-4 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[var(--color-text-secondary)] opacity-60 transition-opacity hover:opacity-100"
+                    >
+                      {showDeletePassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenOtpFlow}
+                  className="w-full text-center text-[10px] font-black uppercase tracking-widest text-[var(--color-primary)] hover:opacity-70 transition-opacity"
+                >
+                  Forgot your password?
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-10">
+                <button
+                  onClick={() => setDeleteModalOpen(false)}
+                  disabled={deleting}
+                  className="px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] border border-[var(--border)] hover:bg-[var(--color-background)] transition-all"
+                >
+                  Go Back
+                </button>
+
+                <button
+                  onClick={handleConfirmDeleteWithPassword}
+                  disabled={!deletePassword || deleting}
+                  className="px-6 py-4 rounded-2xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all disabled:opacity-30"
+                >
+                  {deleting ? "Deleting..." : "Confirm Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      {otpModalOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[999]"
+            onClick={() =>
+              !sendingOtp &&
+              !verifyingOtp &&
+              !resettingPassword &&
+              handleCloseOtpModal()
+            }
+          />
+
+          <div className="fixed inset-0 flex items-center justify-center z-[1000] p-4">
+            <div className="relative w-full max-w-md bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 duration-500">
+              <button
+                type="button"
+                aria-label="Close modal"
+                onClick={handleCloseOtpModal}
+                disabled={sendingOtp || verifyingOtp || resettingPassword}
+                className="absolute top-5 right-5 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--color-background)] text-[var(--color-text-secondary)] transition-all hover:text-[var(--color-text-primary)] hover:border-[var(--color-primary)] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <X size={18} strokeWidth={2.5} />
+              </button>
+
+              {/* Step 1: Initialize */}
+              {otpStep === 1 && (
+                <div className="flex flex-col items-center text-center relative">
+                  {/* Header Icon */}
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] mb-6">
+                    <Globe size={32} />
+                  </div>
+
+                  {/* Text Content */}
+                  <h3 className="text-xl font-black text-[var(--color-text-primary)] tracking-tight">
+                    Verify your Email
+                  </h3>
+                  <p className="text-[14px] font-bold text-[var(--color-text-secondary)] mt-2 opacity-60">
+                    We'll send a code to {data?.user?.email?.split('@')[0].slice(0, 3)}•••@{data?.user?.email?.split('@')[1]}
+                  </p>
+
+                  <div className="w-full flex flex-col gap-4 mt-10">
+                    <button
+                      onClick={handleSendOtp}
+                      disabled={sendingOtp}
+                      className="w-full h-14 bg-[var(--color-primary)] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[var(--color-primary)]/20 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {sendingOtp ? "Sending..." : "Send Verification Code"}
+                    </button>
+
+                    {/* --- THE BACK BUTTON --- */}
+                    <button
+                      type="button"
+                      onClick={handleCloseOtpModal}
+                      className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors py-2"
+                    >
+                      Cancel & Go Back
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Code Entry */}
+              {otpStep === 2 && (
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-orange-500/10 flex items-center justify-center text-orange-500 mb-6">
+                    <Zap size={32} />
+                  </div>
+                  <h3 className="text-xl font-black text-[var(--color-text-primary)]">Enter Code</h3>
+                  <p className="text-[11px] font-bold text-[var(--color-text-secondary)] mt-2 uppercase tracking-widest opacity-60 mb-8">
+                    Check your inbox for the 6-digit code
+                  </p>
+
+                  <div className="grid grid-cols-6 gap-2 w-full">
+                    {Array.from({ length: 6 }, (_, index) => (
+                      <input
+                        key={index}
+                        ref={(node) => {
+                          otpInputRefs.current[index] = node;
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete={index === 0 ? "one-time-code" : "off"}
+                        maxLength={1}
+                        value={otpDigits[index] ?? ""}
+                        onChange={(e) => handleOtpInputChange(index, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        onPaste={index === 0 ? handleOtpPaste : undefined}
+                        className="settings-input h-16 px-0 text-center text-2xl"
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleVerifyOtp}
+                    disabled={otpCode.length < 6 || verifyingOtp}
+                    className="mt-8 w-full h-14 bg-[var(--color-primary)] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-30"
+                  >
+                    {verifyingOtp ? "Verifying..." : "Verify Code"}
+                  </button>
+
+                  <button
+                    disabled={resendTimer > 0}
+                    onClick={handleSendOtp}
+                    className="mt-6 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] disabled:opacity-40"
+                  >
+                    {resendTimer > 0 ? `Resend available in ${resendTimer}s` : "Resend code"}
+                  </button>
+                </div>
+              )}
+
+              {/* Step 3: New Password */}
+              {otpStep === 3 && (
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-red-500/10 flex items-center justify-center text-red-500 mb-6">
+                    <Lock size={32} />
+                  </div>
+                  <h3 className="text-xl font-black text-[var(--color-text-primary)]">
+                    {otpMode === "delete" ? "New Password" : "Change Password"}
+                  </h3>
+                  <p className="text-[11px] font-bold text-[var(--color-text-secondary)] mt-2 uppercase tracking-widest opacity-60 mb-8">
+                    Create a strong password for your account
+                  </p>
+
+                  <div className="relative w-full">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      className="settings-input h-14 pr-12"
+                    />
+                    <button
+                      type="button"
+                      aria-label={showNewPassword ? "Hide password" : "Show password"}
+                      onClick={() => setShowNewPassword((current) => !current)}
+                      className="absolute right-4 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[var(--color-text-secondary)] opacity-60 transition-opacity hover:opacity-100"
+                    >
+                      {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleResetPassword}
+                    disabled={newPassword.length < 6 || resettingPassword}
+                    className="mt-8 w-full h-14 bg-red-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all disabled:opacity-30"
+                  >
+                    {resettingPassword
+                      ? "Updating..."
+                      : otpMode === "delete"
+                        ? "Update & Confirm Deletion"
+                        : "Update Password"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
 

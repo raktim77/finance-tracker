@@ -97,7 +97,7 @@ export const RecentTransactions = () => {
   };
 
   return (
-    <div className="rounded-[2rem] p-2 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all h-full">
+    <div className=" rounded-[2rem] p-2 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all h-full">
       {currentItems.length > 0 ? (
         <div className="flex items-center justify-between mb-4 px-6 pt-6">
         <h2 className="font-bold text-lg text-[var(--color-text-primary)]">

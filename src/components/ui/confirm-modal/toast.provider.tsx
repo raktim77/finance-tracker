@@ -26,7 +26,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       {/* TOAST VIEWPORT */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[500] flex flex-col items-center gap-3 w-full max-w-[90vw] pointer-events-none">
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[1200] flex flex-col items-center gap-3 w-full max-w-[90vw] pointer-events-none">
         {/* Removed mode="multiple" to fix TS error */}
         <AnimatePresence>
           {toasts.map((t) => {

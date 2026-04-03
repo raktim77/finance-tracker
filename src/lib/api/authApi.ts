@@ -64,3 +64,40 @@ export async function me(accessToken?: string) {
     method: "GET",
   });
 }
+
+// 🔐 OTP + PASSWORD RESET APIs
+
+export async function sendOtp(payload: {
+  email: string;
+  purpose: "password_reset";
+}) {
+  return apiFetch<{ ok: boolean }>("/api/auth/otp/send", {
+    method: "POST",
+    body: payload,
+    skipRefreshOn401: true, // important
+  });
+}
+
+export async function verifyOtp(payload: {
+  email: string;
+  code: string;
+  purpose: "password_reset";
+}) {
+  return apiFetch<{ ok: boolean }>("/api/auth/otp/verify", {
+    method: "POST",
+    body: payload,
+    skipRefreshOn401: true,
+  });
+}
+
+export async function resetPassword(payload: {
+  email: string;
+  code: string;
+  new_password: string;
+}) {
+  return apiFetch<{ ok: boolean }>("/api/auth/password/reset", {
+    method: "POST",
+    body: payload,
+    skipRefreshOn401: true,
+  });
+}

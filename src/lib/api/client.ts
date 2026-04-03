@@ -117,8 +117,9 @@ export const apiClient = {
     options?: Omit<RequestOptions, "method" | "body">
   ) => apiRequest<TResponse>(path, { ...options, method: "PUT", body }),
 
-  delete: <TResponse>(
+  delete: <TResponse, TBody = unknown>(
     path: string,
+    body?: TBody,
     options?: Omit<RequestOptions, "method" | "body">
-  ) => apiRequest<TResponse>(path, { ...options, method: "DELETE" }),
+  ) => apiRequest<TResponse>(path, { ...options, method: "DELETE", body }),
 };
