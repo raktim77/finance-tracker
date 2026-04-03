@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Lightbulb, Sparkles, Eye, EyeOff } from "lucide-react";
+import { Mail, Lightbulb, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../lib/context/useAuth";
 import { API_ORIGIN, warnIfCookieRefreshMayFail } from "../../lib/api/config";
 
