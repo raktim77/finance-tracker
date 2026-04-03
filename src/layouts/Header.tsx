@@ -262,8 +262,8 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
                       <div className="px-2 py-2 font-medium">{meUser?.name ?? meUser?.email}</div>
                     </div>
                     <div className="mt-4 border-t border-black/5 pt-4">
-                      <button onClick={() => { navigate("/profile"); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-2">Profile</button>
-                      <button onClick={() => { navigate("/settings"); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-2">Settings</button>
+                      {/* <button onClick={() => { navigate("/profile"); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-2">Profile</button> */}
+                      <button onClick={() => { navigate("/settings"); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-2">Profile & Settings</button>
                       <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600">Logout</button>
                     </div>
                   </>

@@ -103,19 +103,19 @@ export default function ProfileMenu() {
             className="absolute right-0 mt-2 w-44 bg-[var(--color-surface)] rounded-lg shadow-lg ring-1 ring-black/5 z-50"
           >
             <div role="menu" aria-label="User menu" className="py-2">
-              <button
+              {/* <button
                 role="menuitem"
                 onClick={() => handleNavigate("/profile")}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--color-background)]"
               >
                 Profile
-              </button>
+              </button> */}
               <button
                 role="menuitem"
                 onClick={() => handleNavigate("/settings")}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--color-background)]"
               >
-                Settings
+                Profile & Settings
               </button>
               <div className="border-t border-black/5 my-1" />
               <button

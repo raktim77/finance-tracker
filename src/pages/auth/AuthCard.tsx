@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Lightbulb, Sparkles } from "lucide-react";
+import { Mail, Lock, Lightbulb, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../lib/context/useAuth";
 import { API_ORIGIN, warnIfCookieRefreshMayFail } from "../../lib/api/config";
 
@@ -152,6 +152,8 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   const [suName, setSuName] = useState("");
   const [suEmail, setSuEmail] = useState("");
   const [suPassword, setSuPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
 
   /* Handlers */
 
@@ -369,23 +371,33 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                           <span className="text-xs text-[var(--color-text-secondary)]">Email</span>
                           <div className="mt-2 relative">
                             <input type="email" value={siEmail} onChange={(e) => setSiEmail(e.target.value)} className={inputClass} placeholder="you@domain.com" required />
-                            <div className="absolute right-3 top-3 text-[var(--color-text-secondary)]"><Mail size={18} /></div>
+                            <div className="absolute right-3 top-4 text-[var(--color-text-secondary)]"><Mail size={18} /></div>
                           </div>
                         </label>
 
                         <label className="block">
                           <span className="text-xs text-[var(--color-text-secondary)]">Password</span>
                           <div className="mt-2 relative">
-                            <input type="password" value={siPassword} onChange={(e) => setSiPassword(e.target.value)} className={inputClass} placeholder="••••••••" required />
-                            <div className="absolute right-3 top-3 text-[var(--color-text-secondary)]"><Lock size={18} /></div>
+                            <input type={showPassword ? "text" : "password"} value={siPassword} onChange={(e) => setSiPassword(e.target.value)} className={inputClass} placeholder="••••••••" required />
+                            <div className="absolute right-3 top-4 text-[var(--color-text-secondary)]">
+{/* <button
+                              type="button"
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                              onClick={() => setShowPassword((current) => !current)}
+                              className="absolute top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[var(--color-text-secondary)] opacity-60 transition-opacity hover:opacity-100"
+                            >
+                            </button> */}
+                              {showPassword ? <EyeOff className="cursor-pointer" onClick={() => setShowPassword((current) => !current)} size={18} /> : <Eye className="cursor-pointer" onClick={() => setShowPassword((current) => !current)} size={18} />}
+
+                            </div>
                           </div>
                         </label>
 
-                        <div className="flex items-center justify-between">
-                          <label className="flex items-center gap-3 text-sm">
+                        <div className="flex items-center justify-end">
+                          {/* <label className="flex items-center gap-3 text-sm">
                             <input type="checkbox" className="h-4 w-4" />
                             <span className="text-[var(--color-text-secondary)]">Remember me</span>
-                          </label>
+                          </label> */}
                           <a className="text-sm underline">Forgot password?</a>
                         </div>
 
@@ -420,8 +432,19 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
                         <label className="block">
                           <span className="text-xs text-[var(--color-text-secondary)]">Create password</span>
-                          <div className="mt-2">
-                            <input type="password" value={suPassword} onChange={(e) => setSuPassword(e.target.value)} className={inputClass} placeholder="At least 8 characters" required />
+                          <div className="mt-2 relative">
+                            <input type={showNewPassword ? "text" : "password"} value={suPassword} onChange={(e) => setSuPassword(e.target.value)} className={inputClass} placeholder="At least 8 characters" required />
+                            <div className="absolute right-3 top-4 text-[var(--color-text-secondary)]">
+{/* <button
+                              type="button"
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                              onClick={() => setShowPassword((current) => !current)}
+                              className="absolute top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[var(--color-text-secondary)] opacity-60 transition-opacity hover:opacity-100"
+                            >
+                            </button> */}
+                              {showNewPassword ? <EyeOff className="cursor-pointer" onClick={() => setShowNewPassword((current) => !current)} size={18} /> : <Eye className="cursor-pointer" onClick={() => setShowNewPassword((current) => !current)} size={18} />}
+
+                            </div>
                           </div>
                         </label>
 
@@ -472,15 +495,18 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                         <span className="text-xs text-[var(--color-text-secondary)]">Email</span>
                         <div className="mt-2 relative">
                           <input type="email" value={siEmail} onChange={(e) => setSiEmail(e.target.value)} className={inputClass} placeholder="you@domain.com" required />
-                          <div className="absolute right-3 top-3 text-[var(--color-text-secondary)]"><Mail size={18} /></div>
+                          <div className="absolute right-3 top-4 text-[var(--color-text-secondary)]"><Mail size={18} /></div>
                         </div>
                       </label>
 
                       <label className="block">
                         <span className="text-xs text-[var(--color-text-secondary)]">Password</span>
                         <div className="mt-2 relative">
-                          <input type="password" value={siPassword} onChange={(e) => setSiPassword(e.target.value)} className={inputClass} placeholder="••••••••" required />
-                          <div className="absolute right-3 top-3 text-[var(--color-text-secondary)]"><Lock size={18} /></div>
+                          <input type={showPassword ? "text" : "password"} value={siPassword} onChange={(e) => setSiPassword(e.target.value)} className={inputClass} placeholder="••••••••" required />
+                          <div className="absolute right-3 top-4 text-[var(--color-text-secondary)]">
+                            {showPassword ? <EyeOff className="cursor-pointer" onClick={() => setShowPassword((current) => !current)} size={18} /> : <Eye className="cursor-pointer" onClick={() => setShowPassword((current) => !current)} size={18} />}
+
+                          </div>
                         </div>
                       </label>
 
@@ -517,8 +543,19 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
                       <label className="block">
                         <span className="text-xs text-[var(--color-text-secondary)]">Create password</span>
-                        <div className="mt-2">
-                          <input type="password" value={suPassword} onChange={(e) => setSuPassword(e.target.value)} className={inputClass} placeholder="At least 8 characters" required />
+                        <div className="mt-2 relative">
+                          <input type={showNewPassword ? "text" : "password"} value={suPassword} onChange={(e) => setSuPassword(e.target.value)} className={inputClass} placeholder="At least 8 characters" required />
+                          <div className="absolute right-3 top-4 text-[var(--color-text-secondary)]">
+                            {/* <button
+                              type="button"
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                              onClick={() => setShowPassword((current) => !current)}
+                              className="absolute top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[var(--color-text-secondary)] opacity-60 transition-opacity hover:opacity-100"
+                            >
+                            </button> */}
+                              {showNewPassword ? <EyeOff className="cursor-pointer" onClick={() => setShowNewPassword((current) => !current)} size={18} /> : <Eye className="cursor-pointer" onClick={() => setShowNewPassword((current) => !current)} size={18} />}
+
+                            </div>
                         </div>
                       </label>
 

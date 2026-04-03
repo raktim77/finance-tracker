@@ -147,7 +147,7 @@ export default function Transactions() {
   }) => {
     console.log(payload);
     console.log(editingId);
-
+    
     try {
       if (editingTx && editingId) {
         await updateTransactionMutation.mutateAsync({
@@ -156,6 +156,7 @@ export default function Transactions() {
         });
       } else {
         await createTransactionMutation.mutateAsync(payload);
+        toast.success("Transaction recorded successfully");
       }
 
       setSheetOpen(false);
@@ -243,6 +244,7 @@ export default function Transactions() {
     <button
       onClick={() => {
         if (!hasAccounts) {
+          toast.error("Please add an account first");
           navigate("/accounts");
           return;
         }

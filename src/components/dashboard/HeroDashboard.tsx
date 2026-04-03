@@ -101,10 +101,10 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
 
             <div className="flex items-center gap-2">
               <span className="text-3xl md:text-4xl font-black text-white tracking-tight md:block hidden">
-                {netChange >= 0 ? "+" : "-"}₹{Math.abs(netChange).toLocaleString()}
+                {netChange >= 0 ? "+" : "-"}₹{formatCompactCurrency(Math.abs(netChange)).toLocaleString()}
               </span>
               <span className="text-3xl md:text-4xl font-black text-white tracking-tight md:hidden block">
-                {netChange >= 0 ? "+" : "-"}₹{formatCompactCurrency(netChange).toLocaleString()}
+                {netChange >= 0 ? "+" : "-"}₹{formatCompactCurrency(Math.abs(netChange)).toLocaleString()}
               </span>
 
               <div className="flex items-center text-[9px] font-black bg-white/20 px-2 py-1 rounded-lg text-white backdrop-blur-md">

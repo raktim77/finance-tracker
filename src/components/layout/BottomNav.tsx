@@ -8,7 +8,11 @@ import {
   Target
 } from "lucide-react";
 
-export default function BottomNav() {
+type BottomNavProps = {
+  onAddTransaction: () => void;
+};
+
+export default function BottomNav({ onAddTransaction }: BottomNavProps) {
   return (<nav className="fixed bottom-0 left-0 right-0 h-18 lg:hidden
    bg-[var(--color-surface)]
    backdrop-blur-md
@@ -52,6 +56,8 @@ export default function BottomNav() {
       {/* Floating Add Button Wrapper */}
       <div className="flex justify-center items-start h-full relative">
         <button
+          type="button"
+          onClick={onAddTransaction}
           className="absolute -top-6 w-15 h-15 rounded-2xl
           bg-[var(--color-accent)] text-white
           flex items-center justify-center
