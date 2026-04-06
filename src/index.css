@@ -18,6 +18,10 @@
     --border: #e6e9eb;
     --color-accent: #523dff;
     --color-accent-soft: #f2efff;
+    --color-nav-highlight: #198f87;
+    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 86%, var(--color-accent-teal) 14%);
+    --color-bottom-nav-border: color-mix(in oklab, var(--border) 70%, var(--color-nav-highlight) 30%);
+    --color-bottom-nav-shadow: 0 14px 34px rgba(17, 24, 39, 0.10);
     /* 👇 new: light-mode glow behind pricing card */
     --pricing-card-glow-teal: rgba(50, 165, 158, 0.12);
     --pricing-card-glow-warm: rgba(147, 51, 234, 0.08);      /* red for alerts (new) */
@@ -40,6 +44,10 @@
     --border: #ffffff15;
     --color-accent: #c380ff;
     --color-accent-soft: rgba(124,108,255,0.16);
+    --color-nav-highlight: #32a59e;
+    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 76%, black 24%);
+    --color-bottom-nav-border: color-mix(in oklab, var(--border) 58%, var(--color-nav-highlight) 42%);
+    --color-bottom-nav-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
     --benefits-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
     --pricing-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
   }

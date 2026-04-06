@@ -15,6 +15,7 @@ import Accounts from "./pages/Accounts";
 import Budgets from "./pages/Budgets";
 import Settings from "./pages/Settings";
 import AnalyticsPage from "./pages/Analytics";
+import MorePage from "./pages/More";
 
 function HomeWrapper() {
   const { user, loading } = useAuth();
@@ -134,6 +135,17 @@ function App() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Settings />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        {/* More */}
+        <Route
+          path="/more"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <MorePage />
               </DashboardLayout>
             </ProtectedRoute>
           }
