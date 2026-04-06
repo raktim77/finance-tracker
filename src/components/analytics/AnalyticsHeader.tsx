@@ -3,6 +3,7 @@ import Dropdown from "../ui/Dropdown";
 import DatePicker from "../ui/DatePicker";
 import type { AnalyticsDatePreset, AnalyticsDateRange } from "./data/types";
 import { analyticsDatePresetOptions } from "./data/dateRange";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 function toPickerDate(date?: string) {
   return date ? new Date(`${date}T00:00:00`) : undefined;
@@ -38,6 +39,12 @@ export function AnalyticsHeader({
   onCustomCancel,
   onCustomApply
 }: AnalyticsHeaderProps) {
+  useDismissibleLayer({
+    open: isCustomModalOpen,
+    onDismiss: onCustomCancel,
+    priority: 250,
+  });
+
   return (
     <>
       <div className="flex flex-col md:flex-row items-start justify-between gap-6 md:gap-4">

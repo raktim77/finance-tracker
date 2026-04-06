@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/context/useAuth";
 import { useMe } from "../features/user/hooks/useUsers";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
+import { useDismissibleLayer } from "./app-back/DismissibleLayerProvider";
+import { isNativeAndroidApp } from "../lib/capacitor/platform";
 
 function initialsFromUser(user: { name?: string; email?: string } | null) {
   if (!user) return "";
@@ -23,6 +25,13 @@ export default function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const isNativeApp = isNativeAndroidApp();
+
+  useDismissibleLayer({
+    open,
+    onDismiss: () => setOpen(false),
+    priority: 300,
+  });
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -54,7 +63,7 @@ export default function ProfileMenu() {
     try {
       setOpen(false);
       await logout();
-      navigate("/", { replace: true });
+      navigate(isNativeApp ? "/login" : "/", { replace: true });
     } catch (err) {
       console.error("Logout failed", err);
     }

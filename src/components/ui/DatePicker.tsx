@@ -8,6 +8,7 @@ import {
 import { createPortal } from "react-dom";
 import Dropdown from "./Dropdown";
 import "react-day-picker/dist/style.css";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 type Props = {
   value?: Date;
@@ -125,6 +126,12 @@ export default function DatePicker({
     typeof controlledOpen === "boolean" && typeof onOpenChange === "function";
 
   const open = isControlled ? controlledOpen : internalOpen;
+
+  useDismissibleLayer({
+    open,
+    onDismiss: () => setOpen(false),
+    priority: 320,
+  });
 
   const setOpen = useCallback(
     (next: boolean) => {

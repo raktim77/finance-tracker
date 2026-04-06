@@ -22,6 +22,7 @@ import {
   useDeleteBudget,
   useUpsertBudget,
 } from "../features/budgets/hooks/useBudgets";
+import { useDismissibleLayer } from "../components/app-back/DismissibleLayerProvider";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
@@ -76,6 +77,12 @@ export default function Budgets() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+
+  useDismissibleLayer({
+    open: isSelectorOpen,
+    onDismiss: () => setIsSelectorOpen(false),
+    priority: 300,
+  });
 
   useEffect(() => {
     if (suggestions && !budget?.exists && !isEditingBudget) {

@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useDismissibleLayer } from "../../app-back/DismissibleLayerProvider";
 
 type Variant = "default" | "danger" | "success";
 
@@ -23,6 +24,11 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }: Props) {
+  useDismissibleLayer({
+    open,
+    onDismiss: onCancel,
+    priority: 400,
+  });
 
   // Refined variants to match your Brand variables and shadow depth
   const variantStyles = {

@@ -13,8 +13,17 @@ type BootstrapResult =
 
 let bootstrapInFlight: Promise<BootstrapResult> | null = null;
 
+function serializeForLog(value: unknown) {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 async function performBootstrap(): Promise<BootstrapResult> {
   const refreshResult = await authApi.refresh();
+  // console.log(`[Auth] refresh result:\n${serializeForLog(refreshResult)}`);
 
   if (!refreshResult.ok) {
     if (refreshResult.status === "auth-error") {
@@ -33,6 +42,7 @@ async function performBootstrap(): Promise<BootstrapResult> {
   }
 
   const me = await authApi.me(refreshResult.data?.accessToken);
+  console.log(`[Auth] me result:\n${serializeForLog(me)}`);
 
   if (me.ok && me.data?.user) {
     return {
@@ -84,7 +94,9 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       while (attempts < maxAttempts) {
         try {
           const result = await runBootstrapOnce();
-          console.log(`[Auth] bootstrap attempt ${attempts + 1} result`, result);
+          console.log(
+            `[Auth] bootstrap attempt ${attempts + 1} result:\n${serializeForLog(result)}`
+          );
 
           if (cancelled) return;
 
@@ -113,7 +125,12 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           }
 
         } catch (err) {
-          console.error('[Auth] bootstrap error', err);
+          console.error(
+            `[Auth] bootstrap error:\n${serializeForLog({
+              message: err instanceof Error ? err.message : String(err),
+              stack: err instanceof Error ? err.stack : undefined,
+            })}`
+          );
           attempts++;
           if (attempts < maxAttempts) await new Promise(res => setTimeout(res, 5000));
           else break;
@@ -139,7 +156,12 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         (async () => { await runBootstrap(); })();
       }
     } catch (e) {
-      console.log(e);
+      console.log(
+        `[Auth] bootstrap setup error:\n${serializeForLog({
+          message: e instanceof Error ? e.message : String(e),
+          stack: e instanceof Error ? e.stack : undefined,
+        })}`
+      );
 
       (async () => await runBootstrap())();
     }

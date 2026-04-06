@@ -11,6 +11,8 @@ import ProfileMenu from "../components/ProfileMenu";
 import { useAuth } from "../lib/context/useAuth";
 import { useMe } from "../features/user/hooks/useUsers";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
+import { useDismissibleLayer } from "../components/app-back/DismissibleLayerProvider";
+import { isNativeAndroidApp } from "../lib/capacitor/platform";
 
 type NavItem = { label: string; id: "home" | "features" | "benefits" | "pricing" };
 type HeaderProps = {
@@ -50,8 +52,15 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
 
   const isHome = location.pathname === "/";
   const isLogin = location.pathname === "/login";
+  const isNativeApp = isNativeAndroidApp();
   // You can tweak this to include other auth routes if needed
   const isAuthenticated = !!user;
+
+  useDismissibleLayer({
+    open: mobileMenuOpen,
+    onDismiss: () => setMobileMenuOpen(false),
+    priority: 300,
+  });
 
   const handleNav = (id: string) => {
     scrollToId(id);
@@ -64,6 +73,12 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
   };
 
   const smartNavigate = (targetId: string) => {
+    if (isNativeApp) {
+      navigate(isAuthenticated ? "/dashboard" : "/login");
+      setMobileMenuOpen(false);
+      return;
+    }
+
     const currentPath = location.pathname;
 
     if (currentPath === "/") {
@@ -97,7 +112,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
     try {
       setMobileMenuOpen(false);
       await logout();
-      navigate("/", { replace: true });
+      navigate(isNativeApp ? "/login" : "/", { replace: true });
     } catch (err) {
       console.error("Logout failed", err);
     }
@@ -134,7 +149,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-6 lg:gap-8 text-[var(--color-text-secondary)] font-medium">
           {/* show nav links only on home and when unauthenticated */}
-          {isHome && !isAuthenticated && NAV.map((n) => (
+          {isHome && !isAuthenticated && !isNativeApp && NAV.map((n) => (
             <button
               key={n.id}
               onClick={() => handleNav(n.id)}
@@ -162,7 +177,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
           {/* Desktop view */}
           <div className="hidden md:flex items-center gap-4">
             {!isAuthenticated ? (
-              isHome ? (
+              isHome || isNativeApp ? (
                 <button
                   onClick={handleLogin}
                   className="px-4 py-2 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:opacity-90 transition"
@@ -179,7 +194,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
           <div className="md:hidden flex items-center">
             {!isAuthenticated ? (
               // if not logged in -> show hamburger except on /login
-              !isLogin && (
+              !isLogin && !isNativeApp && (
                 <button
                   className="w-10 h-10 flex items-center justify-center rounded-lg 
             bg-[var(--color-surface)] text-[var(--color-text-primary)] 
@@ -235,7 +250,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
 
               <nav className="flex flex-col gap-4 text-[var(--color-text-primary)] font-medium">
                 {/* If home & not authenticated, show section links */}
-                {isHome && !isAuthenticated && NAV.map((n) => (
+                {isHome && !isAuthenticated && !isNativeApp && NAV.map((n) => (
                   <button
                     key={n.id}
                     className="text-left hover:text-[var(--color-primary)] transition"

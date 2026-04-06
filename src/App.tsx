@@ -16,12 +16,15 @@ import Budgets from "./pages/Budgets";
 import Settings from "./pages/Settings";
 import AnalyticsPage from "./pages/Analytics";
 import MorePage from "./pages/More";
+import AndroidBackHandler from "./components/app-back/AndroidBackHandler";
+import { isNativeAndroidApp } from "./lib/capacitor/platform";
 
 function HomeWrapper() {
   const { user, loading } = useAuth();
 
   if (loading) return <FullscreenLogoLoaderMotion />;
   if (user) return <Navigate to="/dashboard" replace />;
+  if (isNativeAndroidApp()) return <Navigate to="/login" replace />;
 
   return (
     <MainLayout>
@@ -48,12 +51,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) return <FullscreenLogoLoaderMotion />;
-  return user ? <>{children}</> : <Navigate to="/" replace />;
+  return user ? <>{children}</> : <Navigate to={isNativeAndroidApp() ? "/login" : "/"} replace />;
 }
 
 function App() {
   return (
     <Router>
+      <AndroidBackHandler />
       <Routes>
 
         {/* Marketing Pages */}
@@ -152,7 +156,10 @@ function App() {
         />
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to={isNativeAndroidApp() ? "/login" : "/"} replace />}
+        />
 
       </Routes>
 

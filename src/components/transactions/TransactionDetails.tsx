@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { X, Calendar, Wallet, FileText, Edit3, Trash2, type LucideIcon } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion"; // Added useDragControls
 import type { Transaction } from "../../features/transactions/types/transaction.types";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 type Props = {
   transaction: Transaction | null;
@@ -15,6 +16,12 @@ type Props = {
 export default function TransactionDetails({ transaction, open, onClose, onEdit, onDelete }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const dragControls = useDragControls(); // Initialize drag controls
+
+  useDismissibleLayer({
+    open,
+    onDismiss: onClose,
+    priority: 200,
+  });
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);

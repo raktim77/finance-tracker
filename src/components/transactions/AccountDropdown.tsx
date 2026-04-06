@@ -12,6 +12,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import resolveLucideIcon from "../../utils/LucideIconsResolver";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 export type Account = {
   _id: string;
@@ -54,6 +55,12 @@ function AccountPicker({
   onClose: () => void;
   onSelect: (id: string) => void;
 }) {
+  useDismissibleLayer({
+    open,
+    onDismiss: onClose,
+    priority: 340,
+  });
+
   const overlay =
     typeof document !== "undefined"
       ? createPortal(

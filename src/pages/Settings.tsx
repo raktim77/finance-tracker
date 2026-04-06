@@ -36,6 +36,7 @@ import {
 } from "../features/user/api/user.api";
 import { API_ORIGIN } from "../lib/api/config";
 import { ApiError } from "../lib/api/errors";
+import { useDismissibleLayer } from "../components/app-back/DismissibleLayerProvider";
 
 // --- TYPES & INTERFACES ---
 
@@ -533,6 +534,26 @@ export default function Settings() {
       setDeleteModalOpen(true);
     }
   };
+
+  useDismissibleLayer({
+    open: isMobileMenuOpen,
+    onDismiss: () => setIsMobileMenuOpen(false),
+    priority: 300,
+  });
+
+  useDismissibleLayer({
+    open: deleteModalOpen,
+    onDismiss: () => setDeleteModalOpen(false),
+    priority: 400,
+    enabled: !deleting,
+  });
+
+  useDismissibleLayer({
+    open: otpModalOpen,
+    onDismiss: handleCloseOtpModal,
+    priority: 400,
+    enabled: !(sendingOtp || verifyingOtp || resettingPassword),
+  });
 
   const handleOtpInputChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);

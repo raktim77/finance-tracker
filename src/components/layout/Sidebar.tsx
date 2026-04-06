@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useConfirm } from "../ui/confirm-modal/useConfirm";
 import { useAuth } from "../../lib/context/useAuth";
+import { isNativeAndroidApp } from "../../lib/capacitor/platform";
 
 import Logo from "../../assets/images/logo.png";
 import onlyLogo from "../../assets/images/only_logo.png";
@@ -33,6 +34,7 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
   const navigate = useNavigate();
   const confirm = useConfirm();
   const { logout } = useAuth();
+  const isNativeApp = isNativeAndroidApp();
 
   const handleLogout = async () => {
     const ok = await confirm({
@@ -47,7 +49,7 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
 
     try {
       await logout();
-      navigate("/", { replace: true });
+      navigate(isNativeApp ? "/login" : "/", { replace: true });
     } catch (err) {
       console.error("Logout failed", err);
     }

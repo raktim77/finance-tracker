@@ -9,6 +9,7 @@ import {
 import * as Icons from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 export type AccountCategory = {
   _id: string;
@@ -56,6 +57,12 @@ export default function AccountCategoryDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [mounted, setMounted] = useState(false);
+
+  useDismissibleLayer({
+    open: isOpen,
+    onDismiss: () => setIsOpen(false),
+    priority: 340,
+  });
 
   useEffect(() => {
     setMounted(true);

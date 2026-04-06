@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronRight, type LucideIcon } from "lucide-react";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 type Option = {
   label: string;
@@ -35,6 +36,12 @@ export default function Dropdown({
   const selectedOptionRef = useRef<HTMLButtonElement>(null);
 
   const selected = options.find((o) => o.value === value);
+
+  useDismissibleLayer({
+    open,
+    onDismiss: () => setOpen(false),
+    priority: 340,
+  });
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {

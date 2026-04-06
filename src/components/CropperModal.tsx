@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
+import { useDismissibleLayer } from "./app-back/DismissibleLayerProvider";
 
 interface Props {
   image: string;
@@ -20,6 +21,13 @@ export default function CropperModal({ image, onClose, onSave, isSaving = false 
   const onCropComplete = useCallback((_croppedArea: Area, croppedPixels: Area) => {
     setCroppedAreaPixels(croppedPixels);
   }, []);
+
+  useDismissibleLayer({
+    open: true,
+    onDismiss: onClose,
+    priority: 400,
+    enabled: !isSaving,
+  });
 
   return (
     <div className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">

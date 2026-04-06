@@ -12,6 +12,7 @@ import CategoryDropdown, { type Category } from "./CategoryDropdown";
 import AccountDropdown, { type Account } from "./AccountDropdown";
 import DateField from "./DateField";
 import NoteInput from "./NoteInput";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 // --- TYPES ---
 
@@ -71,6 +72,12 @@ export default function TransactionSheet({
     category_id: null,
     note: "",
     date: new Date(),
+  });
+
+  useDismissibleLayer({
+    open,
+    onDismiss: onClose,
+    priority: 200,
   });
 
   useEffect(() => {

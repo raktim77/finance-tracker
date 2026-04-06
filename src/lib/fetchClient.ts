@@ -32,6 +32,14 @@ let accessToken: string | null = null;
 let refreshInFlight: Promise<RefreshResult> | null = null;
 const accessTokenListeners = new Set<(token: string | null) => void>();
 
+function serializeForLog(value: unknown) {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 export function setAccessToken(token: string | null) {
   if (accessToken === token) return;
   accessToken = token;
@@ -82,7 +90,14 @@ async function doRefreshOnce(): Promise<RefreshResult> {
       }
 
       if (!res.ok) {
-        console.warn("[Auth] Refresh failed:", res.status);
+        console.warn(
+          `[Auth] Refresh failed:\n${serializeForLog({
+            url: `${API_BASE}${AUTH_REFRESH_URL}`,
+            status: res.status,
+            ok: res.ok,
+            data,
+          })}`
+        );
 
         return {
           ok: false,
@@ -113,7 +128,13 @@ async function doRefreshOnce(): Promise<RefreshResult> {
           data && typeof data === "object" ? (data as RefreshResponse) : undefined,
       };
     } catch (err) {
-      console.error("[fetchClient] doRefreshOnce error", err);
+      console.error(
+        `[fetchClient] doRefreshOnce error:\n${serializeForLog({
+          url: `${API_BASE}${AUTH_REFRESH_URL}`,
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+        })}`
+      );
 
       return {
         ok: false,

@@ -11,6 +11,7 @@ import AccountNameInput from "./AccountNameInput";
 import AccountNoteInput from "./AccountNoteInput";
 import AccountCategoryDropdown from "./AccountCategoryDropdown";
 import OpeningBalanceInput from "./OpeningBalanceInput";
+import { useDismissibleLayer } from "../app-back/DismissibleLayerProvider";
 
 export type AccountCategory = {
   _id: string;
@@ -66,6 +67,12 @@ export default function AccountFormModal({
     opening_balance: "",
     category_id: null,
     note: "",
+  });
+
+  useDismissibleLayer({
+    open,
+    onDismiss: onClose,
+    priority: 200,
   });
 
   useEffect(() => {
