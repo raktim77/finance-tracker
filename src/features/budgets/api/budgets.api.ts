@@ -48,7 +48,7 @@ export async function deleteBudget(
   return apiClient.delete<{ ok: boolean; message: string }>(
     "/budgets",
     {
-      query: { month },
+      month: month ,
       authToken: options.accessToken,
     }
   );

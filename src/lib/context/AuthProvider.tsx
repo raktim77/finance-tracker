@@ -1,7 +1,7 @@
 // src/lib/context/AuthProvider.tsx
 import React, { useEffect, useState } from 'react';
 import { AuthStateContext, AuthActionsContext } from "./authState";
-import type { User as UserType } from "./authState"; 
+import type { User as UserType } from "./authState";
 import * as authApi from '../api/authApi';
 import { setAccessToken, subscribeToAccessToken } from '../fetchClient';
 import type { AuthResponse } from '../api/authApi';
@@ -77,7 +77,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     const runBootstrap = async () => {
       console.log('[Auth] bootstrap start');
       setLoading(true);
-      
+
       let attempts = 0;
       const maxAttempts = 3;
 
@@ -140,7 +140,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       }
     } catch (e) {
       console.log(e);
-      
+
       (async () => await runBootstrap())();
     }
 
@@ -153,8 +153,13 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   // Login, Signup, and Logout logic remain untouched
   const login = async (email: string, password: string) => {
     const r = await authApi.login({ email, password });
-    if (!r.ok || !r.data) return { ok: false, error: 'Login failed' };
-    const resp = r.data as AuthResponse;
+    if (!r.ok) {
+      return { ok: false, error: r.error.message };
+    }
+
+    if (!r.data) {
+      return { ok: false, error: "Login failed" };
+    } const resp = r.data as AuthResponse;
     const token = resp.accessToken ?? null;
     setAccessToken(token);
     if (resp.user) {

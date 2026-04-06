@@ -17,6 +17,8 @@ export interface AuthResponse {
   error?: string;
 }
 
+export type OtpPurpose = "password_reset" | "email_verification";
+
 export async function signup(payload: {
   name: string;
   email: string;
@@ -69,7 +71,7 @@ export async function me(accessToken?: string) {
 
 export async function sendOtp(payload: {
   email: string;
-  purpose: "password_reset";
+  purpose: OtpPurpose;
 }) {
   return apiFetch<{ ok: boolean }>("/api/auth/otp/send", {
     method: "POST",
@@ -81,7 +83,7 @@ export async function sendOtp(payload: {
 export async function verifyOtp(payload: {
   email: string;
   code: string;
-  purpose: "password_reset";
+  purpose: OtpPurpose;
 }) {
   return apiFetch<{ ok: boolean }>("/api/auth/otp/verify", {
     method: "POST",
