@@ -5,6 +5,8 @@ import type { User as UserType } from "./authState";
 import * as authApi from '../api/authApi';
 import { setAccessToken, subscribeToAccessToken } from '../fetchClient';
 import type { AuthResponse } from '../api/authApi';
+import { clearRefreshToken, setRefreshToken } from '../../utils/mobileStorage';
+import { isMobileApp } from '../../utils/isMobile';
 
 type BootstrapResult =
   | { status: "authenticated"; user: NonNullable<UserType> }
@@ -184,6 +186,9 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     } const resp = r.data as AuthResponse;
     const token = resp.accessToken ?? null;
     setAccessToken(token);
+    if (resp.refreshToken && isMobileApp()) {
+      await setRefreshToken(resp.refreshToken);
+    }
     if (resp.user) {
       setUser(resp.user);
       return { ok: true, user: resp.user };
@@ -203,6 +208,9 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     const resp = r.data as AuthResponse;
     const token = resp.accessToken ?? null;
     setAccessToken(token);
+    if (resp.refreshToken && isMobileApp()) {
+      await setRefreshToken(resp.refreshToken);
+    }
     if (resp.user) {
       setUser(resp.user);
       return { ok: true, user: resp.user };
@@ -218,6 +226,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const logout = async () => {
     await authApi.logout();
+    await clearRefreshToken();
     setAccessToken(null);
     setUser(null);
   };

@@ -13,6 +13,7 @@ export interface User {
 export interface AuthResponse {
   ok?: boolean;
   accessToken?: string;
+  refreshToken?: string;
   user?: User;
   error?: string;
 }

@@ -1,5 +1,7 @@
 // src/lib/fetchClient.ts
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+import { isMobileApp } from "../utils/isMobile";
+import { getRefreshToken, setRefreshToken } from "../utils/mobileStorage";
 import { API_ORIGIN, warnIfCookieRefreshMayFail } from "./api/config";
 
 export interface ApiError {
@@ -74,10 +76,21 @@ async function doRefreshOnce(): Promise<RefreshResult> {
     try {
       warnIfCookieRefreshMayFail();
 
+      // const res = await fetch(`${API_BASE}${AUTH_REFRESH_URL}`, {
+      //   method: "POST",
+      //   credentials: "include",
+      //   headers: { "Content-Type": "application/json" },
+      // });
+
+      const refreshToken = isMobileApp() ? await getRefreshToken() : null;
+
       const res = await fetch(`${API_BASE}${AUTH_REFRESH_URL}`, {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include", // still needed for web
+        headers: {
+          "Content-Type": "application/json",
+          ...(refreshToken ? { Authorization: `Bearer ${refreshToken}` } : {}),
+        },
       });
 
       const text = await res.text();
@@ -96,7 +109,7 @@ async function doRefreshOnce(): Promise<RefreshResult> {
             status: res.status,
             ok: res.ok,
             data,
-          })}`
+          })}`,
         );
 
         return {
@@ -107,7 +120,9 @@ async function doRefreshOnce(): Promise<RefreshResult> {
               : "network-error",
           httpStatus: res.status,
           data:
-            data && typeof data === "object" ? (data as RefreshResponse) : undefined,
+            data && typeof data === "object"
+              ? (data as RefreshResponse)
+              : undefined,
         };
       }
 
@@ -121,11 +136,23 @@ async function doRefreshOnce(): Promise<RefreshResult> {
         setAccessToken(data.accessToken);
       }
 
+      if (
+        isMobileApp() &&
+        data &&
+        typeof data === "object" &&
+        "refreshToken" in data &&
+        data.refreshToken
+      ) {
+        await setRefreshToken(data.refreshToken as string);
+      }
+
       return {
         ok: true,
         status: "refreshed",
         data:
-          data && typeof data === "object" ? (data as RefreshResponse) : undefined,
+          data && typeof data === "object"
+            ? (data as RefreshResponse)
+            : undefined,
       };
     } catch (err) {
       console.error(
@@ -133,7 +160,7 @@ async function doRefreshOnce(): Promise<RefreshResult> {
           url: `${API_BASE}${AUTH_REFRESH_URL}`,
           message: err instanceof Error ? err.message : String(err),
           stack: err instanceof Error ? err.stack : undefined,
-        })}`
+        })}`,
       );
 
       return {
@@ -269,7 +296,9 @@ export async function apiFetch<T = unknown>(
         return {
           ok: false,
           error: {
-            status: refreshRes.ok ? res.status : (refreshRes.httpStatus ?? res.status),
+            status: refreshRes.ok
+              ? res.status
+              : (refreshRes.httpStatus ?? res.status),
             message: errData?.error || errData?.message || "Unauthorized",
             data,
           },
