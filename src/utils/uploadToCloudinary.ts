@@ -13,7 +13,8 @@ export const uploadToCloudinary = async (file: Blob) => {
   );
 
   const data = await res.json();
-
+  console.log(JSON.stringify(data));
+  
   if (!res.ok) throw new Error("Upload failed");
 
   return data.secure_url;

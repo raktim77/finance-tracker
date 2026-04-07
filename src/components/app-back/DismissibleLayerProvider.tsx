@@ -7,10 +7,29 @@ import {
   useMemo,
   useLayoutEffect,
   useRef,
-  useState,
   type ReactNode,
 } from "react";
 import { isNativeAndroidApp } from "../../lib/capacitor/platform";
+
+const DEBUG_BACK_STACK =
+  typeof import.meta !== "undefined" && import.meta.env.DEV;
+
+function debugBackStack(message: string, payload?: unknown) {
+  if (!DEBUG_BACK_STACK) {
+    return;
+  }
+
+  if (payload === undefined) {
+    console.log(`[BackStack] ${message}`);
+    return;
+  }
+
+  try {
+    console.log(`[BackStack] ${message}\n${JSON.stringify(payload, null, 2)}`);
+  } catch {
+    console.log(`[BackStack] ${message}`, payload);
+  }
+}
 
 type DismissibleLayer = {
   id: string;
@@ -43,67 +62,71 @@ export function DismissibleLayerProvider({
 }: {
   children: ReactNode;
 }) {
-  const [layers, setLayers] = useState<Record<string, DismissibleLayer>>({});
+  const layersRef = useRef<Record<string, DismissibleLayer>>({});
   const orderRef = useRef(0);
 
   const registerLayer = useCallback((layer: LayerRegistration) => {
     const order = ++orderRef.current;
+    layersRef.current[layer.id] = {
+      ...layer,
+      order,
+    };
 
-    setLayers((current) => ({
-      ...current,
-      [layer.id]: {
-        ...layer,
-        order,
-      },
-    }));
+    debugBackStack("register layer", {
+      id: layer.id,
+      isActive: layer.isActive,
+      priority: layer.priority,
+      order,
+      layerCount: Object.keys(layersRef.current).length,
+    });
 
     return () => {
-      setLayers((current) => {
-        if (!current[layer.id]) {
-          return current;
-        }
+      delete layersRef.current[layer.id];
 
-        const next = { ...current };
-        delete next[layer.id];
-        return next;
+      debugBackStack("unregister layer", {
+        id: layer.id,
+        layerCount: Object.keys(layersRef.current).length,
       });
     };
   }, []);
 
   const updateLayer = useCallback(
     (id: string, layer: Partial<LayerRegistration>) => {
-      setLayers((current) => {
-        const existing = current[id];
-        if (!existing) {
-          return current;
-        }
+      const existing = layersRef.current[id];
+      if (!existing) {
+        return;
+      }
 
-        const nextIsActive = layer.isActive ?? existing.isActive;
-        const nextDismiss = layer.dismiss ?? existing.dismiss;
-        const nextPriority = layer.priority ?? existing.priority;
+      const nextIsActive = layer.isActive ?? existing.isActive;
+      const nextDismiss = layer.dismiss ?? existing.dismiss;
+      const nextPriority = layer.priority ?? existing.priority;
 
-        if (
-          existing.isActive === nextIsActive &&
-          existing.dismiss === nextDismiss &&
-          existing.priority === nextPriority
-        ) {
-          return current;
-        }
+      if (
+        existing.isActive === nextIsActive &&
+        existing.dismiss === nextDismiss &&
+        existing.priority === nextPriority
+      ) {
+        return;
+      }
 
-        return {
-          ...current,
-          [id]: {
-            ...existing,
-            ...layer,
-          },
-        };
+      layersRef.current[id] = {
+        ...existing,
+        ...layer,
+      };
+
+      debugBackStack("update layer", {
+        id,
+        isActive: nextIsActive,
+        priority: nextPriority,
       });
     },
     []
   );
 
   const getTopmostLayer = useCallback(() => {
-    const activeLayers = Object.values(layers).filter((layer) => layer.isActive);
+    const activeLayers = Object.values(layersRef.current).filter(
+      (layer) => layer.isActive
+    );
 
     if (activeLayers.length === 0) {
       return null;
@@ -118,22 +141,35 @@ export function DismissibleLayerProvider({
     });
 
     return activeLayers[0] ?? null;
-  }, [layers]);
+  }, []);
 
   const dismissTopmost = useCallback(() => {
     const topmostLayer = getTopmostLayer();
 
     if (!topmostLayer) {
+      debugBackStack("dismissTopmost found no active layer", {
+        layers: Object.values(layersRef.current).map((layer) => ({
+          id: layer.id,
+          isActive: layer.isActive,
+          priority: layer.priority,
+          order: layer.order,
+        })),
+      });
       return false;
     }
 
+    debugBackStack("dismissTopmost closing layer", {
+      id: topmostLayer.id,
+      priority: topmostLayer.priority,
+      order: topmostLayer.order,
+    });
     topmostLayer.dismiss();
     return true;
   }, [getTopmostLayer]);
 
   const hasOpenLayers = useCallback(
-    () => Object.values(layers).some((layer) => layer.isActive),
-    [layers]
+    () => Object.values(layersRef.current).some((layer) => layer.isActive),
+    []
   );
 
   const value = useMemo(

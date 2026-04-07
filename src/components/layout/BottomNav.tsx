@@ -17,7 +17,7 @@ type BottomNavProps = {
  */
 export default function BottomNav({ onAddTransaction }: BottomNavProps) {
   return (
-    <div className="fixed bottom-2 left-0 right-0 px-3 lg:hidden z-50">
+    <div className="fixed bottom-0 left-0 right-0 px-3 lg:hidden z-50">
       <nav className="
         mx-auto max-w-[420px] h-16
         bg-[var(--color-bottom-nav-surface)]/95

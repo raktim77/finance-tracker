@@ -83,7 +83,7 @@ async function doRefreshOnce(): Promise<RefreshResult> {
       // });
 
       const refreshToken = isMobileApp() ? await getRefreshToken() : null;
-
+      
       const res = await fetch(`${API_BASE}${AUTH_REFRESH_URL}`, {
         method: "POST",
         credentials: "include", // still needed for web
