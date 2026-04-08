@@ -22,6 +22,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def timestamp = new Date().format("yyyyMMdd-HHmm")
+            def appName = "app"
+
+            outputFileName = "${appName}-${variant.buildType.name}-${timestamp}.apk"
+        }
+    }
 }
 
 repositories {

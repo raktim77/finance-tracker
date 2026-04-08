@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1004204555948",
+    "project_id": "xpensio-ca0df",
+    "storage_bucket": "xpensio-ca0df.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1004204555948:android:6bd0d5980edd4bf4fde909",
+        "android_client_info": {
+          "package_name": "com.xpensio.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrGrZP6f-rQtgJPC1vgCGNVEDzQvkmlgk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

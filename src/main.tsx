@@ -12,18 +12,18 @@ import { DismissibleLayerProvider } from "./components/app-back/DismissibleLayer
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ToastProvider>
-      <DismissibleLayerProvider>
-        <ConfirmProvider>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <ThemeProvider>
-                <App />
-              </ThemeProvider>
-            </AuthProvider>
-          </QueryClientProvider>
-        </ConfirmProvider>
-      </DismissibleLayerProvider>
-    </ToastProvider>
+    <DismissibleLayerProvider>
+      <ToastProvider>
+          <ConfirmProvider>
+            <QueryClientProvider client={queryClient}>
+              <AuthProvider>
+                <ThemeProvider>
+                  <App />
+                </ThemeProvider>
+              </AuthProvider>
+            </QueryClientProvider>
+          </ConfirmProvider>
+      </ToastProvider>
+    </DismissibleLayerProvider>
   </React.StrictMode>
 );

@@ -16,8 +16,8 @@ import Budgets from "./pages/Budgets";
 import Settings from "./pages/Settings";
 import AnalyticsPage from "./pages/Analytics";
 import MorePage from "./pages/More";
-import AndroidBackHandler from "./components/app-back/AndroidBackHandler";
 import { isNativeAndroidApp } from "./lib/capacitor/platform";
+import AndroidBackHandler from "./components/app-back/AndroidBackHandler";
 
 function HomeWrapper() {
   const { user, loading } = useAuth();
@@ -57,7 +57,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <Router>
-      <AndroidBackHandler />
+        <AndroidBackHandler />
       <Routes>
 
         {/* Marketing Pages */}

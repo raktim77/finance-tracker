@@ -17,7 +17,7 @@ type BottomNavProps = {
  */
 export default function BottomNav({ onAddTransaction }: BottomNavProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 px-3 lg:hidden z-50">
+    <div className="fixed bottom-1 left-0 right-0 px-3 lg:hidden z-50">
       <nav className="
         mx-auto max-w-[420px] h-16
         bg-[var(--color-bottom-nav-surface)]/95
@@ -33,7 +33,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
 
           {/* Home */}
           <NavLink
-            to="/dashboard"
+            to="/dashboard" replace
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"
@@ -50,8 +50,8 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
           </NavLink>
 
           {/* History */}
-          <NavLink
-            to="/transactions"
+          <NavLink 
+            to="/transactions" replace
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"
@@ -88,7 +88,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
 
           {/* Accounts */}
           <NavLink
-            to="/accounts"
+            to="/accounts" replace
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"
@@ -106,7 +106,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
 
           {/* Budgets */}
           <NavLink
-            to="/more"
+            to="/more" replace
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"

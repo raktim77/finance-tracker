@@ -212,7 +212,7 @@ export default function Transactions() {
   {isScopedToAccount && (
     <div className="flex animate-in slide-in-from-left-2 duration-500">
       <button
-        onClick={() => navigate("/accounts")}
+        onClick={() => navigate(-1)}
         className="group inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-3 py-1.5 text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_10px_20px_-5px_rgba(82,61,255,0.3)]"
         aria-label="Back to accounts"
       >

@@ -97,7 +97,7 @@ export const RecentTransactions = () => {
   };
 
   return (
-    <div className=" rounded-[2rem] p-2 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all h-full">
+    <div className="rounded-[2rem] p-2 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all h-full flex flex-col">
       {currentItems.length > 0 ? (
         <div className="flex items-center justify-between mb-4 px-6 pt-6">
         <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
@@ -113,8 +113,8 @@ export const RecentTransactions = () => {
       ) : ''}
       
 
-      <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden w-full">
-        <div className="flex flex-col gap-1">
+      <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden w-full flex-1">
+        <div className="flex flex-col gap-1 h-full">
           {isLoading ? (
             <div className="flex flex-col gap-1 p-1">
               {Array.from({ length: 4 }).map((_, index) => (
@@ -153,8 +153,8 @@ export const RecentTransactions = () => {
               {error instanceof Error ? error.message : "Failed to load transactions"}
             </div>
           ) : currentItems.length === 0 ? (
-            <div className="px-4 py-8 md:px-5 md:py-10">
-              <div className="relative overflow-hidden rounded-[1.75rem] text-center">
+            <div className="px-4 py-8 md:px-5 md:py-10 h-full min-h-[280px] flex items-center justify-center">
+              <div className="relative overflow-hidden rounded-[1.75rem] text-center w-full">
                 <div className="absolute inset-0 pointer-events-none" />
                 <div className="relative z-10 mx-auto flex max-w-sm flex-col items-center gap-4">
                   {/* <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center shadow-inner">

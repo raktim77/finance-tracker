@@ -18,9 +18,9 @@ const config: CapacitorConfig = {
   //   androidScheme: "https",
   // },
   plugins: {
-    App: {
-      disableBackButtonHandler: true,
-    },
+    // App: {
+    //   disableBackButtonHandler: true,
+    // },
     StatusBar: {
       style: "DARK",
       backgroundColor: "#000000",

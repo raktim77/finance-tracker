@@ -3,75 +3,65 @@ import { App as CapacitorApp } from "@capacitor/app";
 import { useNavigate } from "react-router-dom";
 import { isNativeAndroidApp } from "../../lib/capacitor/platform";
 import { useDismissibleLayerRegistry } from "./DismissibleLayerProvider";
-
-const DEBUG_ANDROID_BACK =
-  typeof import.meta !== "undefined" && import.meta.env.DEV;
-
-function debugAndroidBack(message: string, payload?: unknown) {
-  if (!DEBUG_ANDROID_BACK) {
-    return;
-  }
-
-  if (payload === undefined) {
-    console.log(`[AndroidBack] ${message}`);
-    return;
-  }
-
-  try {
-    console.log(`[AndroidBack] ${message}\n${JSON.stringify(payload, null, 2)}`);
-  } catch {
-    console.log(`[AndroidBack] ${message}`, payload);
-  }
-}
+import type { PluginListenerHandle } from "@capacitor/core";
+import { useToast } from "../ui/confirm-modal/useToast";
 
 export default function AndroidBackHandler() {
   const navigate = useNavigate();
   const { dismissTopmost } = useDismissibleLayerRegistry();
+  const toast = useToast()
+let lastBackPressTime = 0;
 
-  useEffect(() => {
-    if (!isNativeAndroidApp()) {
-      debugAndroidBack("listener not attached because app is not native Android");
-      return;
-    }
+function handleExit() {
+  const now = Date.now();
 
-    debugAndroidBack("disabling Capacitor default back handler");
-    void CapacitorApp.toggleBackButtonHandler({ enabled: false })
-      .then(() => {
-        debugAndroidBack("default back handler disabled");
-      })
-      .catch((error) => {
-        debugAndroidBack("failed to disable default back handler", {
-          message: error instanceof Error ? error.message : String(error),
-        });
-      });
+  if (now - lastBackPressTime < 2000) {
+    CapacitorApp.exitApp();
+  } else {
+    lastBackPressTime = now;
+    toast.show("Press back again to exit")
+  }
+}
+ useEffect(() => {
+  if (!isNativeAndroidApp()) return;
 
-    debugAndroidBack("attaching backButton listener");
-    const listenerPromise = CapacitorApp.addListener("backButton", async ({ canGoBack }) => {
-      debugAndroidBack("backButton event fired", { canGoBack });
+  let listener: PluginListenerHandle | null = null;
+  let isMounted = true;
 
+  const setup = async () => {
+    const l = await CapacitorApp.addListener("backButton", ({ canGoBack }) => {
       const dismissedLayer = dismissTopmost();
-      debugAndroidBack("dismissTopmost result", { dismissedLayer });
-
-      if (dismissedLayer) {
-        return;
-      }
+      if (dismissedLayer) return;
 
       if (canGoBack) {
-        debugAndroidBack("navigating back in router");
         navigate(-1);
         return;
       }
 
-      debugAndroidBack("exiting app because no layer and no history");
-      await CapacitorApp.exitApp();
+      handleExit(); // we'll define this next
     });
 
-    return () => {
-      debugAndroidBack("removing backButton listener");
-      void listenerPromise.then((listener) => listener.remove());
-      void CapacitorApp.toggleBackButtonHandler({ enabled: true }).catch(() => {});
-    };
-  }, [dismissTopmost, navigate]);
+    if (isMounted) {
+      listener = l;
+    } else {
+      l.remove(); // cleanup if already unmounted
+    }
+  };
+
+  setup();
+
+  return () => {
+    isMounted = false;
+    listener?.remove();
+  };
+}, [dismissTopmost, navigate]);
 
   return null;
+}
+
+async function showToast(message: string) {
+  await Toast.show({
+    text: message,
+    duration: "short",
+  });
 }

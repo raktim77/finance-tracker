@@ -145,7 +145,7 @@ export function DismissibleLayerProvider({
 
   const dismissTopmost = useCallback(() => {
     const topmostLayer = getTopmostLayer();
-
+    console.log("ACTIVE LAYERS:", Object.values(layersRef.current));
     if (!topmostLayer) {
       debugBackStack("dismissTopmost found no active layer", {
         layers: Object.values(layersRef.current).map((layer) => ({
