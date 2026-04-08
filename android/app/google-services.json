@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "1004204555948-8m3v4k3mu4pe5oe7skshf28rnuukgmdr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.xpensio.app",
+            "certificate_hash": "b691f3d497c98ca26a86c80da43e164ddc4ddac0"
+          }
+        },
+        {
           "client_id": "1004204555948-s5nmjn2nbjsr3h5th4bjdiqfl8tqv5ku.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
