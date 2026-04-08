@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Xpensio - The one-stop solution to all your expense management needs</string>
-    <string name="title_activity_main">Xpensio - The one-stop solution to all your expense management needs</string>
+    <string name="app_name">Xpensio</string>
+    <string name="title_activity_main">Xpensio</string>
     <string name="package_name">com.xpensio.app</string>
     <string name="custom_url_scheme">com.xpensio.app</string>
 </resources>

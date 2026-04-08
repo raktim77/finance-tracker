@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import FullscreenLogoLoaderMotion from "../../components/loader/FullscreenLogoLoaderMotion";
 import { API_ORIGIN, warnIfCookieRefreshMayFail } from "../../lib/api/config";
+import type { AuthResponse } from "../../lib/api/authApi";
 
 const finalizedOtts = new Set<string>();
 const PENDING_DELETE_STORAGE_KEY = "xpensio:pending_delete";
@@ -71,6 +72,8 @@ export default function OAuthFinish() {
           body: JSON.stringify({ ott }),
         });
 
+        const payload = (await res.json().catch(() => null)) as AuthResponse | null;
+
         if (!res.ok) {
           finalizedOtts.delete(ott);
           if (mounted.current) navigate("/login?oauth=failed", { replace: true });
@@ -79,7 +82,11 @@ export default function OAuthFinish() {
 
         // Notify AuthProvider (and any other listeners) that OAuth finalize completed
         try {
-          window.dispatchEvent(new Event("xpensio:oauth-finalized"));
+          window.dispatchEvent(
+            new CustomEvent<AuthResponse | null>("xpensio:oauth-finalized", {
+              detail: payload,
+            })
+          );
         } catch (e) {
           console.warn("Could not dispatch xpensio:oauth-finalized", e);
         }

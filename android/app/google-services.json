@@ -12,7 +12,28 @@
           "package_name": "com.xpensio.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1004204555948-73nq528n2crlr7sbdpa3o9ava4rh7qev.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.xpensio.app",
+            "certificate_hash": "f2889c94dc90d79cdd22bfac74fb665b14c355ba"
+          }
+        },
+        {
+          "client_id": "1004204555948-s5nmjn2nbjsr3h5th4bjdiqfl8tqv5ku.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.xpensio.app",
+            "certificate_hash": "2f5529f3c8401de7a4c53475018889a2168bbfd9"
+          }
+        },
+        {
+          "client_id": "1004204555948-tm6aq9psglc6oqn392fe9d427pv6o8ms.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDrGrZP6f-rQtgJPC1vgCGNVEDzQvkmlgk"
@@ -20,7 +41,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1004204555948-tm6aq9psglc6oqn392fe9d427pv6o8ms.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

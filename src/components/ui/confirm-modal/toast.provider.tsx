@@ -26,7 +26,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       {/* TOAST VIEWPORT */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[1200] flex flex-col items-center gap-3 w-full max-w-[90vw] pointer-events-none">
+      <div
+        className="fixed inset-x-0 z-[1200] flex flex-col items-center gap-3 px-4 pointer-events-none"
+        style={{ bottom: "calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 1rem)" }}
+      >
         {/* Removed mode="multiple" to fix TS error */}
         <AnimatePresence>
           {toasts.map((t) => {
@@ -47,14 +50,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }}
                 transition={{ type: "spring", damping: 25, stiffness: 400 }}
                 className={`
-            pointer-events-auto flex items-center gap-3 px-6 py-4 
+            pointer-events-auto flex w-fit max-w-full items-start gap-3 px-5 py-4
             rounded-[1.5rem] border backdrop-blur-md 
             text-sm font-black
             ${variantStyles[t.type || "default"]}
           `}
               >
                 <Icon size={18} strokeWidth={2.5} className="shrink-0" />
-                <span className="truncate">{t.message}</span>
+                <span className="max-w-[min(28rem,calc(100vw-6rem))] whitespace-normal break-words leading-5">
+                  {t.message}
+                </span>
               </motion.div>
             );
           })}

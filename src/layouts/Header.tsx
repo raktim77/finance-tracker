@@ -121,6 +121,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
   return (
     <header
       className="fixed inset-x-0 top-0 z-50 bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-md"
+      style={{ paddingTop: "var(--safe-area-inset-top, env(safe-area-inset-top, 0px))" }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         {/* Logo */}

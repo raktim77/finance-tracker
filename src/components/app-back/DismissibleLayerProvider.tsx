@@ -14,21 +14,15 @@ import { isNativeAndroidApp } from "../../lib/capacitor/platform";
 const DEBUG_BACK_STACK =
   typeof import.meta !== "undefined" && import.meta.env.DEV;
 
-function debugBackStack(message: string, payload?: unknown) {
+function debugBackStack(_message: string, payload?: unknown) {
   if (!DEBUG_BACK_STACK) {
     return;
   }
 
   if (payload === undefined) {
-    console.log(`[BackStack] ${message}`);
     return;
   }
 
-  try {
-    console.log(`[BackStack] ${message}\n${JSON.stringify(payload, null, 2)}`);
-  } catch {
-    console.log(`[BackStack] ${message}`, payload);
-  }
 }
 
 type DismissibleLayer = {
@@ -145,7 +139,6 @@ export function DismissibleLayerProvider({
 
   const dismissTopmost = useCallback(() => {
     const topmostLayer = getTopmostLayer();
-    console.log("ACTIVE LAYERS:", Object.values(layersRef.current));
     if (!topmostLayer) {
       debugBackStack("dismissTopmost found no active layer", {
         layers: Object.values(layersRef.current).map((layer) => ({

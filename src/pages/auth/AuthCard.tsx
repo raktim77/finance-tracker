@@ -5,7 +5,10 @@ import { Mail, Lightbulb, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../lib/context/useAuth";
 import { API_ORIGIN, warnIfCookieRefreshMayFail } from "../../lib/api/config";
 import * as authApi from "../../lib/api/authApi";
-
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
+import { isNativeAndroidApp } from "../../lib/capacitor/platform";
+import { useToast } from "../../components/ui/confirm-modal/useToast";
+import { useNavigate } from "react-router-dom";
 /**
  * AuthCard.tsx
  * - Desktop: centered rounded card (unchanged)
@@ -200,7 +203,8 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   const otpCode = otpDigits.join("");
   const isSignup = authView === "signup";
   const isBusy = loading || sendingOtp || verifyingOtp || resettingPassword;
-
+  const toast = useToast();
+  const navigate = useNavigate()
   useEffect(() => {
     if (signupStep !== "otp" && forgotPasswordStep !== "otp") return;
     otpInputRefs.current[0]?.focus();
@@ -577,10 +581,63 @@ export default function AuthCard({ onAuthSuccess }: Props) {
     otpInputRefs.current[index] = node;
   };
 
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
     if (isBusy) return;
+
     warnIfCookieRefreshMayFail();
-    window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
+
+    if (!isNativeAndroidApp()) {
+      window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
+      return;
+    }
+
+    try {
+      const result = await FirebaseAuthentication.signInWithGoogle({
+        scopes: ["email", "profile"],
+        mode: "popup"
+      });
+
+      const idToken = result.credential?.idToken;
+
+      if (!idToken) {
+        throw new Error("No ID token received");
+      }
+
+      const res = await fetch(`${API_ORIGIN}/api/auth/google/mobile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({ idToken })
+      });
+
+      if (!res.ok) {
+        throw new Error("Backend auth failed");
+      }
+
+      const data = await res.json();
+      const ott = data.ott;
+
+      if (!ott) {
+        throw new Error("No OTT received");
+      }
+
+      // 🔥 IMPORTANT: go to oauth-finish like web
+      navigate(`/oauth-finish#ott=${ott}`, { replace: true });
+
+    } catch (err: unknown) {
+      console.log("[ERROR FROM GOOGLE SIGN IN]", err)
+      if (
+        err instanceof Error &&
+        err.message.includes("No credential")
+      ) {
+        // toast.show("No Google account found. Please add one to your device.");
+        toast.show(err.message)
+      } else {
+        toast.show("Google sign-in failed");
+      }
+    }
   };
 
   const inputClass =
@@ -613,7 +670,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
             value={siEmail}
             onChange={(e) => setSiEmail(e.target.value)}
             className={inputClass}
-            placeholder="you@domain.com"
+            placeholder="email@example.com"
             disabled={isBusy}
             required
           />
@@ -1160,7 +1217,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
             border-radius: 0 !important;
             box-shadow: none !important;
             max-height: calc(100vh - 64px);
-            height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            height: calc(100vh - var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) - var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
             overflow-y: auto !important;
           }
           .auth-card .card-inner {
@@ -1303,42 +1360,42 @@ export default function AuthCard({ onAuthSuccess }: Props) {
               >
                 <div className="max-w-md mx-auto w-full max-h-[560px]">
                   {signupStep !== "otp" && authView !== "forgot_password" ? (
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold">
-                        {authView === "signin"
-                          ? "Sign in"
-                          : "Create account"}
-                      </h3>
-                      <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                        {authView === "signin"
-                          ? "Use your email or sign in with Google"
-                          : "Set up your account and start tracking"}
-                      </p>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold">
+                          {authView === "signin"
+                            ? "Sign in"
+                            : "Create account"}
+                        </h3>
+                        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                          {authView === "signin"
+                            ? "Use your email or sign in with Google"
+                            : "Set up your account and start tracking"}
+                        </p>
+                      </div>
+                      <div className="text-xs text-[var(--color-text-secondary)]">
+                        {authView !== "signin" ? (
+                          <button
+                            className="underline"
+                            onClick={switchToSignin}
+                            aria-label="Switch to sign in"
+                            disabled={isBusy}
+                          >
+                            Sign in
+                          </button>
+                        ) : (
+                          <button
+                            className="underline"
+                            onClick={switchToSignup}
+                            aria-label="Switch to sign up"
+                            disabled={isBusy}
+                          >
+                            Sign up
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xs text-[var(--color-text-secondary)]">
-          {authView !== "signin" ? (
-            <button
-              className="underline"
-              onClick={switchToSignin}
-              aria-label="Switch to sign in"
-              disabled={isBusy}
-            >
-              Sign in
-            </button>
-          ) : (
-            <button
-              className="underline"
-              onClick={switchToSignup}
-              aria-label="Switch to sign up"
-              disabled={isBusy}
-            >
-              Sign up
-            </button>
-                      )}
-                    </div>
-                  </div>
-                    
+
                   ) : <></>}
 
                   <AnimatePresence mode="wait">
@@ -1347,8 +1404,8 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                       : authView === "forgot_password"
                         ? renderForgotPasswordForm("forgot-password-desktop")
                         : signupStep === "otp"
-                        ? renderSignupOtpStep("signup-otp-desktop")
-                        : renderSignupForm("signup-form")}
+                          ? renderSignupOtpStep("signup-otp-desktop")
+                          : renderSignupForm("signup-form")}
                   </AnimatePresence>
 
                   <footer className="mt-6 text-xs text-[var(--color-text-secondary)] text-center">
@@ -1361,7 +1418,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
           </div>
 
           <div className="block md:hidden pt-8">
-            
+
             <div className="card-inner p-6 bg-[linear-gradient(180deg, rgba(9,204,206,0.03), rgba(9,204,206,0.01))]">
               <h2 className="text-2xl font-bold">
                 {isSignup ? "Join Xpensio — Get started" : "Welcome back to Xpensio"}
@@ -1376,31 +1433,31 @@ export default function AuthCard({ onAuthSuccess }: Props) {
             <div className="card-inner p-6 bg-[var(--color-surface)]">
               <div className="max-w-md mx-auto">
                 {signupStep !== "otp" && authView !== "forgot_password" ? (
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      {authView === "signin"
-                        ? "Sign in"
-                        : "Create account"}
-                    </h3>
-                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                      {authView === "signin"
-                        ? "Use your email or sign in with Google"
-                        : "Set up your account and start tracking"}
-                    </p>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold">
+                        {authView === "signin"
+                          ? "Sign in"
+                          : "Create account"}
+                      </h3>
+                      <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                        {authView === "signin"
+                          ? "Use your email or sign in with Google"
+                          : "Set up your account and start tracking"}
+                      </p>
+                    </div>
+                    <div className="text-xs text-[var(--color-text-secondary)]">
+                      {authView !== "signin" ? (
+                        <button className="underline disabled:opacity-50" onClick={switchToSignin} disabled={isBusy}>
+                          Sign in
+                        </button>
+                      ) : (
+                        <button className="underline disabled:opacity-50" onClick={switchToSignup} disabled={isBusy}>
+                          Sign up
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-xs text-[var(--color-text-secondary)]">
-                    {authView !== "signin" ? (
-                      <button className="underline disabled:opacity-50" onClick={switchToSignin} disabled={isBusy}>
-                        Sign in
-                      </button>
-                    ) : (
-                      <button className="underline disabled:opacity-50" onClick={switchToSignup} disabled={isBusy}>
-                        Sign up
-                      </button>
-                    )}
-                  </div>
-                </div>
 
                 ) : <></>}
 
@@ -1410,8 +1467,8 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                     : authView === "forgot_password"
                       ? renderForgotPasswordForm("forgot-password-mobile")
                       : signupStep === "otp"
-                      ? renderSignupOtpStep("signup-otp-mobile")
-                      : renderSignupForm("m-signup")}
+                        ? renderSignupOtpStep("signup-otp-mobile")
+                        : renderSignupForm("m-signup")}
                 </AnimatePresence>
               </div>
             </div>

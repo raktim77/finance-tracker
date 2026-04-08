@@ -70,6 +70,33 @@ async function runBootstrapOnce(): Promise<BootstrapResult> {
   return bootstrapInFlight;
 }
 
+async function hydrateAuthResponse(
+  resp: AuthResponse,
+  setUser: React.Dispatch<React.SetStateAction<UserType>>,
+) {
+  const token = resp.accessToken ?? null;
+  setAccessToken(token);
+
+  if (resp.refreshToken && isMobileApp()) {
+    await setRefreshToken(resp.refreshToken);
+  }
+
+  if (resp.user) {
+    setUser(resp.user);
+    return { ok: true as const, user: resp.user };
+  }
+
+  if (token) {
+    const me = await authApi.me(token);
+    if (me.ok && me.data?.user) {
+      setUser(me.data.user);
+      return { ok: true as const, user: me.data.user };
+    }
+  }
+
+  return { ok: false as const };
+}
+
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserType>(null);
   const [accessToken, setToken] = useState<string | null>(null);
@@ -84,7 +111,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     let cancelled = false;
-    let listener: (() => void) | null = null;
+    let listener: ((event: Event) => void) | null = null;
 
     const runBootstrap = async () => {
       console.log('[Auth] bootstrap start');
@@ -145,18 +172,27 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       }
     };
 
-    // OAuth and window logic remains untouched
     try {
-      const path = typeof window !== 'undefined' ? window.location.pathname : '';
-      if (path === '/oauth-finish') {
-        listener = async () => {
-          await Promise.resolve();
-          if (!cancelled) await runBootstrap();
-        };
-        window.addEventListener('xpensio:oauth-finalized', listener as EventListener);
-      } else {
-        (async () => { await runBootstrap(); })();
-      }
+      listener = async (event: Event) => {
+        await Promise.resolve();
+        if (cancelled) return;
+
+        const authPayload =
+          event instanceof CustomEvent ? (event.detail as AuthResponse | undefined) : undefined;
+
+        if (authPayload) {
+          const hydrated = await hydrateAuthResponse(authPayload, setUser);
+          if (hydrated.ok) {
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (!cancelled) await runBootstrap();
+      };
+
+      window.addEventListener('xpensio:oauth-finalized', listener as EventListener);
+      (async () => { await runBootstrap(); })();
     } catch (e) {
       console.log(
         `[Auth] bootstrap setup error:\n${serializeForLog({
@@ -183,45 +219,29 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
     if (!r.data) {
       return { ok: false, error: "Login failed" };
-    } const resp = r.data as AuthResponse;
-    const token = resp.accessToken ?? null;
-    setAccessToken(token);
-    if (resp.refreshToken && isMobileApp()) {
-      await setRefreshToken(resp.refreshToken);
     }
-    if (resp.user) {
-      setUser(resp.user);
-      return { ok: true, user: resp.user };
-    } else {
-      const me = await authApi.me(token ?? undefined);
-      if (me.ok && me.data && me.data.user) {
-        setUser(me.data.user);
-        return { ok: true, user: me.data.user };
-      }
-      return { ok: false, error: 'Could not fetch user' };
+
+    const resp = r.data as AuthResponse;
+    const hydrated = await hydrateAuthResponse(resp, setUser);
+    if (hydrated.ok) {
+      return { ok: true, user: hydrated.user };
     }
+
+    return { ok: false, error: 'Could not fetch user' };
   };
 
   const signup = async (name: string, email: string, password: string) => {
     const r = await authApi.signup({ name, email, password });
     if (!r.ok || !r.data) return { ok: false, error: 'Signup failed' };
+
     const resp = r.data as AuthResponse;
-    const token = resp.accessToken ?? null;
-    setAccessToken(token);
-    if (resp.refreshToken && isMobileApp()) {
-      await setRefreshToken(resp.refreshToken);
+
+    const hydrated = await hydrateAuthResponse(resp, setUser);
+    if (hydrated.ok) {
+      return { ok: true, user: hydrated.user };
     }
-    if (resp.user) {
-      setUser(resp.user);
-      return { ok: true, user: resp.user };
-    } else {
-      const me = await authApi.me(token ?? undefined);
-      if (me.ok && me.data && me.data.user) {
-        setUser(me.data.user);
-        return { ok: true, user: me.data.user };
-      }
-      return { ok: false, error: 'Could not fetch user' };
-    }
+
+    return { ok: false, error: 'Could not fetch user' };
   };
 
   const logout = async () => {
