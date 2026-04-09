@@ -265,6 +265,25 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       ? "text-sm text-green-400 bg-green-900/10 border border-green-500/20 p-2 rounded"
       : "text-sm text-red-400 bg-red-900/10 border border-red-500/20 p-2 rounded";
 
+  const renderFeedback = (mobile = false) => (
+    <AnimatePresence initial={false} mode="wait">
+      {error ? (
+        <motion.div
+          key={`${feedbackTone}:${error}`}
+          role="alert"
+          initial={{ opacity: 0, y: -8, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: "auto" }}
+          exit={{ opacity: 0, y: -8, height: 0 }}
+          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          style={{ overflow: "hidden" }}
+          className={mobile ? (feedbackTone === "success" ? "mpa-success" : "mpa-error") : inlineFeedbackClass}
+        >
+          {error}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+
   const resetOtpState = () => {
     setOtpDigits(Array(6).fill(""));
     setResendTimer(0);
@@ -695,11 +714,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       onSubmit={handleSignin}
       className="space-y-4"
     >
-      {error && (
-        <div role="alert" className={inlineFeedbackClass}>
-          {error}
-        </div>
-      )}
+      {renderFeedback()}
 
       <label className="block">
         <span className="text-xs text-[var(--color-text-secondary)]">Email</span>
@@ -805,11 +820,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       onSubmit={handleSignup}
       className="space-y-4"
     >
-      {error && (
-        <div role="alert" className={inlineFeedbackClass}>
-          {error}
-        </div>
-      )}
+      {renderFeedback()}
 
       <label className="block">
         <span className="text-xs text-[var(--color-text-secondary)]">Full name</span>
@@ -917,11 +928,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       transition={{ duration: 0.28 }}
       className="space-y-5"
     >
-      {error && (
-        <div role="alert" className={inlineFeedbackClass}>
-          {error}
-        </div>
-      )}
+      {renderFeedback()}
 
       <div>
         <p className="text-xs uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
@@ -1017,11 +1024,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       transition={{ duration: 0.28 }}
       className="space-y-5"
     >
-      {error && (
-        <div role="alert" className={inlineFeedbackClass}>
-          {error}
-        </div>
-      )}
+      {renderFeedback()}
 
       {forgotPasswordStep === "email" && (
         <>
@@ -1588,7 +1591,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                 <AnimatePresence mode="wait">
                   {authView === "signin" && (
                     <motion.div key="mpa-si" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
-                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      {renderFeedback(true)}
                       <div className="mpa-field">
                         <label className="mpa-label">Email address</label>
                         <div className="mpa-input-wrap">
@@ -1615,7 +1618,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
                   {authView === "signup" && signupStep === "form" && (
                     <motion.div key="mpa-su" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
-                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      {renderFeedback(true)}
                       <div className="mpa-field">
                         <label className="mpa-label">Full name</label>
                         <div className="mpa-input-wrap">
@@ -1645,7 +1648,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
                   {authView === "signup" && signupStep === "otp" && (
                     <motion.div key="mpa-su-otp" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
-                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      {renderFeedback(true)}
                       <div className="mpa-otp-header">
                         <div className="mpa-otp-badge">Verify email</div>
                         <h4 className="mpa-otp-title">Enter the 6-digit code</h4>
@@ -1667,7 +1670,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
                   {authView === "forgot_password" && (
                     <motion.div key="mpa-fp" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
-                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      {renderFeedback(true)}
                       <div className="mpa-fp-steps">
                         {(["email","otp","reset"] as const).map(s => <div key={s} className={`mpa-fp-dot${forgotPasswordStep === s ? " active" : ""}`} />)}
                       </div>
