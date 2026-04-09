@@ -7,9 +7,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("theme") as Theme | null;
-      return stored ? stored : "dark";
+      return stored ? stored : "light";
     }
-    return "dark";
+    return "light";
   });
   const [sidebarLayout, setSidebarLayout] = useState<SidebarLayout>(() => {
     if (typeof window !== "undefined") {
