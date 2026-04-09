@@ -91,6 +91,7 @@ export default function Transactions() {
     type: acc.account_category_group || "account", // or fallback
     balance: acc.current_balance,
     icon: acc.account_category_icon || 'help',
+    iconColor: acc.account_category_color || '#ddd',
   }));
   const defaultTransactionDraft: Partial<TransactionDraft> | null =
     isScopedToAccount && scopedAccount

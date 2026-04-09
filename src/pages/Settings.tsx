@@ -89,7 +89,7 @@ function SessionItem({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-black text-[var(--color-text-primary)] leading-tight break-words pr-1 mb-1">{device}</p>
-          <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-60 truncate">{location}</p>
+          <p className="text-[11px] font-medium text-[var(--color-text-secondary)] opacity-80 truncate">{location}</p>
         </div>
       </div>
       {current ? (
@@ -987,7 +987,7 @@ export default function Settings() {
                       </div>
                       <p className="text-sm font-black text-red-500">Delete Account</p>
                     </div>
-                    <p className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed">Permanently erase your account and all associated financial data. This action is irreversible.</p>
+                    <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">Permanently erase your account and all associated financial data. This action is irreversible.</p>
                   </div>
                 </div>
               </div>

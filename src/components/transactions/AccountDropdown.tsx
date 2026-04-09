@@ -20,6 +20,7 @@ export type Account = {
   type: string;
   balance?: number;
   icon: string;
+  iconColor: string;
 };
 
 type Props = {
@@ -133,7 +134,10 @@ function AccountPicker({
     }
   `}
 >
-  <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm bg-[var(--color-surface)] text-[var(--color-accent)]">
+  <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm" style={{
+                            backgroundColor: `${acc.iconColor}15`,
+                            color: acc.iconColor,
+                          }}>
     <Icon size={20} />
   </div>
 

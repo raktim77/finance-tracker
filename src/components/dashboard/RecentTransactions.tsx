@@ -54,6 +54,8 @@ export const RecentTransactions = () => {
     type: acc.account_category_group || "account",
     balance: acc.current_balance,
     icon: acc.account_category_icon || "help",
+    iconColor: acc.account_category_color || '#ddd',
+
   }));
   const currentItems = data?.transactions ?? [];
   const isReady = categories.length > 0 && accounts.length > 0;
@@ -100,18 +102,18 @@ export const RecentTransactions = () => {
     <div className="rounded-[2rem] p-2 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all h-full flex flex-col">
       {currentItems.length > 0 ? (
         <div className="flex items-center justify-between mb-4 px-6 pt-6">
-        <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
-          Recent History
-        </h2>
-        <button
-          onClick={() => navigate("/transactions")}
-          className="px-3 py-1.5 rounded-lg bg-[var(--color-accent-soft)] text-[var(--color-accent)] text-[10px] font-black uppercase tracking-widest hover:brightness-95 transition-all"
-        >
-          See All
-        </button>
-      </div>
+          <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
+            Recent History
+          </h2>
+          <button
+            onClick={() => navigate("/transactions")}
+            className="px-3 py-1.5 rounded-lg bg-[var(--color-accent-soft)] text-[var(--color-accent)] text-[10px] font-black uppercase tracking-widest hover:brightness-95 transition-all"
+          >
+            See All
+          </button>
+        </div>
       ) : ''}
-      
+
 
       <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden w-full flex-1">
         <div className="flex flex-col gap-1 h-full">

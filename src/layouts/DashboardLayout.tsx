@@ -35,6 +35,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         type: account.account_category_group || "account",
         balance: account.current_balance,
         icon: account.account_category_icon || "help",
+        iconColor: account.account_category_color || '#ddd',
+
       })),
     [accounts]
   );

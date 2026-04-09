@@ -27,7 +27,7 @@ export function AIInsights() {
             </div>
         </div>
         
-        <div className="px-2 py-1 rounded-full border border-[var(--border)] bg-[var(--color-background)] shrink-0">
+        <div className="flex px-2 py-2 rounded-full border border-[var(--border)] bg-[var(--color-background)] shrink-0">
             <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">
                 v2.0 Update
             </span>

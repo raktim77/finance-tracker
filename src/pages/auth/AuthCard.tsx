@@ -637,66 +637,98 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   };
 
   const handleGoogle = async () => {
-    if (isBusy || nativeGoogleLoading) return;
+  if (isBusy || nativeGoogleLoading) return;
 
-    warnIfCookieRefreshMayFail();
+  warnIfCookieRefreshMayFail();
 
-    if (!isNativeAndroidApp()) {
-      window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
-      return;
+  if (!isNativeAndroidApp()) {
+    window.location.href = `${API_ORIGIN}/api/auth/google?prompt=select_account`;
+    return;
+  }
+
+  // 🔒 helper retry wrapper
+  const attemptGoogleSignIn = async () => {
+    const result = await FirebaseAuthentication.signInWithGoogle({
+      scopes: ["email", "profile"],
+      mode: "popup"
+    });
+
+    const idToken = result.credential?.idToken;
+
+    if (!idToken) {
+      throw new Error("No ID token received");
     }
+
+    return idToken;
+  };
+
+  try {
+    setNativeGoogleLoading(true);
+
+    // 🧠 slight delay helps on flaky WiFi / Play Services sync
+    await new Promise((r) => setTimeout(r, 200));
+
+    let idToken: string | undefined;
 
     try {
-      setNativeGoogleLoading(true);
-
-      const result = await FirebaseAuthentication.signInWithGoogle({
-        scopes: ["email", "profile"],
-        mode: "popup"
-      });
-
-      const idToken = result.credential?.idToken;
-
-      if (!idToken) {
-        throw new Error("No ID token received");
-      }
-
-      const res = await fetch(`${API_ORIGIN}/api/auth/google/mobile`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({ idToken })
-      });
-
-      if (!res.ok) {
-        throw new Error("Backend auth failed");
-      }
-
-      const data = await res.json();
-      const ott = data.ott;
-
-      if (!ott) {
-        throw new Error("No OTT received");
-      }
-
-      // 🔥 IMPORTANT: go to oauth-finish like web
-      navigate(`/oauth-finish#ott=${ott}`, { replace: true });
-
-    } catch (err: unknown) {
-      setNativeGoogleLoading(false);
-      console.log("[ERROR FROM GOOGLE SIGN IN]", err)
+      // 👉 first attempt
+      idToken = await attemptGoogleSignIn();
+    } catch (err) {
+      // 🔁 retry ONLY for credential errors
       if (
         err instanceof Error &&
-        err.message.includes("No credential")
+        err.message.toLowerCase().includes("credential")
       ) {
-        toast.show("No Google account found. Please add one to your device.");
-        // toast.show(err.message)
+        console.log("[GOOGLE RETRY TRIGGERED]", err.message);
+
+        await new Promise((r) => setTimeout(r, 300));
+
+        idToken = await attemptGoogleSignIn();
       } else {
-        toast.show("Google sign-in failed");
+        throw err;
       }
     }
-  };
+
+    const res = await fetch(`${API_ORIGIN}/api/auth/google/mobile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({ idToken })
+    });
+
+    if (!res.ok) {
+      throw new Error("Backend auth failed");
+    }
+
+    const data = await res.json();
+    const ott = data.ott;
+
+    if (!ott) {
+      throw new Error("No OTT received");
+    }
+
+    navigate(`/oauth-finish#ott=${ott}`, { replace: true });
+
+  } catch (err: unknown) {
+    console.log("[ERROR FROM GOOGLE SIGN IN]", err);
+
+    if (
+      err instanceof Error &&
+      err.message.toLowerCase().includes("credential")
+    ) {
+      toast.show("Network issue. Retrying may help.");
+      // toast.show("Network issue or no Google account found on device. Retrying may help.");
+        // toast.show(err.message + ". Please try again after some time")
+    } else {
+      toast.show("Google sign-in failed");
+    }
+
+  } finally {
+    setNativeGoogleLoading(false);
+  }
+};
 
   const inputClass =
     "w-full h-12 rounded-xl px-4 bg-[var(--color-surface-elevated)] border border-[var(--input-border)] placeholder:text-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--exp-glow)]";

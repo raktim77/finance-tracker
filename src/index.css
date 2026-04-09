@@ -3,53 +3,75 @@
 /* Define theme colors for light mode */
 @layer theme {
   :root {
-    --color-background: #F9FAFB;      /* page bg */
-    --color-surface:    #FFFFFF;      /* cards / header */
-    --color-text-primary:   #111827;  /* main text */
-    --color-text-secondary: #4B5563;  /* muted text */
-    --color-primary:    #4F46E5;      /* indigo accent */
-    --color-success:    #16A34A;      /* green */
-    --color-warm:       #9333EA;      /* violet glow/accent */
-    --color-accent-teal: #32a59e;     /* teal accent (new) */
-    --color-danger:     #EF4444;
-    --benefits-card-color: #FFFFFF; 
-    --pricing-card-color: #FFFFFF;
-    --input-border: #e6e9eb;
-    --border: #e6e9eb;
-    --color-accent: #523dff;
-    --color-accent-soft: #f2efff;
-    --color-nav-highlight: #198f87;
-    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 86%, var(--color-accent-teal) 14%);
-    --color-bottom-nav-border: color-mix(in oklab, var(--border) 70%, var(--color-nav-highlight) 30%);
-    --color-bottom-nav-shadow: 0 14px 34px rgba(17, 24, 39, 0.10);
-    /* 👇 new: light-mode glow behind pricing card */
-    --pricing-card-glow-teal: rgba(50, 165, 158, 0.12);
-    --pricing-card-glow-warm: rgba(147, 51, 234, 0.08);      /* red for alerts (new) */
+    /* Core Backgrounds */
+    --color-background:      #F6F1E8;
+    --color-surface:         #FFFCF6;
+    
+    /* Typography */
+    --color-text-primary:    #1A120A;
+    --color-text-secondary:  #6E5F49;
+    
+    /* Brand Colors */
+    --color-primary:         #2F5D1A;
+    --color-success:         #22C55E;
+    --color-warm:            #C26D3A;   /* fixed: real terracotta */
+    --color-accent-teal:     #8A4B1F;   /* richer earthy tone */
+    --color-danger:          #EF4444;
+    --color-accent:          #2F5D1A;
+    --color-accent-soft:     #EEF5E8;
+    
+    /* UI Components */
+    --benefits-card-color:   #FFFCF6;
+    --pricing-card-color:    #FFFCF6;
+    --input-border:          rgba(28,16,8,0.12);
+    --border:                rgba(28,16,8,0.08);
+    
+    /* Bottom Nav */
+    --color-nav-highlight:      #2F5D1A;
+    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 90%, white 10%);
+    --color-bottom-nav-border:  rgba(28,16,8,0.10);
+    --color-bottom-nav-shadow:  0 16px 40px rgba(28, 16, 8, 0.10);
+    
+    /* Pricing Glows (enhanced slightly) */
+    --pricing-card-glow-teal:   rgba(47, 93, 26, 0.12);
+    --pricing-card-glow-warm:   rgba(194, 109, 58, 0.14);
   }
 }
-
 /* 🌙 Dark Mode */
 @layer base {
   html.dark {
-    --color-background: #0B0F1A;      /* deep navy bg */
-    --color-surface:    #1A1F2E;      /* panels */
-    --color-text-primary:   #F9FAFB;  /* main text */
-    --color-text-secondary: #9CA3AF;  /* muted text */
-    --color-primary:    #6366F1;      /* indigo-purple accent */
-    --color-success:    #22C55E;      /* green */
-    --color-warm:       #9333EA;      /* violet glow/accent */
-    --color-accent-teal: #00a8aa;     /* teal accent (new) */
-    --color-danger:     #F87171;
-    --input-border: transparent;
-    --border: #ffffff15;
-    --color-accent: #c380ff;
-    --color-accent-soft: rgba(124,108,255,0.16);
-    --color-nav-highlight: #32a59e;
-    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 76%, black 24%);
-    --color-bottom-nav-border: color-mix(in oklab, var(--border) 58%, var(--color-nav-highlight) 42%);
-    --color-bottom-nav-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
-    --benefits-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
-    --pricing-card-color: color-mix(in_oklab,var(--color-surface)_90%,black);     /* red for alerts (new) */
+    /* Core Backgrounds */
+    --color-background:      #0E0B07;
+    --color-surface:         #17130E;
+    
+    /* Typography */
+    --color-text-primary:    #F2E8D8;
+    --color-text-secondary:  #9B8E7A;
+    
+    /* Brand Colors */
+    --color-primary:         #5E9C3A;
+    --color-success:         #4ADE80;
+    --color-warm:            #E07A3F;
+    --color-accent-teal:     #C07040;
+    --color-danger:          #F87171;
+    --color-accent:          #7AB852;
+    --color-accent-soft:     rgba(94,156,58,0.12);
+    
+    /* UI Components */
+    --benefits-card-color:   color-mix(in oklab, var(--color-surface) 92%, black);
+    --pricing-card-color:    color-mix(in oklab, var(--color-surface) 92%, black);
+    --input-border:          rgba(255,255,255,0.08);
+    --border:                rgba(255,255,255,0.06);
+    
+    /* Bottom Nav */
+    --color-nav-highlight:      #7AB852;
+    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 75%, black 25%);
+    --color-bottom-nav-border:  rgba(122,184,82,0.25);
+    --color-bottom-nav-shadow:  0 24px 60px rgba(0, 0, 0, 0.6);
+    
+    /* Pricing Glows */
+    --pricing-card-glow-teal:   rgba(122,184,82,0.18);
+    --pricing-card-glow-warm:   rgba(224,122,63,0.18);
   }
 }
 @layer theme {
