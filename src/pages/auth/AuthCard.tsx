@@ -9,6 +9,7 @@ import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { isNativeAndroidApp } from "../../lib/capacitor/platform";
 import { useToast } from "../../components/ui/confirm-modal/useToast";
 import { useNavigate } from "react-router-dom";
+import FullscreenLogoLoaderMotion from "../../components/loader/FullscreenLogoLoaderMotion";
 /**
  * AuthCard.tsx
  * - Desktop: centered rounded card (unchanged)
@@ -139,6 +140,8 @@ type PendingSignup = {
   password: string;
 };
 
+type FeedbackTone = "error" | "success";
+
 /* ---------------------- Icons ---------------------- */
 const GoogleIcon = () => (
   <svg
@@ -184,6 +187,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("error");
   const [resendTimer, setResendTimer] = useState(0);
 
   const [siEmail, setSiEmail] = useState("");
@@ -198,6 +202,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [nativeGoogleLoading, setNativeGoogleLoading] = useState(false);
 
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const otpCode = otpDigits.join("");
@@ -207,7 +212,19 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   const navigate = useNavigate()
   useEffect(() => {
     if (signupStep !== "otp" && forgotPasswordStep !== "otp") return;
-    otpInputRefs.current[0]?.focus();
+
+    const focusFirstOtp = () => {
+      const firstInput = otpInputRefs.current[0];
+      if (!firstInput) return;
+      firstInput.focus();
+      firstInput.select();
+    };
+
+    const frameId = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(focusFirstOtp);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [signupStep, forgotPasswordStep]);
 
   useEffect(() => {
@@ -227,6 +244,26 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
     return () => window.clearTimeout(timeout);
   }, [error]);
+
+  const clearFeedback = () => {
+    setError(null);
+    setFeedbackTone("error");
+  };
+
+  const showError = (message: string) => {
+    setFeedbackTone("error");
+    setError(message);
+  };
+
+  const showSuccess = (message: string) => {
+    setFeedbackTone("success");
+    setError(message);
+  };
+
+  const inlineFeedbackClass =
+    feedbackTone === "success"
+      ? "text-sm text-green-400 bg-green-900/10 border border-green-500/20 p-2 rounded"
+      : "text-sm text-red-400 bg-red-900/10 border border-red-500/20 p-2 rounded";
 
   const resetOtpState = () => {
     setOtpDigits(Array(6).fill(""));
@@ -255,21 +292,21 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
   const switchToSignin = () => {
     setAuthView("signin");
-    setError(null);
+    clearFeedback();
     resetSignupFlow();
     resetForgotPasswordFlow();
   };
 
   const switchToSignup = () => {
     setAuthView("signup");
-    setError(null);
+    clearFeedback();
     setLoading(false);
     resetForgotPasswordFlow();
   };
 
   const switchToForgotPassword = () => {
     setAuthView("forgot_password");
-    setError(null);
+    clearFeedback();
     resetSignupFlow();
     setForgotPasswordStep("email");
     setResetEmail(siEmail.trim());
@@ -287,21 +324,21 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
   const handleSignin = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setError(null);
-    if (!siEmail) return setError("Please enter email");
-    if (!siPassword) return setError("Please enter password");
+    clearFeedback();
+    if (!siEmail) return showError("Please enter email");
+    if (!siPassword) return showError("Please enter password");
     setLoading(true);
     try {
       const result = (await login(siEmail, siPassword)) as unknown as AuthResult;
 
       if (!result.ok) {
-        setError(result.error ?? "Sign in failed");
+        showError(result.error ?? "Sign in failed");
       } else {
         const currentUser = result.user ?? null;
         if (currentUser) onAuthSuccess?.(currentUser);
       }
     } catch {
-      setError("Network error");
+      showError("Network error");
     } finally {
       setLoading(false);
     }
@@ -311,7 +348,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
     const nextPayload = payload ?? pendingSignup;
 
     if (!nextPayload?.email) {
-      setError("Please enter email");
+      showError("Please enter email");
       return false;
     }
 
@@ -323,7 +360,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       });
 
       if (!response.ok) {
-        setError(response.error?.message || "Failed to send verification code");
+        showError(response.error?.message || "Failed to send verification code");
         return false;
       }
 
@@ -331,10 +368,10 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       setSignupStep("otp");
       setOtpDigits(Array(6).fill(""));
       setResendTimer(60);
-      setError(null);
+      clearFeedback();
       return true;
     } catch {
-      setError("Failed to send verification code");
+      showError("Failed to send verification code");
       return false;
     } finally {
       setSendingOtp(false);
@@ -343,11 +380,11 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
   const handleSignup = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setError(null);
+    clearFeedback();
 
-    if (!suName) return setError("Please enter your name");
-    if (!suEmail) return setError("Please enter email");
-    if (!suPassword) return setError("Please enter password");
+    if (!suName) return showError("Please enter your name");
+    if (!suEmail) return showError("Please enter email");
+    if (!suPassword) return showError("Please enter password");
 
     const payload = {
       name: suName.trim(),
@@ -360,14 +397,14 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
   const handleVerifySignupOtp = async () => {
     if (!pendingSignup) {
-      setError("Please start signup again");
+      showError("Please start signup again");
       resetSignupFlow();
       return;
     }
 
     try {
       setVerifyingOtp(true);
-      setError(null);
+      clearFeedback();
 
       const otpResponse = await authApi.verifyOtp({
         email: pendingSignup.email,
@@ -376,11 +413,11 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       });
 
       if (!otpResponse.ok) {
-        setError(otpResponse.error?.message || "Invalid verification code");
+        showError(otpResponse.error?.message || "Invalid verification code");
         return;
       }
     } catch {
-      setError("Invalid verification code");
+      showError("Invalid verification code");
       return;
     } finally {
       setVerifyingOtp(false);
@@ -395,7 +432,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       )) as unknown as AuthResult;
 
       if (!result.ok) {
-        setError(result.error ?? "Sign up failed");
+        showError(result.error ?? "Sign up failed");
         return;
       }
 
@@ -405,20 +442,20 @@ export default function AuthCard({ onAuthSuccess }: Props) {
         onAuthSuccess?.(currentUser);
       }
     } catch {
-      setError("Network error");
+      showError("Network error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleBackToSignupDetails = () => {
-    setError(null);
+    clearFeedback();
     setSignupStep("form");
     setOtpDigits(Array(6).fill(""));
   };
 
   const handleCancelSignup = () => {
-    setError(null);
+    clearFeedback();
     resetSignupFlow();
     setSuPassword("");
     setSuName("");
@@ -429,7 +466,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
   const handleSendResetOtp = async () => {
     if (!resetEmail.trim()) {
-      setError("Please enter email");
+      showError("Please enter email");
       return false;
     }
 
@@ -441,17 +478,17 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       });
 
       if (!res.ok) {
-        setError(res.error?.message || "Failed to send OTP");
+        showError(res.error?.message || "Failed to send OTP");
         return false;
       }
 
       setForgotPasswordStep("otp");
       setOtpDigits(Array(6).fill(""));
       setResendTimer(60);
-      setError(null);
+      clearFeedback();
       return true;
     } catch {
-      setError("Failed to send OTP");
+      showError("Failed to send OTP");
       return false;
     } finally {
       setSendingOtp(false);
@@ -460,7 +497,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
   const handleVerifyResetOtp = async () => {
     if (!resetEmail.trim()) {
-      setError("Please enter email");
+      showError("Please enter email");
       setForgotPasswordStep("email");
       return;
     }
@@ -474,14 +511,14 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       });
 
       if (!res.ok) {
-        setError(res.error?.message || "Invalid OTP");
+        showError(res.error?.message || "Invalid OTP");
         return;
       }
 
-      setError(null);
+      clearFeedback();
       setForgotPasswordStep("reset");
     } catch {
-      setError("Invalid OTP");
+      showError("Invalid OTP");
     } finally {
       setVerifyingOtp(false);
     }
@@ -490,7 +527,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   const handleResetPassword = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!resetPasswordValue) {
-      setError("Please enter a new password");
+      showError("Please enter a new password");
       return;
     }
 
@@ -503,17 +540,17 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       });
 
       if (!res.ok) {
-        setError(res.error?.message || "Failed to reset password");
+        showError(res.error?.message || "Failed to reset password");
         return;
       }
 
-      setError("Password reset successful. Please sign in.");
+      showSuccess("Password reset successful. Please sign in.");
       setSiEmail(resetEmail.trim());
       setSiPassword("");
       resetForgotPasswordFlow();
       setAuthView("signin");
     } catch {
-      setError("Failed to reset password");
+      showError("Failed to reset password");
     } finally {
       setResettingPassword(false);
     }
@@ -577,12 +614,11 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
   const setOtpInputRef = (index: number, node: HTMLInputElement | null) => {
     if (!node) return;
-    if (node.offsetParent === null) return;
     otpInputRefs.current[index] = node;
   };
 
   const handleGoogle = async () => {
-    if (isBusy) return;
+    if (isBusy || nativeGoogleLoading) return;
 
     warnIfCookieRefreshMayFail();
 
@@ -592,6 +628,8 @@ export default function AuthCard({ onAuthSuccess }: Props) {
     }
 
     try {
+      setNativeGoogleLoading(true);
+
       const result = await FirebaseAuthentication.signInWithGoogle({
         scopes: ["email", "profile"],
         mode: "popup"
@@ -627,13 +665,14 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       navigate(`/oauth-finish#ott=${ott}`, { replace: true });
 
     } catch (err: unknown) {
+      setNativeGoogleLoading(false);
       console.log("[ERROR FROM GOOGLE SIGN IN]", err)
       if (
         err instanceof Error &&
         err.message.includes("No credential")
       ) {
-        // toast.show("No Google account found. Please add one to your device.");
-        toast.show(err.message)
+        toast.show("No Google account found. Please add one to your device.");
+        // toast.show(err.message)
       } else {
         toast.show("Google sign-in failed");
       }
@@ -657,7 +696,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       className="space-y-4"
     >
       {error && (
-        <div role="alert" className="text-sm text-red-400 bg-red-900/10 p-2 rounded">
+        <div role="alert" className={inlineFeedbackClass}>
           {error}
         </div>
       )}
@@ -742,7 +781,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
         </button>
       </div>
 
-      <div className="text-center text-sm text-[var(--color-text-secondary)]">or</div>
+      <div className="text-center text-sm text-[var(--color-text-secondary)]">OR</div>
 
       <button
         type="button"
@@ -767,7 +806,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       className="space-y-4"
     >
       {error && (
-        <div role="alert" className="text-sm text-red-400 bg-red-900/10 p-2 rounded">
+        <div role="alert" className={inlineFeedbackClass}>
           {error}
         </div>
       )}
@@ -855,7 +894,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
         </button>
       </div>
 
-      <div className="text-center text-sm text-[var(--color-text-secondary)]">or</div>
+      <div className="text-center text-sm text-[var(--color-text-secondary)]">OR</div>
 
       <button
         type="button"
@@ -879,7 +918,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       className="space-y-5"
     >
       {error && (
-        <div role="alert" className="text-sm text-red-400 bg-red-900/10 p-2 rounded">
+        <div role="alert" className={inlineFeedbackClass}>
           {error}
         </div>
       )}
@@ -979,7 +1018,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       className="space-y-5"
     >
       {error && (
-        <div role="alert" className="text-sm text-red-400 bg-red-900/10 p-2 rounded">
+        <div role="alert" className={inlineFeedbackClass}>
           {error}
         </div>
       )}
@@ -1191,14 +1230,15 @@ export default function AuthCard({ onAuthSuccess }: Props) {
   );
 
   return (
-    <div
-      className="relative w-full flex items-stretch justify-center"
-      style={{
-        overflow: "hidden",
-        WebkitOverflowScrolling: "auto",
-        minHeight: "calc(100vh - 64px)",
-      }}
-    >
+    <>
+      <div
+        className="relative w-full flex items-stretch justify-center"
+        style={{
+          overflow: "hidden",
+          WebkitOverflowScrolling: "auto",
+          minHeight: "calc(100vh - 64px)",
+        }}
+      >
       <style>{`
         @keyframes blobFloat1 {
           0% { transform: translate3d(-10%, -10%, 0) scale(1); }
@@ -1417,64 +1457,274 @@ export default function AuthCard({ onAuthSuccess }: Props) {
             </motion.div>
           </div>
 
-          <div className="block md:hidden pt-8">
+{/* ═══════════════ MOBILE ONLY — PREMIUM REVAMP ═══════════════ */}
+         <div className="flex md:hidden" style={{ minHeight: "calc(100vh - 64px)", flexDirection: "column" }}>
+            <style>{`
+              .mpa-root {
+                 --mpa-bg: var(--color-background);
+                --mpa-header-start: var(--color-accent);
+                --mpa-header-mid: var(--color-primary);
+                --mpa-header-end: var(--color-accent-teal);
+                --mpa-header-blob-1: rgba(255, 255, 255, 0.14);
+                --mpa-header-blob-2: rgba(255, 255, 255, 0.09);
+                --mpa-card-shadow: 0 -4px 32px rgba(82, 61, 255, 0.18);
+                --mpa-tab-bg: var(--color-accent-soft);
+                --mpa-tab-shadow: 0 2px 10px rgba(82, 61, 255, 0.2);
+                --mpa-input-bg: var(--color-surface-elevated);
+                --mpa-input-border: var(--input-border);
+                --mpa-border: var(--border);
+                --mpa-input-focus: var(--color-accent);
+                --mpa-muted: var(--color-text-secondary);
+                --mpa-soft-muted: var(--color-text-secondary);
+                --mpa-danger-bg: rgba(239, 68, 68, 0.12);
+                --mpa-danger-border: rgba(239, 68, 68, 0.32);
+                --mpa-danger-text: var(--color-danger);
+                --mpa-success-bg: rgba(34, 197, 94, 0.12);
+                --mpa-success-border: rgba(34, 197, 94, 0.32);
+                --mpa-success-text: var(--color-success);
+                display: flex;
+                flex-direction: column;
+                min-height: calc(100vh - 64px);
+                background: var(--mpa-bg);
+                color: var(--color-text-primary);
+                font-family: inherit;
+              }
 
-            <div className="card-inner p-6 bg-[linear-gradient(180deg, rgba(9,204,206,0.03), rgba(9,204,206,0.01))]">
-              <h2 className="text-2xl font-bold">
-                {isSignup ? "Join Xpensio — Get started" : "Welcome back to Xpensio"}
-              </h2>
-              <p className="mt-3 text-sm text-[var(--color-text-secondary)]">
-                {isSignup
-                  ? "Create your account to keep your finances organized. Set budgets, view reports, and stay in control."
-                  : "Sign in to continue tracking expenses, setting budgets, and getting insights. Quick, private, and beautiful."}
-              </p>
-            </div>
+              .mpa-header { position: relative; padding: 52px 28px 80px; background: linear-gradient(145deg, var(--mpa-header-start) 0%, var(--mpa-header-mid) 48%, var(--mpa-header-end) 100%); overflow: hidden; flex-shrink: 0; }
+              .mpa-header::before { content: ''; position: absolute; width: 280px; height: 280px; border-radius: 50%; top: -90px; right: -80px; background: var(--mpa-header-blob-1); }
+              .mpa-header::after { content: ''; position: absolute; width: 180px; height: 180px; border-radius: 50%; bottom: 20px; left: -60px; background: var(--mpa-header-blob-2); }
 
-            <div className="card-inner p-6 bg-[var(--color-surface)]">
-              <div className="max-w-md mx-auto">
-                {signupStep !== "otp" && authView !== "forgot_password" ? (
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold">
-                        {authView === "signin"
-                          ? "Sign in"
-                          : "Create account"}
-                      </h3>
-                      <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                        {authView === "signin"
-                          ? "Use your email or sign in with Google"
-                          : "Set up your account and start tracking"}
-                      </p>
-                    </div>
-                    <div className="text-xs text-[var(--color-text-secondary)]">
-                      {authView !== "signin" ? (
-                        <button className="underline disabled:opacity-50" onClick={switchToSignin} disabled={isBusy}>
-                          Sign in
-                        </button>
-                      ) : (
-                        <button className="underline disabled:opacity-50" onClick={switchToSignup} disabled={isBusy}>
-                          Sign up
-                        </button>
-                      )}
-                    </div>
+              .mpa-brand-row { display: flex; align-items: center; gap: 9px; margin-bottom: 28px; position: relative; z-index: 2; }
+              .mpa-brand-dot { width: 32px; height: 32px; border-radius: 10px; background: rgba(255, 255, 255, 0.24); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+              .mpa-brand-name { font-size: 18px; font-weight: 700; color: #ffffff; letter-spacing: -0.01em; }
+              .mpa-header-title { font-size: 32px; font-weight: 800; line-height: 1.18; color: #ffffff; letter-spacing: -0.025em; margin: 0; position: relative; z-index: 2; white-space: pre-line; }
+              .mpa-header-sub { margin-top: 10px; font-size: 14px; font-weight: 400; color: rgba(255, 255, 255, 0.74); line-height: 1.5; position: relative; z-index: 2; }
+
+              .mpa-card { flex: 1; background: var(--color-surface); border-radius: 28px 28px 0 0; margin-top: -28px; padding: 32px 24px 40px; position: relative; z-index: 3; box-shadow: var(--mpa-card-shadow); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+              .mpa-tabs { display: flex; background: var(--mpa-tab-bg); border-radius: 14px; padding: 4px; margin-bottom: 28px; position: relative; }
+              .mpa-tab-slider { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); background: var(--color-surface); border-radius: 10px; box-shadow: var(--mpa-tab-shadow); transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1); pointer-events: none; }
+              .mpa-tab-slider.right { transform: translateX(calc(100% + 4px)); }
+              .mpa-tab-btn { flex: 1; padding: 11px 0; border: none; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--mpa-soft-muted); cursor: pointer; border-radius: 10px; position: relative; z-index: 2; transition: color 0.2s; }
+              .mpa-tab-btn.active { color: var(--color-accent); }
+              .mpa-tab-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+              .mpa-field { margin-bottom: 18px; }
+              .mpa-label { display: block; font-size: 12px; font-weight: 600; color: var(--mpa-muted); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
+              .mpa-input-wrap { position: relative; }
+              .mpa-input { width: 100%; height: 54px; border-radius: 14px; border: 1.5px solid var(--mpa-input-border); background: var(--mpa-input-bg); padding: 0 46px 0 16px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--color-text-primary); box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; -webkit-appearance: none; }
+              .mpa-input::placeholder { color: var(--mpa-soft-muted); font-weight: 400; }
+              .mpa-input:focus { outline: none; border-color: var(--mpa-input-focus); box-shadow: 0 0 0 4px rgba(82, 61, 255, 0.18); background: var(--color-surface); }
+              .mpa-input-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--mpa-soft-muted); display: flex; align-items: center; cursor: pointer; }
+              .mpa-input-icon:hover { color: var(--color-accent); }
+
+              .mpa-forgot-row { display: flex; justify-content: flex-end; margin: -8px 0 12px; }
+              .mpa-forgot-btn { border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--color-accent); cursor: pointer; padding: 0; }
+
+              .mpa-cta { width: 100%; height: 56px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%); color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer; box-shadow: 0 6px 24px rgba(82, 61, 255, 0.32); transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
+
+              .mpa-cta:active { transform: scale(0.98); opacity: 0.92; }
+              .mpa-cta:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+              .mpa-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; }
+              .mpa-divider-line { flex: 1; height: 1px; background: var(--border); }
+              .mpa-divider-text { font-size: 12px; font-weight: 500; color: var(--mpa-soft-muted);}
+
+              .mpa-social-btn { width: 100%; height: 52px; border-radius: 14px; border: 2px solid var(--mpa-border); background: var(--mpa-input-bg); display: flex; align-items: center; justify-content: center; gap: 10px; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--color-text-primary); cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+              .mpa-social-btn:hover { background: var(--color-surface); border-color: var(--mpa-input-focus); }
+              .mpa-social-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+              .mpa-error { background: var(--mpa-danger-bg); border: 1px solid var(--mpa-danger-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 500; color: var(--mpa-danger-text); margin-bottom: 18px; }
+              .mpa-success { background: var(--mpa-success-bg); border: 1px solid var(--mpa-success-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 500; color: var(--mpa-success-text); margin-bottom: 18px; }
+              .mpa-terms { font-size: 11.5px; font-weight: 400; color: var(--mpa-soft-muted); text-align: center; margin-top: 20px; line-height: 1.6; }
+              .mpa-terms a { color: var(--color-accent); text-decoration: none; font-weight: 500; }
+
+              .mpa-otp-header { margin-bottom: 24px; }
+              .mpa-otp-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--mpa-tab-bg); color: var(--color-accent); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 12px; border-radius: 20px; margin-bottom: 14px; }
+              .mpa-otp-title { font-size: 26px; font-weight: 800; color: var(--color-text-primary); letter-spacing: -0.02em; margin: 0 0 8px; }
+              .mpa-otp-sub { font-size: 14px; color: var(--mpa-muted); line-height: 1.5; }
+              .mpa-otp-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0 0 8px; width: 100%; min-width: 0; }
+              .mpa-otp-box { width: 100%; min-width: 0; height: 58px; border-radius: 14px; border: 2px solid var(--mpa-border); background: var(--mpa-input-bg); text-align: center; font-family: inherit; font-size: 22px; font-weight: 800; color: var(--color-text-primary); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; -webkit-appearance: none; box-sizing: border-box; }
+              .mpa-otp-box:focus { outline: none; border-color: var(--mpa-input-focus); box-shadow: 0 0 0 4px rgba(82, 61, 255, 0.18); background: var(--color-surface); }
+              .mpa-resend { width: 100%; border: none; background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--color-accent); cursor: pointer; padding: 10px 0; text-align: center; }
+              .mpa-resend:disabled { color: var(--mpa-soft-muted); cursor: not-allowed; }
+
+              .mpa-nav-row { display: flex; justify-content: space-between; margin-top: 14px; }
+              .mpa-nav-btn { border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--mpa-muted); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+              .mpa-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+              .mpa-fp-steps { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; }
+              .mpa-fp-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.3s; }
+              .mpa-fp-dot.active { background: var(--color-accent); width: 22px; border-radius: 4px; }
+            `}</style>
+
+            <div className="mpa-root">
+              <div className="mpa-header">
+                <div className="mpa-brand-row">
+                  <div className="mpa-brand-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" fill="rgba(255,255,255,0.9)"/>
+                    </svg>
                   </div>
+                  <span className="mpa-brand-name">Xpensio</span>
+                </div>
+                <h2 className="mpa-header-title">
+                  {authView === "forgot_password" ? "Reset your\npassword" : isSignup ? "Get started\nfor free." : "Welcome\nback."}
+                </h2>
+                <p className="mpa-header-sub">
+                  {authView === "forgot_password" ? "We'll get you back in quickly." : isSignup ? "Free forever. No credit card needed." : "Enter your details below to continue."}
+                </p>
+              </div>
 
-                ) : <></>}
+              <div className="mpa-card">
+                {authView !== "forgot_password" && signupStep !== "otp" && (
+                  <div className="mpa-tabs">
+                    <div className={`mpa-tab-slider${isSignup ? " right" : ""}`} />
+                    <button className={`mpa-tab-btn${!isSignup ? " active" : ""}`} type="button" onClick={switchToSignin} disabled={isBusy}>Sign in</button>
+                    <button className={`mpa-tab-btn${isSignup ? " active" : ""}`} type="button" onClick={switchToSignup} disabled={isBusy}>Sign up</button>
+                  </div>
+                )}
 
                 <AnimatePresence mode="wait">
-                  {authView === "signin"
-                    ? renderSigninForm()
-                    : authView === "forgot_password"
-                      ? renderForgotPasswordForm("forgot-password-mobile")
-                      : signupStep === "otp"
-                        ? renderSignupOtpStep("signup-otp-mobile")
-                        : renderSignupForm("m-signup")}
+                  {authView === "signin" && (
+                    <motion.div key="mpa-si" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      <div className="mpa-field">
+                        <label className="mpa-label">Email address</label>
+                        <div className="mpa-input-wrap">
+                          <input type="email" value={siEmail} onChange={e => setSiEmail(e.target.value)} className="mpa-input" placeholder="nicholas@example.com" disabled={isBusy} required />
+                          <div className="mpa-input-icon"><Mail size={17} /></div>
+                        </div>
+                      </div>
+                      <div className="mpa-field">
+                        <label className="mpa-label">Password</label>
+                        <div className="mpa-input-wrap">
+                          <input type={showPassword ? "text" : "password"} value={siPassword} onChange={e => setSiPassword(e.target.value)} className="mpa-input" placeholder="••••••••" disabled={isBusy} required />
+                          <div className="mpa-input-icon" onClick={() => { if (!isBusy) setShowPassword(p => !p); }}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</div>
+                        </div>
+                      </div>
+                      <div className="mpa-forgot-row">
+                        <button type="button" className="mpa-forgot-btn" onClick={switchToForgotPassword} disabled={isBusy}>Forgot your password?</button>
+                      </div>
+                      <button type="button" className="mpa-cta" disabled={isBusy} onClick={e => handleSignin(e as unknown as React.FormEvent)}>{loading ? "Signing in…" : "Sign in"}</button>
+                      <div className="mpa-divider"><div className="mpa-divider-line"/><span className="mpa-divider-text">OR</span><div className="mpa-divider-line"/></div>
+                      <button type="button" className="mpa-social-btn" onClick={handleGoogle} disabled={isBusy}><GoogleIcon /><span>Sign in with Google</span></button>
+                      <p className="mpa-terms">By continuing you agree to Xpensio's <a>Terms</a> and <a>Privacy Policy</a>.</p>
+                    </motion.div>
+                  )}
+
+                  {authView === "signup" && signupStep === "form" && (
+                    <motion.div key="mpa-su" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      <div className="mpa-field">
+                        <label className="mpa-label">Full name</label>
+                        <div className="mpa-input-wrap">
+                          <input type="text" value={suName} onChange={e => setSuName(e.target.value)} className="mpa-input" placeholder="Nicholas Ergema" disabled={isBusy} required />
+                        </div>
+                      </div>
+                      <div className="mpa-field">
+                        <label className="mpa-label">Email address</label>
+                        <div className="mpa-input-wrap">
+                          <input type="email" value={suEmail} onChange={e => setSuEmail(e.target.value)} className="mpa-input" placeholder="nicholas@example.com" disabled={isBusy} required />
+                          <div className="mpa-input-icon"><Mail size={17} /></div>
+                        </div>
+                      </div>
+                      <div className="mpa-field">
+                        <label className="mpa-label">Password</label>
+                        <div className="mpa-input-wrap">
+                          <input type={showNewPassword ? "text" : "password"} value={suPassword} onChange={e => setSuPassword(e.target.value)} className="mpa-input" placeholder="At least 8 characters" disabled={isBusy} required />
+                          <div className="mpa-input-icon" onClick={() => { if (!isBusy) setShowNewPassword(p => !p); }}>{showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}</div>
+                        </div>
+                      </div>
+                      <button type="button" className="mpa-cta" disabled={isBusy} onClick={e => handleSignup(e as unknown as React.FormEvent)}>{sendingOtp ? "Sending code…" : "Sign up"}</button>
+                      <div className="mpa-divider"><div className="mpa-divider-line"/><span className="mpa-divider-text">OR</span><div className="mpa-divider-line"/></div>
+                      <button type="button" className="mpa-social-btn" onClick={handleGoogle} disabled={isBusy}><GoogleIcon /><span>Continue with Google</span></button>
+                      <p className="mpa-terms">By continuing you agree to Xpensio's <a>Terms</a> and <a>Privacy Policy</a>.</p>
+                    </motion.div>
+                  )}
+
+                  {authView === "signup" && signupStep === "otp" && (
+                    <motion.div key="mpa-su-otp" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      <div className="mpa-otp-header">
+                        <div className="mpa-otp-badge">Verify email</div>
+                        <h4 className="mpa-otp-title">Enter the 6-digit code</h4>
+                        <p className="mpa-otp-sub">Sent to {maskedEmail(pendingSignup?.email ?? suEmail)}</p>
+                      </div>
+                      <div className="mpa-otp-grid">
+                        {Array.from({ length: 6 }, (_, i) => (
+                          <input key={i} ref={node => setOtpInputRef(i, node)} type="text" inputMode="numeric" autoComplete={i === 0 ? "one-time-code" : "off"} maxLength={1} value={otpDigits[i] ?? ""} onChange={e => handleOtpInputChange(i, e.target.value)} onKeyDown={e => handleOtpKeyDown(i, e)} onPaste={i === 0 ? handleOtpPaste : undefined} disabled={isBusy} className="mpa-otp-box" />
+                        ))}
+                      </div>
+                      <button type="button" className="mpa-cta" style={{ marginTop: 16 }} disabled={otpCode.length < 6 || isBusy} onClick={handleVerifySignupOtp}>{verifyingOtp ? "Verifying…" : loading ? "Creating account…" : "Verify & create account"}</button>
+                      <button type="button" className="mpa-resend" disabled={resendTimer > 0 || isBusy} onClick={() => void handleSendSignupOtp()}>{sendingOtp ? "Sending…" : resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend code"}</button>
+                      <div className="mpa-nav-row">
+                        <button type="button" className="mpa-nav-btn" disabled={isBusy} onClick={handleBackToSignupDetails}>Edit details</button>
+                        <button type="button" className="mpa-nav-btn" disabled={isBusy} onClick={handleCancelSignup}>Cancel</button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {authView === "forgot_password" && (
+                    <motion.div key="mpa-fp" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                      {error && <div className={feedbackTone === "success" ? "mpa-success" : "mpa-error"}>{error}</div>}
+                      <div className="mpa-fp-steps">
+                        {(["email","otp","reset"] as const).map(s => <div key={s} className={`mpa-fp-dot${forgotPasswordStep === s ? " active" : ""}`} />)}
+                      </div>
+                      {forgotPasswordStep === "email" && (
+                        <>
+                          <div className="mpa-otp-header"><h4 className="mpa-otp-title">Find your account</h4><p className="mpa-otp-sub">Enter your email and we'll send a 6-digit code.</p></div>
+                          <div className="mpa-field">
+                            <label className="mpa-label">Email address</label>
+                            <div className="mpa-input-wrap">
+                              <input type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} className="mpa-input" placeholder="you@domain.com" disabled={isBusy} required />
+                              <div className="mpa-input-icon"><Mail size={17} /></div>
+                            </div>
+                          </div>
+                          <button type="button" className="mpa-cta" disabled={isBusy} onClick={() => void handleSendResetOtp()}>{sendingOtp ? "Sending…" : "Send verification code"}</button>
+                        </>
+                      )}
+                      {forgotPasswordStep === "otp" && (
+                        <>
+                          <div className="mpa-otp-header"><h4 className="mpa-otp-title">Check your inbox</h4><p className="mpa-otp-sub">Code sent to {maskedEmail(resetEmail)}.</p></div>
+                          <div className="mpa-otp-grid">
+                            {Array.from({ length: 6 }, (_, i) => (
+                              <input key={i} ref={node => setOtpInputRef(i, node)} type="text" inputMode="numeric" autoComplete={i === 0 ? "one-time-code" : "off"} maxLength={1} value={otpDigits[i] ?? ""} onChange={e => handleOtpInputChange(i, e.target.value)} onKeyDown={e => handleOtpKeyDown(i, e)} onPaste={i === 0 ? handleOtpPaste : undefined} disabled={isBusy} className="mpa-otp-box" />
+                            ))}
+                          </div>
+                          <button type="button" className="mpa-cta" style={{ marginTop: 16 }} disabled={otpCode.length < 6 || isBusy} onClick={handleVerifyResetOtp}>{verifyingOtp ? "Verifying…" : "Verify code"}</button>
+                          <button type="button" className="mpa-resend" disabled={resendTimer > 0 || isBusy} onClick={() => void handleSendResetOtp()}>{sendingOtp ? "Sending…" : resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend code"}</button>
+                        </>
+                      )}
+                      {forgotPasswordStep === "reset" && (
+                        <>
+                          <div className="mpa-otp-header"><h4 className="mpa-otp-title">Set a new password</h4><p className="mpa-otp-sub">For {maskedEmail(resetEmail)}.</p></div>
+                          <div className="mpa-field">
+                            <label className="mpa-label">New password</label>
+                            <div className="mpa-input-wrap">
+                              <input type={showResetPassword ? "text" : "password"} value={resetPasswordValue} onChange={e => setResetPasswordValue(e.target.value)} className="mpa-input" placeholder="At least 8 characters" disabled={isBusy} required />
+                              <div className="mpa-input-icon" onClick={() => { if (!isBusy) setShowResetPassword(p => !p); }}>{showResetPassword ? <EyeOff size={17} /> : <Eye size={17} />}</div>
+                            </div>
+                          </div>
+                          <button type="button" className="mpa-cta" disabled={isBusy} onClick={e => handleResetPassword(e as unknown as React.FormEvent)}>{resettingPassword ? "Resetting…" : "Reset password"}</button>
+                        </>
+                      )}
+                      <div className="mpa-nav-row">
+                        <button type="button" className="mpa-nav-btn" disabled={isBusy} onClick={() => { if (forgotPasswordStep === "otp") { setForgotPasswordStep("email"); setOtpDigits(Array(6).fill("")); return; } if (forgotPasswordStep === "reset") { setForgotPasswordStep("otp"); return; } switchToSignin(); }}>{forgotPasswordStep === "email" ? " Back to sign in" : " Go back"}</button>
+                      </div>
+                    </motion.div>
+                  )}
                 </AnimatePresence>
               </div>
             </div>
           </div>
+          {/* ═══════════════ END MOBILE ═══════════════ */}
         </div>
       </motion.div>
-    </div>
+      </div>
+      {nativeGoogleLoading && isNativeAndroidApp() ? (
+        <FullscreenLogoLoaderMotion message="Signing you in..." />
+      ) : null}
+    </>
   );
 }

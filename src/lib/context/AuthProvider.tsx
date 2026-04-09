@@ -44,7 +44,7 @@ async function performBootstrap(): Promise<BootstrapResult> {
   }
 
   const me = await authApi.me(refreshResult.data?.accessToken);
-  console.log(`[Auth] me result:\n${serializeForLog(me)}`);
+  // console.log(`[Auth] me result:\n${serializeForLog(me)}`);
 
   if (me.ok && me.data?.user) {
     return {
@@ -123,9 +123,9 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       while (attempts < maxAttempts) {
         try {
           const result = await runBootstrapOnce();
-          console.log(
-            `[Auth] bootstrap attempt ${attempts + 1} result:\n${serializeForLog(result)}`
-          );
+          // console.log(
+          //   `[Auth] bootstrap attempt ${attempts + 1} result:\n${serializeForLog(result)}`
+          // );
 
           if (cancelled) return;
 

@@ -38,7 +38,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
           <NavLink
             to="/dashboard" replace
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
+              `flex flex-col items-center justify-center gap-1 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"
                 : "text-[var(--color-text-secondary)] "
               }`
@@ -47,7 +47,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
             {({ isActive }) => (
               <>
                 <Home size={18} strokeWidth={isActive ? 3 : 2} />
-                <span className="text-[8px] font-black uppercase tracking-widest">Home</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">Home</span>
               </>
             )}
           </NavLink>
@@ -56,7 +56,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
           <NavLink 
             to="/transactions" replace
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
+              `flex flex-col items-center justify-center gap-1 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"
                 : "text-[var(--color-text-secondary)] "
               }`
@@ -65,7 +65,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
             {({ isActive }) => (
               <>
                 <ArrowLeftRight size={18} strokeWidth={isActive ? 3 : 2} />
-                <span className="text-[8px] font-black uppercase tracking-widest">History</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">History</span>
               </>
             )}
           </NavLink>
@@ -93,7 +93,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
           <NavLink
             to="/accounts" replace
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
+              `flex flex-col items-center justify-center gap-1 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"
                 : "text-[var(--color-text-secondary)] "
               }`
@@ -102,7 +102,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
             {({ isActive }) => (
               <>
                 <Wallet size={18} strokeWidth={isActive ? 3 : 2} />
-                <span className="text-[8px] font-black uppercase tracking-widest">Accounts</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">Accounts</span>
               </>
             )}
           </NavLink>
@@ -111,7 +111,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
           <NavLink
             to="/more" replace
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 transition-all duration-300 ${isActive
+              `flex flex-col items-center justify-center gap-1 transition-all duration-300 ${isActive
                 ? "text-[var(--color-nav-highlight)] scale-105"
                 : "text-[var(--color-text-secondary)]"
               }`
@@ -122,7 +122,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
                 <div className="relative">
                   <Ellipsis size={18} strokeWidth={isActive ? 3 : 2} /> {/* Use Plus rotated as a 'More' icon or lucide 'Menu' */}
                 </div>
-                <span className="text-[8px] font-black uppercase tracking-widest">More</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">More</span>
               </>
             )}
           </NavLink>

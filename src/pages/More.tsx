@@ -28,7 +28,7 @@ export default function MorePage() {
     const { logout } = useAuth();
     const confirm = useConfirm();
     const isNativeApp = isNativeAndroidApp();
-
+    const versioNumber = import.meta.env.VITE_VERSION_NUMBER;
     const handleLogout = async () => {
         const ok = await confirm({
             title: "Logout?",
@@ -112,7 +112,7 @@ export default function MorePage() {
                 {/* Text-Link Logout */}
                 <button 
                     onClick={handleLogout}
-                    className="mb-10 text-[11px] font-black uppercase tracking-[0.3em] text-red-500/80 hover:text-red-500 active:opacity-60 transition-all"
+                    className="mb-10 text-[12px] font-black uppercase tracking-[0.3em] text-red-500/80 hover:text-red-500 active:opacity-60 transition-all"
                 >
                     Logout
                 </button>
@@ -125,7 +125,7 @@ export default function MorePage() {
                         </p>
                     </div> */}
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">
-                        Xpensio Build 2026.4.0
+                        Xpensio Build {versioNumber}
                     </p>
                 </div>
             </footer>

@@ -4,49 +4,36 @@ import Logo from "../../assets/images/only_logo.png";
 export default function LogoSpinnerMotion({ size = 72 }: { size?: number }) {
   const reduce = useReducedMotion();
 
-  if (reduce) {
-    return (
-      <div
-        className="flex items-center justify-center logo-loader-glow"
-        style={{ width: size, height: size }}
-        role="status"
-        aria-label="Loading"
-      >
-        <img src={Logo} alt="Xpensio" style={{ width: size, height: size, objectFit: "contain" }} />
-      </div>
-    );
-  }
+  if (reduce) return <img src={Logo} alt="Loading" style={{ width: size, height: size }} />;
 
   return (
     <motion.div
-      initial={{ opacity: 0.7, scale: 0.9 }}
+      initial={{ scale: 0.9, opacity: 0.8 }}
       animate={{
-        opacity: [0.7, 1, 0.85, 1],
-        scale: [0.9, 1.04, 0.97, 1],
+        scale: [0.95, 1.05, 0.95],
+        opacity: [0.8, 1, 0.8],
+        // Multi-layered bloom effect using the Industrial Copper color
         filter: [
-          "drop-shadow(0 0 0px rgba(59,130,246,0))",
-          "drop-shadow(0 0 12px rgba(59,130,246,0.45))",
-          "drop-shadow(0 0 4px rgba(59,130,246,0.25))",
-          "drop-shadow(0 0 0px rgba(59,130,246,0))",
+          "drop-shadow(0 0 0px rgba(198,124,78,0))",
+          "drop-shadow(0 0 12px rgba(198,124,78,0.4))",
+          "drop-shadow(0 0 0px rgba(198,124,78,0))",
         ],
       }}
       transition={{
-        duration: 1.8,
-        ease: "easeInOut",
+        duration: 2,
+        ease: [0.4, 0, 0.2, 1], // Custom cubic-bezier for a "biological" breathing feel
         repeat: Infinity,
       }}
       className="flex items-center justify-center"
       style={{ width: size, height: size }}
-      role="status"
-      aria-label="Loading"
     >
       <img
         src={Logo}
         alt="Xpensio"
-        className="rounded-full select-none"
+        className="select-none"
         style={{
-          width: size,
-          height: size,
+          width: "100%",
+          height: "100%",
           objectFit: "contain",
         }}
       />

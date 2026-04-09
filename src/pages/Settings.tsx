@@ -82,25 +82,25 @@ function SessionItem({
   onRevoke?: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--color-background)] border border-[var(--border)]">
-      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-[var(--color-surface)] flex items-center justify-center border border-[var(--border)] text-[var(--color-text-secondary)]">
+    <div className="flex items-center gap-3 p-4 rounded-2xl bg-[var(--color-background)] border border-[var(--border)]">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-surface)] flex items-center justify-center border border-[var(--border)] text-[var(--color-text-secondary)]">
           {device.includes("iPhone") ? <Globe size={18} /> : <Database size={18} />}
         </div>
-        <div>
-          <p className="text-xs font-black text-[var(--color-text-primary)]">{device}</p>
-          <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-60">{location}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-black text-[var(--color-text-primary)] leading-tight break-words pr-1 mb-1">{device}</p>
+          <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-60 truncate">{location}</p>
         </div>
       </div>
       {current ? (
-        <span className="text-[8px] font-black uppercase text-[var(--color-primary)] tracking-widest">
-          Active Now
+        <span className="shrink-0 ml-2 text-[8px] font-black uppercase text-[var(--color-primary)] tracking-widest whitespace-nowrap">
+          Active
         </span>
       ) : (
         <button
           type="button"
           onClick={onRevoke}
-          className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] transition-colors"
+          className="shrink-0 ml-2 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] transition-colors whitespace-nowrap"
         >
           Revoke
         </button>
@@ -111,20 +111,20 @@ function SessionItem({
 
 function ToggleItem({ title, desc, value, onChange, icon }: ToggleItemProps) {
   return (
-    <div className="flex items-center justify-between p-8 transition-colors">
-      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
+    <div className="flex items-start justify-between gap-3 p-6 md:p-6 transition-colors">
+      <div className="flex min-w-0 flex-1 items-start gap-3 md:gap-4">
+        <div className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
           {icon}
         </div>
-        <div>
-          <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight">{title}</p>
-          <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70">{desc}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight leading-tight">{title}</p>
+          <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70 leading-relaxed break-words">{desc}</p>
         </div>
       </div>
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className={`w-14 h-8 rounded-full transition relative p-1 ${value ? "bg-[var(--color-primary)]" : "bg-[var(--border)]"}`}
+        className={`shrink-0 mt-0.5 w-14 h-8 rounded-full transition relative p-1 ${value ? "bg-[var(--color-primary)]" : "bg-[var(--border)]"}`}
       >
         <div className={`w-6 h-6 rounded-full bg-white shadow-sm transition-transform duration-300 ${value ? "translate-x-6" : "translate-x-0"}`} />
       </button>
@@ -767,7 +767,7 @@ export default function Settings() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--color-surface)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Display Name</label>
                   <input
@@ -801,7 +801,7 @@ export default function Settings() {
 
           {/* FINANCIAL */}
           {activeTab === "financial" && (
-            <div className="settings-section-animate space-y-6 bg-[var(--color-surface)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
+            <div className="settings-section-animate space-y-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Default Currency</label>
@@ -863,17 +863,17 @@ export default function Settings() {
                   icon={theme === "dark" ? <Moon className="text-[var(--color-primary)]" size={18} /> : <Sun className="text-orange-400" size={18} />}
                 />
                 <div className="h-px bg-[var(--border)] mx-8 opacity-50" />
-                <div className="flex items-center justify-between p-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
+                <div className="hidden md:flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between md:p-6">
+                  <div className="flex min-w-0 items-start gap-3 md:gap-4">
+                    <div className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
                       <Globe className="text-[var(--color-accent)]" size={18} />
                     </div>
-                    <div>
-                      <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight">Sidebar Layout</p>
-                      <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70">Choose your preferred navigation style and keep it synced across the app</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight leading-tight">Sidebar Layout</p>
+                      <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70 leading-relaxed break-words">Choose your preferred navigation style and keep it synced across the app</p>
                     </div>
                   </div>
-                  <div className="w-full md:w-[180px]">
+                  <div className="w-full md:w-[180px] md:shrink-0">
                     <Dropdown
                       icon={LayoutList}
                       value={sidebarLayout}
@@ -892,7 +892,7 @@ export default function Settings() {
           {/* SECURITY & DATA */}
           {activeTab === "security" && (
             <div className="settings-section-animate space-y-8">
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
                 <h3 className="text-sm font-black uppercase tracking-widest mb-6 text-[var(--color-text-primary)] flex items-center gap-2">
                   <Lock size={16} /> Account Security
                 </h3>
@@ -904,7 +904,7 @@ export default function Settings() {
                 </div>
               </div>
 
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-sm font-black uppercase tracking-widest text-[var(--color-text-primary)]">Active Sessions</h3>
                   <span className="px-3 py-1 bg-[var(--color-success)]/10 text-[var(--color-success)] text-[9px] font-black rounded-full uppercase">{sessions.length} {sessions.length > 1 ? "Devices" : "Device"} Online</span>
@@ -954,7 +954,7 @@ export default function Settings() {
                 </button>
               </div>
 
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
                 <h3 className="text-sm font-black uppercase tracking-widest mb-6 text-[var(--color-text-primary)] flex items-center gap-2">
                   <Database size={16} /> Data & Privacy
                 </h3>
