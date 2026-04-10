@@ -16,7 +16,7 @@ export default function Topbar({ toggleSidebar }: Props) {
 
   return (
     <header
-      className="flex items-center justify-between px-6 border-b border-black/10 bg-[var(--color-surface)]"
+      className="flex items-center justify-between px-6 md:border-b md:border-black/10 md:bg-[var(--color-surface)]"
       style={{
         minHeight: "calc(var(--header-h) + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)))",
         paddingTop: "var(--safe-area-inset-top, env(safe-area-inset-top, 0px))",

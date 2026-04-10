@@ -37,16 +37,16 @@
     --pricing-card-glow-warm:   rgba(194, 109, 58, 0.14);
   }
 }
-/* 🌙 Dark Mode */
+/* 🌙 Dark Mode - Adjusted for Depth & Separation */
 @layer base {
   html.dark {
-    /* Core Backgrounds */
-    --color-background:      #0E0B07;
-    --color-surface:         #17130E;
+    /* Core Backgrounds - Created more distance between back and surface */
+    --color-background:      #080705;   /* Deepened for true contrast */
+    --color-surface:         #1C1812;   /* Elevated "lifted" surface */
     
     /* Typography */
     --color-text-primary:    #F2E8D8;
-    --color-text-secondary:  #9B8E7A;
+    --color-text-secondary:  #A39580;   /* Slightly boosted for legibility */
     
     /* Brand Colors */
     --color-primary:         #5E9C3A;
@@ -55,23 +55,23 @@
     --color-accent-teal:     #C07040;
     --color-danger:          #F87171;
     --color-accent:          #7AB852;
-    --color-accent-soft:     rgba(94,156,58,0.12);
+    --color-accent-soft:     rgba(94, 156, 58, 0.15);
     
-    /* UI Components */
-    --benefits-card-color:   color-mix(in oklab, var(--color-surface) 92%, black);
-    --pricing-card-color:    color-mix(in oklab, var(--color-surface) 92%, black);
-    --input-border:          rgba(255,255,255,0.08);
-    --border:                rgba(255,255,255,0.06);
+    /* UI Components - Cards now pop against the background */
+    --benefits-card-color:   #241F19;   /* Clearly distinct from surface */
+    --pricing-card-color:    #241F19;
+    --input-border:          rgba(242, 232, 216, 0.12);
+    --border:                rgba(242, 232, 216, 0.08);
     
     /* Bottom Nav */
     --color-nav-highlight:      #7AB852;
-    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 75%, black 25%);
-    --color-bottom-nav-border:  rgba(122,184,82,0.25);
-    --color-bottom-nav-shadow:  0 24px 60px rgba(0, 0, 0, 0.6);
+    --color-bottom-nav-surface: #12100D; /* Darker than cards to anchor the UI */
+    --color-bottom-nav-border:  rgba(122, 184, 82, 0.3);
+    --color-bottom-nav-shadow:  0 -8px 30px rgba(0, 0, 0, 0.8);
     
-    /* Pricing Glows */
-    --pricing-card-glow-teal:   rgba(122,184,82,0.18);
-    --pricing-card-glow-warm:   rgba(224,122,63,0.18);
+    /* Pricing Glows - Increased opacity slightly for better "lift" */
+    --pricing-card-glow-teal:   rgba(122, 184, 82, 0.22);
+    --pricing-card-glow-warm:   rgba(224, 122, 63, 0.22);
   }
 }
 @layer theme {

@@ -16,6 +16,8 @@ import Budgets from "./pages/Budgets";
 import Settings from "./pages/Settings";
 import AnalyticsPage from "./pages/Analytics";
 import MorePage from "./pages/More";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { isNativeAndroidApp } from "./lib/capacitor/platform";
 import AndroidBackHandler from "./components/app-back/AndroidBackHandler";
 import { ThemeContext } from "./context/ThemeContext";
@@ -123,6 +125,47 @@ function NativeChromeSync() {
   return null;
 }
 
+function scrollElementIntoView(id: string) {
+  const element = document.getElementById(id);
+  if (!element) return false;
+
+  const header = document.querySelector("header");
+  const headerH = header ? (header as HTMLElement).offsetHeight : 72;
+  const top = element.getBoundingClientRect().top + window.scrollY - (headerH + 8);
+
+  window.scrollTo({ top, left: 0, behavior: "smooth" });
+  return true;
+}
+
+function ScrollRestoration() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const restoreScroll = () => {
+      const hashId = location.hash ? decodeURIComponent(location.hash.slice(1)) : "";
+      if (hashId && scrollElementIntoView(hashId)) {
+        return;
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      document
+        .querySelectorAll<HTMLElement>("[data-route-scroll-container]")
+        .forEach((element) => {
+          element.scrollTo({ top: 0, left: 0, behavior: "auto" });
+          element.scrollTop = 0;
+        });
+    };
+
+    const frameId = window.requestAnimationFrame(restoreScroll);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [location.pathname, location.hash]);
+
+  return null;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -141,12 +184,29 @@ function App() {
   return (
     <Router>
       <NativeChromeSync />
+      <ScrollRestoration />
       <AndroidBackHandler />
       <Routes>
 
         {/* Marketing Pages */}
         <Route path="/" element={<HomeWrapper />} />
         <Route path="/login" element={<LoginWrapper />} />
+        <Route
+          path="/terms"
+          element={
+            <MainLayout>
+              <TermsOfService />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <MainLayout>
+              <PrivacyPolicy />
+            </MainLayout>
+          }
+        />
 
         {/* OAuth callback */}
         <Route path="/oauth-finish" element={<OAuthFinish />} />

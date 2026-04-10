@@ -1,19 +1,32 @@
-import { Github, Twitter, Linkedin } from "lucide-react";
+import { Github } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 // Smooth scroll that accounts for the sticky header height
 function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
 
-  const headerEl = document.querySelector("header") as HTMLElement | null;
-  const headerH = headerEl?.offsetHeight ?? 72;
-
-  const top =
-    el.getBoundingClientRect().top + window.scrollY - (headerH + 8); // small breathing space
+  const header = document.querySelector("header");
+  const headerH = header ? (header as HTMLElement).offsetHeight : 72;
+  const top = el.getBoundingClientRect().top + window.scrollY - (headerH + 8);
   window.scrollTo({ top, behavior: "smooth" });
 }
 
 export default function Footer() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSectionNav = (id: string) => {
+    const targetHash = `#${id}`;
+
+    if (location.pathname === "/" && location.hash === targetHash) {
+      scrollToId(id);
+      return;
+    }
+
+    navigate({ pathname: "/", hash: targetHash });
+  };
+
   return (
     <footer className="relative bg-[var(--color-background)] border-t border-black/10 dark:border-white/10">
       {/* subtle top aura */}
@@ -40,47 +53,47 @@ export default function Footer() {
             {/* Footer Nav (JS smooth scroll with offset) */}
             <nav className="flex flex-wrap justify-center md:justify-start gap-6 text-sm font-medium text-[var(--color-text-secondary)]">
               <button
-                onClick={() => scrollToId("home")}
+                onClick={() => handleSectionNav("home")}
                 className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Home"
               >
                 Home
               </button>
               <button
-                onClick={() => scrollToId("features")}
+                onClick={() => handleSectionNav("features")}
                 className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Features"
               >
                 Features
               </button>
               <button
-                onClick={() => scrollToId("benefits")}
+                onClick={() => handleSectionNav("benefits")}
                 className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Benefits"
               >
                 Benefits
               </button>
               <button
-                onClick={() => scrollToId("pricing")}
+                onClick={() => handleSectionNav("pricing")}
                 className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to Pricing"
               >
                 Pricing
               </button>
-              <button
+              {/* <button
                 
                 className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
                 aria-label="Go to FAQ"
               >
                 FAQ
-              </button>
+              </button> */}
             </nav>
           </div>
 
           {/* Socials */}
           <div className="flex justify-center md:justify-end gap-4">
             <a
-              href="https://github.com/"
+              href="https://github.com/raktim77/finance-tracker"
               target="_blank"
               rel="noreferrer"
               className="p-2 rounded-lg bg-[var(--color-surface-elevated)]/40 hover:bg-[var(--color-accent-teal)]/20 transition"
@@ -88,7 +101,7 @@ export default function Footer() {
             >
               <Github size={18} className="text-[var(--color-text-primary)]" />
             </a>
-            <a
+            {/* <a
               href="https://twitter.com/"
               target="_blank"
               rel="noreferrer"
@@ -105,7 +118,7 @@ export default function Footer() {
               aria-label="LinkedIn"
             >
               <Linkedin size={18} className="text-[var(--color-text-primary)]" />
-            </a>
+            </a> */}
           </div>
         </div>
 
@@ -114,28 +127,28 @@ export default function Footer() {
 
         {/* bottom row */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-[var(--color-text-secondary)]">
-          {/* legal (smooth scroll to #privacy / #terms if present) */}
+          {/* legal */}
           <div className="flex justify-center md:justify-start gap-6">
-            <button
-              
+            <Link
+              to="/privacy"
               className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
               aria-label="Go to Privacy Policy"
             >
               Privacy Policy
-            </button>
-            <button
-           
+            </Link>
+            <Link
+              to="/terms"
               className="hover:text-[var(--color-accent-teal)] transition cursor-pointer"
               aria-label="Go to Terms of Use"
             >
               Terms of Use
-            </button>
+            </Link>
           </div>
 
           <div className="text-center md:text-left">
             Developed with ❤️ by{" "}
             <span className="text-[var(--color-accent-teal)] font-medium cursor-pointer">
-              <a  aria-label="Raktim Routh profile">Raktim Routh</a>
+              <a  aria-label="Raktim Routh profile" href="https://www.linkedin.com/in/raktim-routh-9a5447197/" target="_blank">Raktim Routh</a>
             </span>
           </div>
 

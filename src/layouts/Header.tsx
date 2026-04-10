@@ -86,13 +86,13 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
       scrollToId(targetId);
     } else if (currentPath === "/login") {
       // Login: go home
-      navigate("/");
+      navigate({ pathname: "/", hash: `#${targetId}` });
     } else if (currentPath.startsWith("/dashboard")) {
       // Dashboard: stay on dashboard or go to dashboard home
       navigate("/dashboard");
     } else {
       // All other routes: go to home page
-      navigate("/");
+      navigate({ pathname: "/", hash: `#${targetId}` });
     }
 
     setMobileMenuOpen(false);
@@ -120,7 +120,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-50 bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-md"
+      className="fixed inset-x-0 top-0 z-50 bg-[var(--color-background)] text-[var(--color-text-primary)]"
       style={{ paddingTop: "var(--safe-area-inset-top, env(safe-area-inset-top, 0px))" }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
@@ -168,7 +168,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
           <button
             onClick={toggleTheme}
             className="w-10 h-10 flex items-center justify-center rounded-full 
-      bg-[var(--color-surface)] text-[var(--color-text-primary)] 
+      bg-[var(--color-background)] text-[var(--color-text-primary)] 
       hover:bg-[var(--color-primary)] hover:text-white transition cursor-pointer"
             aria-label="Toggle theme"
           >
@@ -198,7 +198,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
               !isLogin && !isNativeApp && (
                 <button
                   className="w-10 h-10 flex items-center justify-center rounded-lg 
-            bg-[var(--color-surface)] text-[var(--color-text-primary)] 
+            bg-[var(--color-background)] text-[var(--color-text-primary)] 
             hover:bg-[var(--color-background)] transition"
                   onClick={() => setMobileMenuOpen(true)}
                   aria-label="Open menu"
@@ -251,11 +251,11 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
 
               <nav className="flex flex-col gap-4 text-[var(--color-text-primary)] font-medium">
                 {/* If home & not authenticated, show section links */}
-                {isHome && !isAuthenticated && !isNativeApp && NAV.map((n) => (
+                {!isAuthenticated && !isNativeApp && NAV.map((n) => (
                   <button
                     key={n.id}
                     className="text-left hover:text-[var(--color-primary)] transition"
-                    onClick={() => { handleNav(n.id); }}
+                    onClick={() => { smartNavigate(n.id); }}
                   >
                     {n.label}
                   </button>

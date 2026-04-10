@@ -80,7 +80,7 @@ const TipRotator: React.FC<TipRotatorProps> = ({
 
   return (
     <div
-      className="mt-8 py-4 rounded-lg"
+      className="mt-8 p-4 rounded-lg"
       style={{
         background: "var(--benefits-card-color)",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)",
@@ -820,7 +820,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
           className="w-full h-12 rounded-xl font-semibold"
           style={{
             background:
-              "linear-gradient(90deg, var(--color-accent-teal, #09ccce), #007a78)",
+              "linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%)",
             color: "white",
           }}
         >
@@ -929,7 +929,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
           className="w-full h-12 rounded-xl font-semibold"
           style={{
             background:
-              "linear-gradient(90deg, var(--color-accent-teal, #09ccce), #007a78)",
+              "linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%)",
             color: "white",
           }}
         >
@@ -1001,7 +1001,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
           className="w-full h-12 rounded-xl font-semibold"
           style={{
             background:
-              "linear-gradient(90deg, var(--color-accent-teal, #09ccce), #007a78)",
+              "linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%)",
             color: "white",
           }}
         >
@@ -1097,7 +1097,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
             className="w-full h-12 rounded-xl font-semibold"
             style={{
               background:
-                "linear-gradient(90deg, var(--color-accent-teal, #09ccce), #007a78)",
+                "linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%)",
               color: "white",
             }}
           >
@@ -1146,7 +1146,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
             className="w-full h-12 rounded-xl font-semibold"
             style={{
               background:
-                "linear-gradient(90deg, var(--color-accent-teal, #09ccce), #007a78)",
+                "linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%)",
               color: "white",
             }}
           >
@@ -1227,7 +1227,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
               className="w-full h-12 rounded-xl font-semibold"
               style={{
                 background:
-                  "linear-gradient(90deg, var(--color-accent-teal, #09ccce), #007a78)",
+                  "linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%)",
                 color: "white",
               }}
             >
@@ -1387,34 +1387,68 @@ export default function AuthCard({ onAuthSuccess }: Props) {
               transition={{ duration: slideDuration }}
             >
               <div
-                className="h-full p-10 flex flex-col justify-center"
+                className="relative h-full p-10 flex flex-col justify-center overflow-hidden"
                 style={{
                   background:
-                    "linear-gradient(120deg, rgba(9,204,206,0.03) 0%, rgba(2,6,23,0.02) 60%)",
+                    "linear-gradient(145deg, var(--color-accent) 0%, var(--color-primary) 48%, var(--color-accent-teal) 100%)",
                 }}
               >
-                <h2
-                  className="text-3xl md:text-5xl leading-tight font-extrabold"
-                  style={{ color: "var(--color-text-primary)" }}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
                 >
-                  {isSignup ? (
-                    <>
-                      Join Xpensio <span className="text-[var(--color-accent-teal)]">Get started</span>
-                    </>
-                  ) : (
-                    <>
-                      Welcome back to <span className="text-[var(--color-accent-teal)]">Xpensio</span>
-                    </>
-                  )}
-                </h2>
+                  <div
+                    className="absolute rounded-full"
+                    style={{
+                      width: 360,
+                      height: 360,
+                      top: -120,
+                      right: -70,
+                      background: "rgba(255, 255, 255, 0.14)",
+                    }}
+                  />
+                  <div
+                    className="absolute rounded-full"
+                    style={{
+                      width: 240,
+                      height: 240,
+                      left: -110,
+                      top: 150,
+                      background: "rgba(255, 255, 255, 0.09)",
+                    }}
+                  />
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-44"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(169, 94, 31, 0.32) 100%)",
+                    }}
+                  />
+                </div>
 
-                <p className="mt-4 text-sm text-[var(--color-text-secondary)] max-w-[36ch]">
-                  {isSignup
-                    ? "Create your account to keep your finances organized. Set budgets, view reports, and stay in control."
-                    : "Sign in to continue tracking expenses, setting budgets, and getting insights. Quick, private, and beautiful."}
-                </p>
+                <div className="relative z-10">
+                  <h2
+                    className="text-3xl md:text-5xl leading-tight font-extrabold text-white"
+                  >
+                    {isSignup ? (
+                      <>
+                        Join Xpensio <span className="text-white/95">Get started</span>
+                      </>
+                    ) : (
+                      <>
+                        Welcome back to <span className="text-white/95">Xpensio</span>
+                      </>
+                    )}
+                  </h2>
 
-                <TipRotator isSignup={isSignup} />
+                  <p className="mt-4 text-sm text-white/75 max-w-[36ch]">
+                    {isSignup
+                      ? "Create your account to keep your finances organized. Set budgets, view reports, and stay in control."
+                      : "Sign in to continue tracking expenses, setting budgets, and getting insights. Quick, private, and beautiful."}
+                  </p>
+
+                  <TipRotator isSignup={isSignup} />
+                </div>
               </div>
             </motion.div>
 
@@ -1484,8 +1518,8 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                   </AnimatePresence>
 
                   <footer className="mt-6 text-xs text-[var(--color-text-secondary)] text-center">
-                    By continuing, you agree to Xpensio's <a className="underline">Terms</a> and{" "}
-                    <a className="underline">Privacy Policy</a>.
+                    By continuing, you agree to Xpensio&apos;s <a href="https://xpensio.vercel.app/terms" target="_blank" rel="noreferrer" className="underline">Terms</a> and{" "}
+                    <a href="https://xpensio.vercel.app/privacy" target="_blank" rel="noreferrer" className="underline">Privacy Policy</a>.
                   </footer>
                 </div>
               </div>
@@ -1554,9 +1588,9 @@ export default function AuthCard({ onAuthSuccess }: Props) {
               .mpa-input-icon:hover { color: var(--color-accent); }
 
               .mpa-forgot-row { display: flex; justify-content: flex-end; margin: -8px 0 12px; }
-              .mpa-forgot-btn { border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--color-accent); cursor: pointer; padding: 0; }
+              .mpa-forgot-btn { border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--color-accent); cursor: pointer; padding: 0;margin-top:5px }
 
-              .mpa-cta { width: 100%; height: 56px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%); color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer; box-shadow: 0 6px 24px rgba(82, 61, 255, 0.32); transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
+              .mpa-cta { width: 100%; height: 56px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent) 100%); color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer;transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
 
               .mpa-cta:active { transform: scale(0.98); opacity: 0.92; }
               .mpa-cta:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -1639,12 +1673,12 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                         </div>
                       </div>
                       <div className="mpa-forgot-row">
-                        <button type="button" className="mpa-forgot-btn" onClick={switchToForgotPassword} disabled={isBusy}>Forgot your password?</button>
+                        <button type="button" className="mpa-forgot-btn" onClick={switchToForgotPassword} disabled={isBusy}>Forgot password?</button>
                       </div>
                       <button type="button" className="mpa-cta" disabled={isBusy} onClick={e => handleSignin(e as unknown as React.FormEvent)}>{loading ? "Signing in…" : "Sign in"}</button>
                       <div className="mpa-divider"><div className="mpa-divider-line"/><span className="mpa-divider-text">OR</span><div className="mpa-divider-line"/></div>
                       <button type="button" className="mpa-social-btn" onClick={handleGoogle} disabled={isBusy}><GoogleIcon /><span>Sign in with Google</span></button>
-                      <p className="mpa-terms">By continuing you agree to Xpensio's <a>Terms</a> and <a>Privacy Policy</a>.</p>
+                      <p className="mpa-terms">By continuing you agree to Xpensio&apos;s <a href="https://xpensio.vercel.app/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="https://xpensio.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</p>
                     </motion.div>
                   )}
 
@@ -1674,7 +1708,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
                       <button type="button" className="mpa-cta" disabled={isBusy} onClick={e => handleSignup(e as unknown as React.FormEvent)}>{sendingOtp ? "Sending code…" : "Sign up"}</button>
                       <div className="mpa-divider"><div className="mpa-divider-line"/><span className="mpa-divider-text">OR</span><div className="mpa-divider-line"/></div>
                       <button type="button" className="mpa-social-btn" onClick={handleGoogle} disabled={isBusy}><GoogleIcon /><span>Continue with Google</span></button>
-                      <p className="mpa-terms">By continuing you agree to Xpensio's <a>Terms</a> and <a>Privacy Policy</a>.</p>
+                      <p className="mpa-terms">By continuing you agree to Xpensio&apos;s <a href="https://xpensio.vercel.app/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="https://xpensio.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</p>
                     </motion.div>
                   )}
 

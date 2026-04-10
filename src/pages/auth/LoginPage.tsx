@@ -229,7 +229,7 @@ export default function XpensioLoginPage({ onLoginSuccess }: Props) {
                     </form>
 
                     <footer className="mt-6 text-xs text-[var(--color-text-secondary)]">
-                        By signing in, you agree to Xpensio's <a className="underline">Terms</a> and <a className="underline">Privacy Policy</a>.
+                        By signing in, you agree to Xpensio&apos;s <a href="https://xpensio.vercel.app/terms" target="_blank" rel="noreferrer" className="underline">Terms</a> and <a href="https://xpensio.vercel.app/privacy" target="_blank" rel="noreferrer" className="underline">Privacy Policy</a>.
                     </footer>
                 </motion.main>
             </motion.div>
