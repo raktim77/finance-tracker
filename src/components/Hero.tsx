@@ -8,7 +8,7 @@ const Hero = () => {
     navigate("/login");
   };
   return (
-    <section id="home" className="relative bg-[var(--color-background)] text-center py-24 overflow-hidden max-w-7xl mx-auto">
+    <section id="home" className="relative bg-[var(--color-background)] text-center py-24 overflow-hidden mx-auto">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[var(--color-accent-teal)]/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-[var(--color-warm)]/10 blur-[120px] rounded-full" />
@@ -42,19 +42,23 @@ const Hero = () => {
       </div>
 
       <div className="relative z-10 mt-20 flex justify-center px-6">
-        <div className="absolute inset-0 flex justify-center -z-10">
-          <div className="w-[min(90vw,1200px)] h-[500px] bg-[var(--color-warm)]/20 blur-3xl rounded-full" />
+        <div className="absolute inset-0 flex justify-center items-center -z-10 pointer-events-none">
+          <div className="absolute w-[min(92vw,1280px)] h-[560px] rounded-full bg-[var(--color-accent-teal)]/10 blur-[140px]" />
+          <div className="absolute w-[min(86vw,1160px)] h-[500px] rounded-full bg-[var(--color-primary)]/18 blur-[120px]" />
+          <div className="absolute bottom-8 w-[min(78vw,980px)] h-[220px] rounded-full bg-[var(--color-warm)]/14 blur-[110px]" />
         </div>
 
         <motion.div
           animate={{ y: [0, -15, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="glass-card p-2 md:p-4 rounded-[2.5rem]"
+          className="relative glass-card p-2 md:p-4 rounded-[2.5rem]"
         >
+          <div className="pointer-events-none absolute -inset-3 rounded-[3rem] bg-[radial-gradient(circle_at_top,rgba(143,208,107,0.18),transparent_42%),radial-gradient(circle_at_80%_30%,rgba(9,204,206,0.18),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(82,61,255,0.16),transparent_48%)] blur-2xl opacity-90" />
+          <div className="pointer-events-none absolute -inset-[1px] rounded-[2.7rem] border border-white/10 shadow-[0_0_0_1px_rgba(143,208,107,0.12),0_0_60px_rgba(9,204,206,0.12),0_22px_80px_rgba(0,0,0,0.45)]" />
           <img
-            src="/assets/professional-dashboard-user-panel.png"
+            src="../../src/assets/images/home-hero.png"
             alt="Xpensio Dashboard"
-            className="w-[min(92vw,1400px)] rounded-[1.8rem] shadow-2xl border border-[var(--border)]"
+            className="relative w-[min(92vw,1400px)] rounded-[1.8rem] shadow-2xl border border-[var(--border)]"
           />
         </motion.div>
       </div>

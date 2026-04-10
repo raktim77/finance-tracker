@@ -9,10 +9,12 @@ interface AuthOptions {
 }
 
 export async function getDashboardSummary(
+  date: string,
   options: AuthOptions = {}
 ): Promise<DashboardSummaryResponse> {
   return apiClient.get<DashboardSummaryResponse>("/dashboard/summary", {
     authToken: options.accessToken,
+    query: { date },
   });
 }
 

@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl px-6 md:px-8">
+      <section className="mx-auto max-w-4xl px-6 md:px-8 mb-16">
         <div className="rounded-[28px] border border-black/10 bg-[var(--color-surface)] p-6 shadow-[0_18px_50px_rgba(2,6,23,0.08)] dark:border-white/10 md:p-10">
           <div className="space-y-10">
             <section>

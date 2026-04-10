@@ -12,17 +12,19 @@ interface AuthOptions {
 
 // 🔹 Summary (hero + stats + insights)
 export function useDashboardSummary(options: AuthOptions = {}) {
+  const today = new Date("2026-03-12").toISOString().slice(0, 10);
+
   return useQuery({
-    queryKey: dashboardKeys.summary(),
+    queryKey: dashboardKeys.summary(today),
     queryFn: () =>
-      getDashboardSummary({ accessToken: options.accessToken }),
+      getDashboardSummary(today, { accessToken: options.accessToken }),
     enabled: options.enabled ?? true,
   });
 }
 
 // 🔹 Analytics (charts + donut)
 export function useDashboardAnalytics(options: AuthOptions = {}) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date("2026-03-12").toISOString().slice(0, 10);
 
   return useQuery({
     queryKey: dashboardKeys.analytics(today),
