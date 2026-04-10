@@ -35,6 +35,7 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
   const confirm = useConfirm();
   const { logout } = useAuth();
   const isNativeApp = isNativeAndroidApp();
+  const versionNumber = import.meta.env.VITE_VERSION_NUMBER;
 
   const handleLogout = async () => {
     const ok = await confirm({
@@ -134,7 +135,17 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
         </nav>
 
         {/* --- REFINED LOGOUT SECTION --- */}
-      <div className="mt-auto px-3 pb-8 border-t border-[var(--border)] pt-4">
+      <div className="mt-auto px-3 pb-8 pt-4">
+        {!collapsed && (
+          <div className="mb-5 px-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-secondary)] opacity-45">
+              Xpensio Build {versionNumber}
+            </p>
+          </div>
+        )}
+
+        <div className="mb-3 h-px bg-[var(--border)]" />
+
         <button
           type="button"
           onClick={handleLogout}

@@ -257,7 +257,7 @@ export default function Transactions() {
       <span className="hidden md:block">
         {hasAccounts ? "Record transaction" : "Add Account"}
       </span>
-      <span className="block md:hidden">
+      <span className="block text-sm md:hidden">
         {hasAccounts ? "Record" : "Add"}
       </span>
     </button>

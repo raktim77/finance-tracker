@@ -62,7 +62,7 @@ export default function MorePage() {
                     </h1>
                 </div>
             </header>
-
+            
             {/* --- MENU LIST --- */}
             <div className="space-y-3">
                 {items.map((item) => (
@@ -71,7 +71,7 @@ export default function MorePage() {
                         onClick={() => navigate(item.path)}
                         className="
                             w-full flex items-center justify-between p-2 
-                            rounded-[1.75rem] bg-[var(--color-surface)] 
+                            rounded-[1.25rem] bg-[var(--color-surface)] 
                             border border-[var(--border)] 
                             shadow-sm active:scale-[0.97] 
                             transition-all duration-300 group
@@ -112,10 +112,30 @@ export default function MorePage() {
                 {/* Text-Link Logout */}
                 <button 
                     onClick={handleLogout}
-                    className="mb-10 text-[12px] font-black uppercase tracking-[0.3em] text-red-500/80 hover:text-red-500 active:opacity-60 transition-all"
+                    className="mb-14 text-[14px] font-black uppercase tracking-[0.3em] text-red-500/80 hover:text-red-500 active:opacity-60 transition-all"
                 >
                     Logout
                 </button>
+                <div className="flex items-center justify-center gap-5 text-[12px] font-semibold text-[var(--color-text-secondary)] opacity-75">
+                    <a
+                        href="https://xpensio.vercel.app/terms"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="transition hover:text-[var(--color-primary)]"
+                    >
+                        Terms
+                    </a>
+                    <span className="h-1 w-1 rounded-full bg-[var(--color-text-secondary)]/40" />
+                    <a
+                        href="https://xpensio.vercel.app/privacy"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="transition hover:text-[var(--color-primary)]"
+                    >
+                        Privacy Policy
+                    </a>
+                </div>
+
 
                 <div className="flex flex-col items-center justify-center gap-2 opacity-30">
                     {/* <div className="flex items-center gap-2">

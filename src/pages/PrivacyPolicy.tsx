@@ -9,14 +9,11 @@ const paragraphClass =
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-full bg-[var(--color-background)]">
-      <section className="relative overflow-hidden border-b border-black/10 dark:border-white/10">
+      <section className="relative overflow-hidden">
         <div
           aria-hidden
           className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(60% 60% at 20% 16%, rgba(9,204,206,0.14) 0%, transparent 58%), radial-gradient(50% 50% at 82% 18%, rgba(103,88,255,0.14) 0%, transparent 56%), linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%)",
-          }}
+          
         />
         <div className="relative mx-auto max-w-4xl px-6 py-16 md:px-8 md:py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent-teal)]">
