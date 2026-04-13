@@ -56,7 +56,7 @@ const Hero = () => {
           <div className="pointer-events-none absolute -inset-3 rounded-[3rem] bg-[radial-gradient(circle_at_top,rgba(143,208,107,0.18),transparent_42%),radial-gradient(circle_at_80%_30%,rgba(9,204,206,0.18),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(82,61,255,0.16),transparent_48%)] blur-2xl opacity-90" />
           <div className="pointer-events-none absolute -inset-[1px] rounded-[2.7rem] border border-white/10 shadow-[0_0_0_1px_rgba(143,208,107,0.12),0_0_60px_rgba(9,204,206,0.12),0_22px_80px_rgba(0,0,0,0.45)]" />
           <img
-            src="/assets/home-hero.png"
+            src="/assets/home-hero.webp"
             alt="Xpensio Dashboard"
             className="relative w-[min(92vw,1400px)] rounded-[1.8rem] shadow-2xl border border-[var(--border)]"
           />

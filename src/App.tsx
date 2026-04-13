@@ -29,6 +29,8 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { useContext, useEffect } from "react";
 import { initDB, insertPendingSMS } from "./lib/localDb";
 import { SmsListener } from "./plugins/smsListener";
+import { parseSMS } from "./lib/smsParser";
+import type { PluginListenerHandle } from "@capacitor/core";
 
 
 
@@ -183,28 +185,80 @@ function App() {
     setupStatusBar(theme);
   }, [theme]);
 
+  // MESSAGES WORK
+
   useEffect(() => {
   initDB();
 }, []);
-
 useEffect(() => {
-  SmsListener.addListener("smsReceived", async (sms) => {
-    console.log("SMS RECEIVED:", sms);
+let listener: PluginListenerHandle | null = null;
+  const setupListener = async () => {
+    listener = await SmsListener.addListener("smsReceived", async (sms) => {
+      console.log("SMS RECEIVED:", sms);
 
-    // basic parse
-    const isDebit = sms.message.toLowerCase().includes("debited");
+      const parsed = parseSMS(sms.message);
 
-    await insertPendingSMS({
-      raw_message: sms.message,
-      sender: sms.sender,
-      amount: undefined, // we’ll parse later
-      type: isDebit ? "expense" : "income",
-      merchant: undefined,
-      confidence: 0.5
+      console.log("PARSED:", parsed);
+
+      await insertPendingSMS({
+        raw_message: sms.message,
+        sender: sms.sender,
+        amount: parsed.amount,
+        type: parsed.type,
+        merchant: parsed.merchant ?? '',
+        confidence: parsed.confidence,
+          timestamp: Date.now()
+
+      });
     });
-  });
+  };
+
+  setupListener();
+
+  return () => {
+    // 🔥 cleanup to prevent duplicate listeners
+    listener?.remove();
+  };
 }, []);
 
+
+useEffect(() => {
+  const sync = async () => {
+    try {
+      const res = await SmsListener.getStoredSms();
+      const list = JSON.parse(res.data || "[]");
+
+      console.log("SYNC LIST:", list);
+
+      for (const sms of list) {
+        const parsed = parseSMS(sms.message);
+
+        console.log("SYNC PARSED:", parsed);
+
+        await insertPendingSMS({
+          raw_message: sms.message,
+          sender: sms.sender,
+          amount: parsed.amount,
+          type: parsed.type,
+          merchant: parsed.merchant ?? "",
+          confidence: parsed.confidence,
+            timestamp: Date.now()
+
+        });
+      }
+
+      // ✅ clear native storage after sync
+      if (list.length > 0) {
+        await SmsListener.clearStoredSms();
+      }
+
+    } catch (err) {
+      console.error("SMS sync failed", err);
+    }
+  };
+
+  sync();
+}, []);
   return (
     <Router>
       <NativeChromeSync />

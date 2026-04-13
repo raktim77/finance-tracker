@@ -3,7 +3,7 @@ import {
   SQLiteConnection,
   SQLiteDBConnection,
 } from "@capacitor-community/sqlite";
-import { v4 as uuidv4 } from "uuid";
+import { createSMSHash } from "./hash";
 
 
 const sqlite = new SQLiteConnection(CapacitorSQLite);
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS pending_sms_transactions (
   confidence REAL,
   status TEXT,
   received_at INTEGER
+  hash TEXT UNIQUE
 );
 `);
 };
@@ -42,27 +43,35 @@ export const insertPendingSMS = async (data: {
   type?: string;
   merchant?: string;
   confidence?: number;
+  timestamp?: number;
 }) => {
-  const id = uuidv4();
-
-  await db.run(
-    `INSERT INTO pending_sms_transactions 
-    (id, raw_message, sender, amount, type, merchant, confidence, status, received_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      id,
-      data.raw_message,
-      data.sender,
-      data.amount ?? null,
-      data.type ?? "unknown",
-      data.merchant ?? null,
-      data.confidence ?? 0,
-      "pending",
-      Date.now()
-    ]
+  const hash = createSMSHash(
+    data.raw_message,
+    data.sender,
+    data.timestamp
   );
 
-  return id;
+  try {
+    await db.run(
+      `INSERT OR IGNORE INTO pending_sms_transactions 
+      (id, raw_message, sender, amount, type, merchant, confidence, status, received_at, hash)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        crypto.randomUUID(),
+        data.raw_message,
+        data.sender,
+        data.amount ?? null,
+        data.type ?? "unknown",
+        data.merchant ?? null,
+        data.confidence ?? 0,
+        "pending",
+        Date.now(),
+        hash
+      ]
+    );
+  } catch (err) {
+    console.error("Insert failed", err);
+  }
 };
 
 export const getPendingSMS = async () => {

@@ -3,6 +3,8 @@ package com.xpensio.app;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.PluginCall;
 
 @CapacitorPlugin(name = "SmsListener")
 public class SmsListenerPlugin extends Plugin {
@@ -15,6 +17,7 @@ public class SmsListenerPlugin extends Plugin {
         instance = this;
     }
 
+    // 🔥 Send SMS to JS (when app is alive)
     public static void notifySms(String message, String sender) {
         if (instance != null) {
             JSObject data = new JSObject();
@@ -22,6 +25,30 @@ public class SmsListenerPlugin extends Plugin {
             data.put("sender", sender);
 
             instance.notifyListeners("smsReceived", data);
+        }
+    }
+
+    // 🔥 Fetch stored SMS from native
+    @PluginMethod
+    public void getStoredSms(PluginCall call) {
+        try {
+            String data = SmsStorage.getAllSms(getContext());
+            JSObject result = new JSObject();
+            result.put("data", data);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Failed to get stored SMS");
+        }
+    }
+
+    // 🔥 Optional: clear after sync (we’ll use later)
+    @PluginMethod
+    public void clearStoredSms(PluginCall call) {
+        try {
+            SmsStorage.clearSms(getContext());
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Failed to clear SMS");
         }
     }
 }
