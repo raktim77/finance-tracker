@@ -7,13 +7,14 @@ import android.os.Bundle;
 import androidx.core.view.WindowCompat;
 
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.community.database.sqlite.CapacitorSQLite;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(NativeChromePlugin.class);
+        // registerPlugin(SmsListenerPlugin.class);
         super.onCreate(savedInstanceState);
-
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
@@ -23,4 +24,5 @@ public class MainActivity extends BridgeActivity {
             getWindow().setNavigationBarContrastEnforced(false);
         }
     }
+    
 }

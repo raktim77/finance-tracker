@@ -27,6 +27,8 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { useContext, useEffect } from "react";
+import { initDB, insertPendingSMS } from "./lib/localDb";
+import { SmsListener } from "./plugins/smsListener";
 
 
 
@@ -180,6 +182,28 @@ function App() {
   useEffect(() => {
     setupStatusBar(theme);
   }, [theme]);
+
+  useEffect(() => {
+  initDB();
+}, []);
+
+useEffect(() => {
+  SmsListener.addListener("smsReceived", async (sms) => {
+    console.log("SMS RECEIVED:", sms);
+
+    // basic parse
+    const isDebit = sms.message.toLowerCase().includes("debited");
+
+    await insertPendingSMS({
+      raw_message: sms.message,
+      sender: sms.sender,
+      amount: undefined, // we’ll parse later
+      type: isDebit ? "expense" : "income",
+      merchant: undefined,
+      confidence: 0.5
+    });
+  });
+}, []);
 
   return (
     <Router>
