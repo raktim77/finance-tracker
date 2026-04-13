@@ -20,20 +20,29 @@ export const initDB = async () => {
   );
 
   await db.open();
+
+  // ✅ Correct table creation
   await db.execute(`
-CREATE TABLE IF NOT EXISTS pending_sms_transactions (
-  id TEXT PRIMARY KEY,
-  raw_message TEXT,
-  sender TEXT,
-  amount REAL,
-  type TEXT,
-  merchant TEXT,
-  confidence REAL,
-  status TEXT,
-  received_at INTEGER
-  hash TEXT UNIQUE
-);
-`);
+    CREATE TABLE IF NOT EXISTS pending_sms_transactions (
+      id TEXT PRIMARY KEY,
+      raw_message TEXT,
+      sender TEXT,
+      amount REAL,
+      type TEXT,
+      merchant TEXT,
+      confidence REAL,
+      status TEXT,
+      received_at INTEGER,
+      hash TEXT UNIQUE
+    );
+  `);
+
+  // 🔥 Migration (safe)
+  try {
+    await db.execute(`ALTER TABLE pending_sms_transactions ADD COLUMN hash TEXT`);
+  } catch (e) {
+    console.log("hash column already exists",e);
+  }
 };
 
 export const insertPendingSMS = async (data: {
@@ -65,7 +74,7 @@ export const insertPendingSMS = async (data: {
         data.merchant ?? null,
         data.confidence ?? 0,
         "pending",
-        Date.now(),
+        data.timestamp ?? Date.now(),
         hash
       ]
     );

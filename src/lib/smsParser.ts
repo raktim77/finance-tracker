@@ -20,7 +20,7 @@ export function parseSMS(message: string): ParsedSMS {
     amount = parseFloat(amountMatch[1].replace(/,/g, ""));
     confidence += 0.4;
   }
-
+  
   // 🔻 Detect expense
   if (
     lower.includes("debited") ||

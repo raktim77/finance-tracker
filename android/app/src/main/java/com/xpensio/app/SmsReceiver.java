@@ -12,7 +12,7 @@ import android.app.NotificationManager;
 import android.app.NotificationChannel;
 import android.app.Notification;
 import android.os.Build;
-
+import android.app.PendingIntent;
 import androidx.core.app.NotificationCompat;
 
 public class SmsReceiver extends BroadcastReceiver {
@@ -53,35 +53,58 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private void showNotification(Context context, String message) {
 
-        String channelId = "xpensio_sms";
+    String channelId = "xpensio_sms";
 
-        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    NotificationManager manager =
+            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Create channel (Android 8+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    channelId,
-                    "SMS Detection",
-                    NotificationManager.IMPORTANCE_HIGH);
-            manager.createNotificationChannel(channel);
-        }
-        String title = "Transaction detected 💸";
-
-        if (message.toLowerCase().contains("debited")) {
-            title = "Expense detected";
-        } else if (message.toLowerCase().contains("credited")) {
-            title = "Income detected";
-        }
-        Notification notification = new NotificationCompat.Builder(context, channelId)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setAutoCancel(true)
-                .setColor(0xFF7C6CFF)
-                .build();
-
-        manager.notify((int) System.currentTimeMillis(), notification);
+    // Create channel (Android 8+)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        NotificationChannel channel = new NotificationChannel(
+                channelId,
+                "SMS Detection",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        manager.createNotificationChannel(channel);
     }
+
+    String title = "Transaction detected 💸";
+
+    if (message.toLowerCase().contains("debited")) {
+        title = "Expense detected 💸";
+    } else if (message.toLowerCase().contains("credited")) {
+        title = "Income detected 💰";
+    }
+
+    // 🔥 CREATE INTENT FIRST (THIS WAS MISSING)
+    Intent clickIntent = new Intent(context, MainActivity.class);
+
+    // 🔥 pass data
+    clickIntent.putExtra("sms_message", message);
+
+    clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+    // 🔥 ALSO store in plugin (for React)
+    SmsListenerPlugin.setLastClickedSms(message, "");
+
+    PendingIntent pendingIntent = PendingIntent.getActivity(
+            context,
+            (int) System.currentTimeMillis(),
+            clickIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+    );
+
+    Notification notification = new NotificationCompat.Builder(context, channelId)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setColor(0xFF7C6CFF)
+            .build();
+
+    manager.notify((int) System.currentTimeMillis(), notification);
+}
 
     private boolean isFinancialSMS(String message) {
         String lower = message.toLowerCase();
@@ -97,7 +120,10 @@ public class SmsReceiver extends BroadcastReceiver {
                 lower.contains("sent") ||
                 lower.contains("received"));
     }
-    private boolean containsAmount(String message) {
-    return message.matches(".*(₹|rs\\.?|inr)\\s?\\d+.*");
-}
+    private static boolean containsAmount(String message) {
+        if (message == null) return false;
+        // (?i) handles Rs, RS, rs, etc.
+        // \u20B9 is the Unicode for the Rupee symbol
+        return message.matches("(?i).*(\u20B9|rs\\.?|inr)\\s?\\d+.*");
+    }
 }

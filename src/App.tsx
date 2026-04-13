@@ -259,6 +259,33 @@ useEffect(() => {
 
   sync();
 }, []);
+
+
+useEffect(() => {
+  const handleNotificationOpen = async () => {
+    try {
+      const res = await SmsListener.getLastClickedSms();
+
+      if (res?.message) {
+        console.log("🔔 Opened from notification:", res);
+
+        // 🔥 TEMP: navigate to transactions page
+        // later we’ll go to a dedicated review screen
+        window.location.href = "/transactions";
+
+        // 👉 OPTIONAL (future)
+        // you can store this in global state / context
+        // so Transactions page highlights it
+      }
+
+    } catch (err) {
+      console.error("Failed to get last clicked SMS", err);
+    }
+  };
+
+  handleNotificationOpen();
+}, []);
+
   return (
     <Router>
       <NativeChromeSync />

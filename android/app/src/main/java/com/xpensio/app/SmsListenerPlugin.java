@@ -11,6 +11,10 @@ public class SmsListenerPlugin extends Plugin {
 
     private static SmsListenerPlugin instance;
 
+    // 🔥 store last clicked SMS (for notification click)
+    private static String lastClickedMessage = null;
+    private static String lastClickedSender = null;
+
     @Override
     public void load() {
         super.load();
@@ -28,7 +32,27 @@ public class SmsListenerPlugin extends Plugin {
         }
     }
 
-    // 🔥 Fetch stored SMS from native
+    // 🔥 Called when notification is clicked
+    public static void setLastClickedSms(String message, String sender) {
+        lastClickedMessage = message;
+        lastClickedSender = sender;
+    }
+
+    // 🔥 Fetch last clicked SMS in React
+    @PluginMethod
+    public void getLastClickedSms(PluginCall call) {
+        JSObject result = new JSObject();
+        result.put("message", lastClickedMessage);
+        result.put("sender", lastClickedSender);
+
+        call.resolve(result);
+
+        // optional: clear after fetch (prevents reuse)
+        lastClickedMessage = null;
+        lastClickedSender = null;
+    }
+
+    // 🔥 Fetch stored SMS from native (background sync)
     @PluginMethod
     public void getStoredSms(PluginCall call) {
         try {
@@ -41,7 +65,7 @@ public class SmsListenerPlugin extends Plugin {
         }
     }
 
-    // 🔥 Optional: clear after sync (we’ll use later)
+    // 🔥 Clear stored SMS after sync
     @PluginMethod
     public void clearStoredSms(PluginCall call) {
         try {

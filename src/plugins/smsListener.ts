@@ -10,6 +10,9 @@ type SmsListenerPlugin = {
   getStoredSms(): Promise<{ data: string }>;
 
   clearStoredSms(): Promise<void>;
+
+  // 🔥 ADD THIS
+  getLastClickedSms(): Promise<{ message: string | null; sender: string | null }>;
 };
 
 export const SmsListener = registerPlugin<SmsListenerPlugin>("SmsListener");
