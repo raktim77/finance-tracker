@@ -1,9 +1,11 @@
 package com.xpensio.app;
 
 import android.util.Log;
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
@@ -14,6 +16,7 @@ import android.app.Notification;
 import android.os.Build;
 import android.app.PendingIntent;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 public class SmsReceiver extends BroadcastReceiver {
 
@@ -52,59 +55,62 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     private void showNotification(Context context, String message) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.d("XPENSIO_SMS", "Notification permission not granted.");
+            return;
+        }
 
-    String channelId = "xpensio_sms";
+        String channelId = "xpensio_sms";
 
-    NotificationManager manager =
-            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager manager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-    // Create channel (Android 8+)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        NotificationChannel channel = new NotificationChannel(
-                channelId,
-                "SMS Detection",
-                NotificationManager.IMPORTANCE_HIGH
+        // Create channel (Android 8+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "SMS Detection",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            manager.createNotificationChannel(channel);
+        }
+
+        String title = "Transaction detected 💸";
+
+        if (message.toLowerCase().contains("debited")) {
+            title = "Expense detected 💸";
+        } else if (message.toLowerCase().contains("credited")) {
+            title = "Income detected 💰";
+        }
+
+        // 🔥 CREATE INTENT FIRST (THIS WAS MISSING)
+        Intent clickIntent = new Intent(context, MainActivity.class);
+
+        // 🔥 pass data
+        clickIntent.putExtra("sms_message", message);
+
+        clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context,
+                (int) System.currentTimeMillis(),
+                clickIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-        manager.createNotificationChannel(channel);
+
+        Notification notification = new NotificationCompat.Builder(context, channelId)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setColor(0xFF7C6CFF)
+                .build();
+
+        manager.notify((int) System.currentTimeMillis(), notification);
     }
-
-    String title = "Transaction detected 💸";
-
-    if (message.toLowerCase().contains("debited")) {
-        title = "Expense detected 💸";
-    } else if (message.toLowerCase().contains("credited")) {
-        title = "Income detected 💰";
-    }
-
-    // 🔥 CREATE INTENT FIRST (THIS WAS MISSING)
-    Intent clickIntent = new Intent(context, MainActivity.class);
-
-    // 🔥 pass data
-    clickIntent.putExtra("sms_message", message);
-
-    clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-    // 🔥 ALSO store in plugin (for React)
-    SmsListenerPlugin.setLastClickedSms(message, "");
-
-    PendingIntent pendingIntent = PendingIntent.getActivity(
-            context,
-            (int) System.currentTimeMillis(),
-            clickIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-    );
-
-    Notification notification = new NotificationCompat.Builder(context, channelId)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setColor(0xFF7C6CFF)
-            .build();
-
-    manager.notify((int) System.currentTimeMillis(), notification);
-}
 
     private boolean isFinancialSMS(String message) {
         String lower = message.toLowerCase();
@@ -113,7 +119,7 @@ public class SmsReceiver extends BroadcastReceiver {
                 lower.contains("credited") ||
                 lower.contains("spent") ||
                 lower.contains("transaction") ||
-                lower.contains("withdrawn") ||
+                lower.contains("withdraw") ||
                 lower.contains("deposit") ||
                 lower.contains("paid") ||
                 lower.contains("upi") ||

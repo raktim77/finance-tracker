@@ -26,7 +26,8 @@ export function parseSMS(message: string): ParsedSMS {
     lower.includes("debited") ||
     lower.includes("spent") ||
     lower.includes("paid") ||
-    lower.includes("purchase")
+    lower.includes("withdraw") ||
+    lower.includes("sent")
   ) {
     type = "expense";
     confidence += 0.3;
@@ -36,7 +37,7 @@ export function parseSMS(message: string): ParsedSMS {
   if (
     lower.includes("credited") ||
     lower.includes("received") ||
-    lower.includes("deposited")
+    lower.includes("deposit")
   ) {
     type = "income";
     confidence += 0.3;

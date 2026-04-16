@@ -4,6 +4,7 @@ import { HeroDashboard } from "../components/dashboard/HeroDashboard";
 import { RecentTransactions } from "../components/dashboard/RecentTransactions";
 import { SpendingDonut } from "../components/dashboard/SpendingDonut";
 import { StatsGrid } from "../components/dashboard/StatsGrid";
+import PendingReviewCard from "../components/pending/PendingReviewCard";
 
 import { useDashboardAnalytics, useDashboardSummary } from "../features/dashboard/hooks/useDashboard";
 
@@ -18,8 +19,8 @@ export default function Dashboard() {
 
       <HeroDashboard data={data} isLoading={isLoading} />
 
+      <PendingReviewCard />
       <StatsGrid data={data} isLoading={isLoading} />
-
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
         <div className="lg:col-span-3">
           <ExpenseTrend data={analyticsData?.trend}

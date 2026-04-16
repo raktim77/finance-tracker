@@ -12,7 +12,7 @@ interface AuthOptions {
 
 // 🔹 Summary (hero + stats + insights)
 export function useDashboardSummary(options: AuthOptions = {}) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date("2026-03-20").toISOString().slice(0, 10);
 
   return useQuery({
     queryKey: dashboardKeys.summary(today),
@@ -24,7 +24,7 @@ export function useDashboardSummary(options: AuthOptions = {}) {
 
 // 🔹 Analytics (charts + donut)
 export function useDashboardAnalytics(options: AuthOptions = {}) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date("2026-03-20").toISOString().slice(0, 10);
 
   return useQuery({
     queryKey: dashboardKeys.analytics(today),

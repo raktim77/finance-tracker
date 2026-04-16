@@ -31,6 +31,7 @@ import { initDB, insertPendingSMS } from "./lib/localDb";
 import { SmsListener } from "./plugins/smsListener";
 import { parseSMS } from "./lib/smsParser";
 import type { PluginListenerHandle } from "@capacitor/core";
+import PendingReview from "./pages/PendingReview";
 
 
 
@@ -73,7 +74,51 @@ async function setupStatusBar(theme: "light" | "dark") {
 }
 
 function normalizeColor(value: string) {
-  return value.trim() || "#0B0F1A";
+  const color = value.trim();
+  return color || "#0B0F1A";
+}
+
+function toHexByte(value: string) {
+  return Math.max(0, Math.min(255, Number.parseInt(value, 10)))
+    .toString(16)
+    .padStart(2, "0")
+    .toUpperCase();
+}
+
+function rgbToHex(color: string) {
+  const match = color.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+  if (!match) return null;
+
+  return `#${toHexByte(match[1])}${toHexByte(match[2])}${toHexByte(match[3])}`;
+}
+
+function expandHexColor(color: string) {
+  if (/^#[0-9a-f]{6}$/i.test(color)) return color.toUpperCase();
+  if (/^#[0-9a-f]{3}$/i.test(color)) {
+    const [, red, green, blue] = color;
+    return `#${red}${red}${green}${green}${blue}${blue}`.toUpperCase();
+  }
+
+  return null;
+}
+
+function resolveCssColorToHex(value: string) {
+  const normalized = normalizeColor(value);
+  const directHex = expandHexColor(normalized);
+  if (directHex) return directHex;
+
+  const directRgb = rgbToHex(normalized);
+  if (directRgb) return directRgb;
+
+  const probe = document.createElement("div");
+  probe.style.display = "none";
+  probe.style.backgroundColor = normalized;
+  document.body.appendChild(probe);
+
+  const computed = getComputedStyle(probe).backgroundColor;
+  probe.remove();
+
+  return rgbToHex(computed) ?? "#0B0F1A";
 }
 
 function isLightColor(color: string) {
@@ -92,9 +137,9 @@ function isLightColor(color: string) {
 
 function resolveNativeChromeColor(pathname: string) {
   const css = getComputedStyle(document.documentElement);
-  const background = normalizeColor(css.getPropertyValue("--color-background"));
-  const surface = normalizeColor(css.getPropertyValue("--color-surface"));
-  const elevated = normalizeColor(css.getPropertyValue("--color-surface-elevated"));
+  const background = resolveCssColorToHex(css.getPropertyValue("--color-background"));
+  const surface = resolveCssColorToHex(css.getPropertyValue("--color-surface"));
+  const elevated = resolveCssColorToHex(css.getPropertyValue("--color-surface-elevated"));
 
   if (pathname === "/" || pathname === "/login" || pathname.startsWith("/oauth-finish")) {
     return surface;
@@ -188,103 +233,107 @@ function App() {
   // MESSAGES WORK
 
   useEffect(() => {
-  initDB();
-}, []);
-useEffect(() => {
-let listener: PluginListenerHandle | null = null;
-  const setupListener = async () => {
-    listener = await SmsListener.addListener("smsReceived", async (sms) => {
-      console.log("SMS RECEIVED:", sms);
+    if (!isNativeAndroidApp()) return;
+    initDB();
+  }, []);
+  useEffect(() => {
+    if (!isNativeAndroidApp()) return;
+    let listener: PluginListenerHandle | null = null;
+    const setupListener = async () => {
+      listener = await SmsListener.addListener("smsReceived", async (sms) => {
+        console.log("SMS RECEIVED:", sms);
 
-      const parsed = parseSMS(sms.message);
-
-      console.log("PARSED:", parsed);
-
-      await insertPendingSMS({
-        raw_message: sms.message,
-        sender: sms.sender,
-        amount: parsed.amount,
-        type: parsed.type,
-        merchant: parsed.merchant ?? '',
-        confidence: parsed.confidence,
-          timestamp: Date.now()
-
-      });
-    });
-  };
-
-  setupListener();
-
-  return () => {
-    // 🔥 cleanup to prevent duplicate listeners
-    listener?.remove();
-  };
-}, []);
-
-
-useEffect(() => {
-  const sync = async () => {
-    try {
-      const res = await SmsListener.getStoredSms();
-      const list = JSON.parse(res.data || "[]");
-
-      console.log("SYNC LIST:", list);
-
-      for (const sms of list) {
         const parsed = parseSMS(sms.message);
 
-        console.log("SYNC PARSED:", parsed);
+        console.log("PARSED:", parsed);
 
         await insertPendingSMS({
           raw_message: sms.message,
           sender: sms.sender,
           amount: parsed.amount,
           type: parsed.type,
-          merchant: parsed.merchant ?? "",
+          merchant: parsed.merchant ?? '',
           confidence: parsed.confidence,
-            timestamp: Date.now()
+          timestamp: Date.now()
 
         });
+      });
+    };
+
+    setupListener();
+
+    return () => {
+      // 🔥 cleanup to prevent duplicate listeners
+      listener?.remove();
+    };
+  }, []);
+
+
+  useEffect(() => {
+    if (!isNativeAndroidApp()) return;
+    const sync = async () => {
+      try {
+        const res = await SmsListener.getStoredSms();
+        const list = JSON.parse(res.data || "[]");
+
+        console.log("SYNC LIST:", list);
+
+        for (const sms of list) {
+          const parsed = parseSMS(sms.message);
+
+          console.log("SYNC PARSED:", parsed);
+
+          await insertPendingSMS({
+            raw_message: sms.message,
+            sender: sms.sender,
+            amount: parsed.amount,
+            type: parsed.type,
+            merchant: parsed.merchant ?? "",
+            confidence: parsed.confidence,
+            timestamp: Date.now()
+
+          });
+        }
+
+        // ✅ clear native storage after sync
+        if (list.length > 0) {
+          await SmsListener.clearStoredSms();
+        }
+
+      } catch (err) {
+        console.error("SMS sync failed", err);
       }
+    };
 
-      // ✅ clear native storage after sync
-      if (list.length > 0) {
-        await SmsListener.clearStoredSms();
+    sync();
+  }, []);
+
+
+  useEffect(() => {
+    if (!isNativeAndroidApp()) return;
+    const handleNotificationOpen = async () => {
+      try {
+        const res = await SmsListener.getLastClickedSms();
+
+        if (res?.message) {
+          console.log("🔔 Opened from notification:", res);
+
+          // 🔥 TEMP: navigate to transactions page
+          // later we’ll go to a dedicated review screen
+          window.location.href = "/transactions";
+
+          // 👉 OPTIONAL (future)
+          // you can store this in global state / context
+          // so Transactions page highlights it
+        }
+
+      } catch (err) {
+        console.error("Failed to get last clicked SMS", err);
       }
+    };
 
-    } catch (err) {
-      console.error("SMS sync failed", err);
-    }
-  };
-
-  sync();
-}, []);
-
-
-useEffect(() => {
-  const handleNotificationOpen = async () => {
-    try {
-      const res = await SmsListener.getLastClickedSms();
-
-      if (res?.message) {
-        console.log("🔔 Opened from notification:", res);
-
-        // 🔥 TEMP: navigate to transactions page
-        // later we’ll go to a dedicated review screen
-        window.location.href = "/transactions";
-
-        // 👉 OPTIONAL (future)
-        // you can store this in global state / context
-        // so Transactions page highlights it
-      }
-
-    } catch (err) {
-      console.error("Failed to get last clicked SMS", err);
-    }
-  };
-
-  handleNotificationOpen();
-}, []);
+    handleNotificationOpen();
+  }, []);
 
   return (
     <Router>
@@ -296,6 +345,7 @@ useEffect(() => {
         {/* Marketing Pages */}
         <Route path="/" element={<HomeWrapper />} />
         <Route path="/login" element={<LoginWrapper />} />
+
         <Route
           path="/terms"
           element={
@@ -327,6 +377,18 @@ useEffect(() => {
             </ProtectedRoute>
           }
         />
+        {isNativeAndroidApp() && (
+          <Route
+            path="/pending-review"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <PendingReview />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+        )}
         {/* Transactions */}
         <Route
           path="/transactions"
