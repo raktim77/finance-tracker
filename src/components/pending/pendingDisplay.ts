@@ -21,8 +21,8 @@ export function getPendingTitle(item: PendingSMSItem) {
 
 export function getPendingSubtitle(item: PendingSMSItem) {
   const kind = getPendingKind(item);
-  if (kind === "income") return "Potential income";
-  if (kind === "expense") return "Potential expense";
+  if (kind === "income") return "income";
+  if (kind === "expense") return "expense";
   return "Needs review";
 }
 
