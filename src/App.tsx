@@ -389,6 +389,16 @@ function App() {
             }
           />
         )}
+        <Route
+            path="/pending-review"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <PendingReview />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
         {/* Transactions */}
         <Route
           path="/transactions"

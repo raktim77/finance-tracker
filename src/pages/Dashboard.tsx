@@ -15,7 +15,7 @@ export default function Dashboard() {
   useDashboardAnalytics();
 
   return (
-    <div className="p-1 flex flex-col gap-6 md:gap-8 pb-24 animate-in fade-in duration-700 mx-auto">
+    <div className="p-1 flex w-full max-w-full min-w-0 flex-col gap-6 md:gap-8 pb-24 animate-in fade-in duration-700 mx-auto overflow-x-hidden">
 
       <HeroDashboard data={data} isLoading={isLoading} />
 
