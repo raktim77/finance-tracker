@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { X } from "lucide-react";
+import { MessageSquareText, X } from "lucide-react";
 import {
   AnimatePresence,
   motion,
@@ -45,6 +45,7 @@ type Props = {
   }) => Promise<void>;
   initialData?: TransactionDraft | null;
   defaultData?: Partial<TransactionDraft> | null;
+  sourceMessage?: string | null;
 };
 
 // --- COMPONENT ---
@@ -58,6 +59,7 @@ export default function TransactionSheet({
   loading = false,
   initialData,
   defaultData,
+  sourceMessage,
 }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
@@ -285,6 +287,22 @@ export default function TransactionSheet({
                       }))
                     }
                   />
+
+                  {sourceMessage?.trim() && (
+                    <div className="rounded-[1.75rem] border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)]/60 p-4 shadow-sm">
+                      <div className="mb-3 flex items-center gap-2 text-[var(--color-accent)]">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)]/80">
+                          <MessageSquareText size={16} strokeWidth={2.5} />
+                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.22em]">
+                          Source SMS
+                        </span>
+                      </div>
+                      <p className="max-h-36 overflow-y-auto whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-[var(--color-text-primary)]">
+                        {sourceMessage}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Form Elements as Cards */}
                   <div className="flex flex-col gap-4">

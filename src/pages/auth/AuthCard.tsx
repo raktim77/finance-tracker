@@ -655,10 +655,10 @@ export default function AuthCard({ onAuthSuccess }: Props) {
 
     const idToken = result.credential?.idToken;
 
+    console.log("[ID TOKEN RECEIVED]", idToken)
     if (!idToken) {
       throw new Error("No ID token received");
     }
-
     return idToken;
   };
 
@@ -697,7 +697,7 @@ export default function AuthCard({ onAuthSuccess }: Props) {
       credentials: "include",
       body: JSON.stringify({ idToken })
     });
-
+    
     if (!res.ok) {
       throw new Error("Backend auth failed");
     }

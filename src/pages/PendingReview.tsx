@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -7,8 +7,14 @@ import {
   Inbox,
   ShieldCheck,
 } from "lucide-react";
-import { getPendingSMS } from "../lib/localDb";
+import { getPendingSMS, updateSMSStatus } from "../lib/localDb";
 import { isNativeAndroidApp } from "../lib/capacitor/platform";
+import TransactionSheet, { type TransactionDraft } from "../components/transactions/TransactionSheet";
+import { useAccounts } from "../features/accounts/hooks/useAccounts";
+import { useCategories } from "../features/categories/hooks/useCategories";
+import { useCreateTransaction } from "../features/transactions/hooks/useTransactions";
+import { useAuth } from "../lib/context/useAuth";
+import { useToast } from "../components/ui/confirm-modal/useToast";
 import {
   formatPendingDateTime,
   getPendingAmountClass,
@@ -37,9 +43,116 @@ function getPendingIconStyle(item: PendingSMSItem) {
   return "bg-[var(--color-accent-soft)] text-[var(--color-accent)]";
 }
 
+type TransactionType = TransactionDraft["type"];
+
+type SheetAccount = {
+  _id: string;
+  name: string;
+  type: string;
+  balance?: number;
+  icon: string;
+  iconColor: string;
+};
+
+const GENERIC_ACCOUNT_WORDS = new Set([
+  "account",
+  "bank",
+  "card",
+  "credit",
+  "current",
+  "debit",
+  "saving",
+  "savings",
+]);
+
+function normalizeMatchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getWords(value: string) {
+  return normalizeMatchText(value)
+    .split(" ")
+    .filter((word) => word.length >= 3 && !GENERIC_ACCOUNT_WORDS.has(word));
+}
+
+function findMatchingAccount(item: PendingSMSItem, accounts: SheetAccount[]) {
+  const searchableText = normalizeMatchText(
+    [item.raw_message, item.sender, item.merchant].filter(Boolean).join(" ")
+  );
+  const searchableWords = new Set(searchableText.split(" ").filter(Boolean));
+
+  const scoredAccounts = accounts
+    .map((account) => {
+      const accountName = normalizeMatchText(account.name);
+      const accountWords = getWords(account.name);
+      if (!accountName || accountWords.length === 0) return null;
+
+      let score = 0;
+      if (searchableText.includes(accountName)) {
+        score += accountName.length >= 5 ? 100 : 45;
+      }
+
+      for (const word of accountWords) {
+        if (searchableWords.has(word)) score += Math.min(word.length, 12);
+      }
+
+      return { account, score };
+    })
+    .filter((entry): entry is { account: SheetAccount; score: number } => !!entry)
+    .sort((a, b) => b.score - a.score);
+
+  const [best, secondBest] = scoredAccounts;
+  if (!best || best.score < 4) return null;
+  if (secondBest && best.score === secondBest.score) return null;
+
+  return best.account;
+}
+
+function toSupportedTransactionType(type: PendingSMSItem["type"]): TransactionType {
+  if (type === "income" || type === "expense") return type;
+  return "expense";
+}
+
 export default function PendingReview() {
+  const { accessToken } = useAuth();
+  const toast = useToast();
   const [items, setItems] = useState<PendingSMSItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPending, setSelectedPending] = useState<PendingSMSItem | null>(null);
+  const { data: categoriesData } = useCategories({ accessToken });
+  const { data: accountsData } = useAccounts({}, { accessToken });
+  const createTransactionMutation = useCreateTransaction({ accessToken });
+
+  const categories = categoriesData?.categories ?? [];
+  const accounts = accountsData?.accounts ?? [];
+  const mappedAccounts = useMemo(
+    () =>
+      accounts.map((account) => ({
+        _id: account._id,
+        name: account.name,
+        type: account.account_category_group || "account",
+        balance: account.current_balance,
+        icon: account.account_category_icon || "help",
+        iconColor: account.account_category_color || "#ddd",
+      })),
+    [accounts]
+  );
+
+  const loadPendingItems = useCallback(async () => {
+    if (!isNativeAndroidApp()) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const data = await getPendingSMS();
+    setItems(data);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,7 +177,50 @@ export default function PendingReview() {
     };
   }, []);
 
+  const pendingDraft = useMemo<Partial<TransactionDraft> | null>(() => {
+    if (!selectedPending) return null;
+
+    const matchingAccount = findMatchingAccount(selectedPending, mappedAccounts);
+
+    return {
+      amount:
+        typeof selectedPending.amount === "number" && !Number.isNaN(selectedPending.amount)
+          ? selectedPending.amount
+          : "",
+      type: toSupportedTransactionType(selectedPending.type),
+      account_id: matchingAccount?._id ?? null,
+      category_id: null,
+      note: selectedPending.merchant?.trim() || "",
+      date: selectedPending.received_at ? new Date(selectedPending.received_at) : new Date(),
+    };
+  }, [mappedAccounts, selectedPending]);
+
+  const handleSubmitPendingTransaction = async (payload: {
+    amount: number;
+    type: "expense" | "income" | "transfer";
+    account_id: string;
+    to_account_id?: string;
+    category_id?: string;
+    note?: string;
+    date: Date;
+  }) => {
+    if (!selectedPending) return;
+
+    try {
+      await createTransactionMutation.mutateAsync(payload);
+      await updateSMSStatus(selectedPending.id, "processed");
+      await loadPendingItems();
+      toast.success("Transaction recorded successfully");
+      setSelectedPending(null);
+    } catch (error) {
+      console.error("Failed to review pending transaction", error);
+      toast.error("Failed to record transaction");
+      throw error;
+    }
+  };
+
   return (
+    <>
         <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-col gap-6 overflow-x-hidden pb-24 animate-in fade-in duration-500">
             <section className="relative min-w-0 overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--color-surface)] p-5 md:p-8 shadow-sm">
                 <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
@@ -138,8 +294,11 @@ export default function PendingReview() {
                                     type="button"
                                     className="group relative flex w-full min-w-0 items-center justify-between gap-2 rounded-2xl py-3 px-2 text-left transition-all hover:bg-[var(--color-background)] active:scale-[0.995] overflow-hidden"
                                     onClick={() => {
-                                        console.log("Clicked:", item);
-                                        // next step: open review modal
+                                        if (mappedAccounts.length === 0) {
+                                            toast.error("Please add an account first");
+                                            return;
+                                        }
+                                        setSelectedPending(item);
                                     }}
                                 >
                                     {index !== items.length - 1 && (
@@ -191,5 +350,18 @@ export default function PendingReview() {
                 )}
             </section>
         </div>
+
+        <TransactionSheet
+            open={!!selectedPending}
+            onClose={() => setSelectedPending(null)}
+            categories={categories}
+            accounts={mappedAccounts}
+            onSubmit={handleSubmitPendingTransaction}
+            loading={createTransactionMutation.isPending}
+            initialData={null}
+            defaultData={pendingDraft}
+            sourceMessage={selectedPending?.raw_message ?? null}
+        />
+    </>
     );
 }
