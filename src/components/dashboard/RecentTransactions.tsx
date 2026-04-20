@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { List, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../lib/context/useAuth";
 import { useTransactions, useDeleteTransaction, useUpdateTransaction } from "../../features/transactions/hooks/useTransactions";
@@ -176,11 +176,16 @@ export const RecentTransactions = () => {
                     onClick={() => navigate(hasAccounts ? "/transactions" : "/accounts")}
                     className="group mt-1 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-4 py-2.5 text-[11px] font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)]"
                   >
-                    <PlusCircle
+                    {hasAccounts ? <List
                       size={16}
                       strokeWidth={2.5}
                       className="group-hover:rotate-90 transition-transform"
-                    />
+                    /> : <PlusCircle
+                      size={16}
+                      strokeWidth={2.5}
+                      className="group-hover:rotate-90 transition-transform"
+                    />}
+                    
                     {hasAccounts ? "View Transactions" : "Add Account"}
                   </button>
                 </div>

@@ -46,11 +46,11 @@ export function SpendingDonut({ data, isLoading }: Props) {
         <div className="w-12 h-12 rounded-2xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)] shadow-sm">
           <span className="text-xl">🍩</span>
         </div>
-        <div className="flex flex-col gap-1 max-w-sm">
-          <h2 className="text-xs font-black uppercase tracking-widest text-[var(--color-text-primary)]">
+        <div className="flex flex-col gap-2 max-w-sm">
+          <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
             Empty Vault
           </h2>
-          <p className="text-[10px] font-bold text-[var(--color-text-secondary)] leading-relaxed">
+          <p className="text-xs text-[var(--color-text-secondary)]">
             Record categories to see spending insights.
           </p>
         </div>
