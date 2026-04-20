@@ -20,7 +20,6 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
     hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
   const displayName = user?.name?.split(" ")[0] ?? "there";
-  const avatarInitial = displayName.charAt(0).toUpperCase();
 
   // 🔁 AUTO ROTATE INSIGHTS
   useEffect(() => {

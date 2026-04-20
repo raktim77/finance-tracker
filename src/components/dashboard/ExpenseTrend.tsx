@@ -18,7 +18,7 @@ export const ExpenseTrend = ({ data, isLoading }: Props) => {
   // 🔥 SKELETON (matches your UI)
   if (isLoading) {
     return (
-     <div className="rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6 h-full">
+     <div className="w-full rounded-[1.6rem] md:rounded-[2rem] p-4 md:p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6 h-full">
   {/* Header Skeleton */}
   <div className="flex items-center justify-between">
     <div className="flex flex-col gap-2">
@@ -70,7 +70,7 @@ export const ExpenseTrend = ({ data, isLoading }: Props) => {
 
   if (!hasData) {
     return (
-      <div className="rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6 items-center justify-center text-center min-h-[320px] h-full">
+      <div className="w-full rounded-[1.6rem] md:rounded-[2rem] p-4 md:p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-6 items-center justify-center text-center min-h-[320px] h-full">
         <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center shadow-inner">
           <span className="text-2xl">📈</span>
         </div>
@@ -88,7 +88,7 @@ export const ExpenseTrend = ({ data, isLoading }: Props) => {
   }
 
   return (
-    <div className="rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6 h-full">
+    <div className="w-full rounded-[1.6rem] md:rounded-[2rem] p-4 md:p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col gap-6 h-full">
       
       {/* Header */}
       <div className="flex items-center justify-between">

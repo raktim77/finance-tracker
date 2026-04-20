@@ -15,16 +15,16 @@ export default function Dashboard() {
   useDashboardAnalytics();
 
   return (
-    <div className="md:p-1 flex flex-col gap-6 md:gap-8 pb-24 animate-in fade-in duration-700 mx-auto">
+    <div className="section-animate md:p-1 flex flex-col gap-6 md:gap-8 pb-24 mx-auto">
 
       <HeroDashboard data={data} isLoading={isLoading} />
 
       <PendingReviewCard />
       <StatsGrid data={data} isLoading={isLoading} />
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 items-stretch">
 
   {/* Expense Trend */}
-  <div className="lg:col-span-3 order-2 lg:order-1 p-1 md:p-0">
+  <div className="lg:col-span-3 order-3 lg:order-1 p-1 md:p-0 lg:flex">
     <ExpenseTrend
       data={analyticsData?.trend}
       isLoading={analyticsLoading}
@@ -32,12 +32,12 @@ export default function Dashboard() {
   </div>
 
   {/* Recent Transactions */}
-  <div className="lg:col-span-2 order-1 lg:order-2 p-1 md:p-0">
+  <div className="lg:col-span-2 order-1 lg:order-2 p-1 md:p-0 lg:flex">
     <RecentTransactions />
   </div>
 
   {/* Spending Donut */}
-  <div className="lg:col-span-3 h-full order-3 p-1 md:p-0">
+  <div className="lg:col-span-3 h-full order-2 p-1 md:p-0 lg:flex">
     <SpendingDonut
       data={analyticsData?.categories}
       isLoading={analyticsLoading}
@@ -45,7 +45,7 @@ export default function Dashboard() {
   </div>
 
   {/* AI Insights */}
-  <div className="lg:col-span-2 h-full order-4">
+  <div className="lg:col-span-2 h-full order-4 lg:flex">
     <AIInsights />
   </div>
 

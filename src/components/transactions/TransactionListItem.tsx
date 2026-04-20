@@ -42,12 +42,12 @@ export default function TransactionListItem({
   return (
     <div
       onClick={onClick}
-      className={`relative flex items-center justify-between p-3 hover:bg-[var(--color-background)] rounded-2xl transition-all group min-w-0 cursor-pointer ${
+      className={`relative mb-1 md:mb-0 flex items-center justify-between p-3 bg-[var(--color-surface)] md:hover:bg-[var(--color-background)] hover:bg-[var(--color-accent-soft)] rounded-2xl transition-all group min-w-0 cursor-pointer ${
         isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"
       }`}
     >
       {showDivider && (
-        <div className="absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
+        <div className="hidden md:block absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
       )}
 
       <div className={`flex items-center min-w-0 flex-1 ${isCompact ? "gap-3" : "gap-3 md:gap-4"}`}>

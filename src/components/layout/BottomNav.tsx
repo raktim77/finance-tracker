@@ -76,7 +76,7 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
               type="button"
               onClick={onAddTransaction}
               className="
-                absolute -top-6 w-14 h-14 rounded-2xl
+                absolute -top-3 w-14 h-14 rounded-full
                 bg-[var(--color-primary)] text-[var(--color-background)]
                 flex items-center justify-center
                 shadow-[0_15px_35px_rgba(198,124,78,0.4)]

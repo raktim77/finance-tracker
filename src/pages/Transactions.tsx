@@ -206,9 +206,9 @@ export default function Transactions() {
     setDebouncedSearch("");
   };
 
-  return (<div className="p-1 flex flex-col gap-6 pb-24 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full mx-auto box-border overflow-x-hidden">
+  return (<div className="p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden">
   {/* HEADER */}
-<div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
+<div className="transaction-section-animate flex flex-col gap-4 w-full min-w-0 overflow-hidden">
   {/* TOP ROW: Back Button (Only shows when scoped) */}
   {isScopedToAccount && (
     <div className="flex animate-in slide-in-from-left-2 duration-500">
@@ -266,7 +266,7 @@ export default function Transactions() {
 
     {/* CONTROLS */}
 
-    <div className="flex flex-col gap-5 w-full">
+    <div className="transaction-section-animate flex flex-col gap-5 w-full" style={{ animationDelay: "80ms" }}>
 
       {/* SEARCH */}
 
@@ -387,7 +387,7 @@ export default function Transactions() {
 
     {/* TRANSACTION LIST */}
 
-    <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden shadow-sm w-full">
+    <div className="transaction-section-animate rounded-xl bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden shadow-sm w-full" style={{ animationDelay: "160ms" }}>
 
       <div className="flex flex-col p-2 gap-1">
 
@@ -604,6 +604,31 @@ export default function Transactions() {
         }
       }}
     />
+    <style>{`
+      .transaction-section-animate {
+        opacity: 0;
+        animation: transactionSlideUp 0.45s ease-out forwards;
+      }
+
+      @keyframes transactionSlideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .transaction-section-animate {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+      }
+    `}</style>
   </div>
 
   );

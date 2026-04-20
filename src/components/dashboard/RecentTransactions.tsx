@@ -99,9 +99,9 @@ export const RecentTransactions = () => {
   };
 
   return (
-    <div className="rounded-[2rem] p-2 hover:shadow-md transition-all h-full flex flex-col">
+    <div className="w-full rounded-[2rem] px-2 md:bg-[var(--color-surface)] md:border border-[var(--border)] md:shadow-sm md:hover:shadow-md transition-all h-full flex flex-col">
       {currentItems.length > 0 ? (
-        <div className="flex items-center justify-between mb-4 px-2 pt-2">
+        <div className="flex items-center justify-between mb-4 md:px-6 md:pt-6">
           <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
             Recent History
           </h2>
@@ -115,7 +115,7 @@ export const RecentTransactions = () => {
       ) : ''}
 
 
-      <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden w-full flex-1">
+      <div className="rounded-xl overflow-hidden w-full flex-1">
         <div className="flex flex-col gap-1 h-full">
           {isLoading ? (
             <div className="flex flex-col gap-1 p-1">

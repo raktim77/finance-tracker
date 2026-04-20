@@ -5,7 +5,7 @@
   :root {
     /* Core Backgrounds */
     --color-background:      #F6F1E8;
-    --color-surface:         #FFFCF6;
+    --color-surface:         #fffcf7;
     
     /* Typography */
     --color-text-primary:    #1A120A;
@@ -175,6 +175,31 @@ button {
   cursor: pointer;
 }
 
+
+.section-animate {
+        opacity: 0;
+        animation: transactionSlideUp 0.45s ease-out forwards;
+      }
+
+      @keyframes transactionSlideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .section-animate,
+        .transaction-section-animate {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+      }
 
 
 

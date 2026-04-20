@@ -5,7 +5,7 @@ import { Sparkles} from "lucide-react";
  */
 export function AIInsights() {
   return (
-    <div className="lg:col-span-6 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm relative overflow-hidden min-h-[200px] md:min-h-[240px] flex flex-col justify-center transition-all">
+    <div className="lg:col-span-6 h-full w-full rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm relative overflow-hidden min-h-[200px] md:min-h-[240px] flex flex-col justify-center transition-all">
       
       {/* Background Accents - Scaled down for mobile */}
       <div className="absolute -bottom-12 -right-12 w-48 h-48 md:w-64 md:h-64 bg-[var(--color-accent)] opacity-[0.08] blur-3xl rounded-full" />
