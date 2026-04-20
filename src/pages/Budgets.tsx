@@ -772,7 +772,7 @@ export default function Budgets() {
         <div
           className="
       relative group rounded-[2.5rem] p-6 md:p-12 
-      bg-gradient-to-br from-[#8FD06B] via-[#6BBF59] to-[#244A14] 
+      bg-gradient-to-br from-[#2f8c3d] via-[#257d35] to-[#17430f] 
       transition-shadow duration-300 
       shadow-2xl/50
       z-10

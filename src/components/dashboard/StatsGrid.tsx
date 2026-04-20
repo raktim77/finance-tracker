@@ -9,7 +9,7 @@ type Props = {
 
 export const StatsGrid = ({ data, isLoading }: Props) => {
     return (
-        <div className="relative z-10">
+        <div className="relative z-10 hidden md:block">
             {/* Header */}
             <div className="relative z-20 mb-3">
                 <div className="inline-flex items-baseline gap-2 px-4 py-2 rounded-full bg-[var(--color-surface)] border border-[var(--border)] backdrop-blur-md">

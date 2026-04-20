@@ -196,7 +196,7 @@ export default function Accounts() {
       </div>
 
       {accountsLoading ? (
-        <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#8FD06B] via-[#6BBF59] to-[#244A14] shadow-2xl/50">
+        <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl/50">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32 animate-pulse" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-[60px] -ml-20 -mb-20" />
 
@@ -216,7 +216,7 @@ export default function Accounts() {
           </div>
         </div>
       ) : (
-        <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#8FD06B] via-[#6BBF59] to-[#244A14] shadow-2xl/50 transition-all duration-500 hover:scale-[1.005]">
+        <div className="relative group overflow-hidden rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl/50 transition-all duration-500 hover:scale-[1.005]">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32 animate-pulse" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-[60px] -ml-20 -mb-20" />
 

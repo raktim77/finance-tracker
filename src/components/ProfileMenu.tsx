@@ -82,13 +82,16 @@ export default function ProfileMenu() {
     avatarUrl.trim().toLowerCase() !== "null";
   const initials = initialsFromUser(meUser);
 
+  const handleProfileClick = () => {
+    navigate("/settings");
+  };
   return (
     <div className="relative" ref={rootRef}>
       <button
         aria-haspopup="true"
         aria-expanded={open}
         className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-primary)] text-white font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]"
-        onClick={() => setOpen((s) => !s)}
+        onClick={handleProfileClick}
         title={meUser?.name ?? meUser?.email ?? "Account"}
       >
         {hasAvatar ? (
@@ -122,7 +125,7 @@ export default function ProfileMenu() {
               <button
                 role="menuitem"
                 onClick={() => handleNavigate("/settings")}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--color-background)]"
+                className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--color-background)] text-[var(--color-text-primary)]"
               >
                 Profile & Settings
               </button>

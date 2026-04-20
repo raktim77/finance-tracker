@@ -78,7 +78,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <Topbar toggleSidebar={toggleSidebarLayout} />
 
         {/* Page Content */}
-        <main data-route-scroll-container className="flex-1 p-4 overflow-auto md:p-6">
+        <main data-route-scroll-container className="flex-1 overflow-auto md:p-6">
           {children}
         </main>
 
