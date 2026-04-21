@@ -2,7 +2,7 @@ import { registerPlugin } from "@capacitor/core";
 
 type NativeChromePlugin = {
   setBackgroundColor(options: { color: string }): Promise<{ color: string }>;
-  setSystemBarIcons(options: { style: "light" | "dark" }): Promise<{ style: "light" | "dark" }>;
+  setStatusBarIcons(options: { style: "light" | "dark" }): Promise<{ style: "light" | "dark" }>;
 };
 
 export const NativeChrome = registerPlugin<NativeChromePlugin>("NativeChrome");

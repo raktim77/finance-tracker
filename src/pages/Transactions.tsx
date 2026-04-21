@@ -1,6 +1,6 @@
 import { useCreateTransaction, useDeleteTransaction, useTransactions, useUpdateTransaction } from "../features/transactions/hooks/useTransactions";
 import type { Transaction as ApiTransaction, Transaction } from "../features/transactions/types/transaction.types";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Search,
   X,
@@ -27,6 +27,7 @@ import {
   getTransactionCategoryLabel,
   getTransactionTitle,
 } from "../features/transactions/utils/transactionDisplay";
+import { useHeaderConfig } from "../hooks/useHeaderConfig";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -206,6 +207,24 @@ export default function Transactions() {
     setDebouncedSearch("");
   };
 
+  const handleOpenTransactionSheet = useCallback(() => {
+    if (!hasAccounts) {
+      toast.error("Please add an account first");
+      navigate("/accounts");
+      return;
+    }
+    setSheetOpen(true);
+  }, [hasAccounts, navigate, toast]);
+
+  useHeaderConfig({
+    heroColor: null,
+    heroHeight: 92,
+    showLogo: false,
+    scrollTitle: displayTitle,
+    scrollAction: "+",
+    onAction: handleOpenTransactionSheet,
+  });
+
   return (<div className="p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden">
   {/* HEADER */}
 <div className="transaction-section-animate flex flex-col gap-4 w-full min-w-0 overflow-hidden">
@@ -243,14 +262,7 @@ export default function Transactions() {
     </div>
 
     <button
-      onClick={() => {
-        if (!hasAccounts) {
-          toast.error("Please add an account first");
-          navigate("/accounts");
-          return;
-        }
-        setSheetOpen(true);
-      }}
+      onClick={handleOpenTransactionSheet}
       className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-2.5 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
     >
       <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />

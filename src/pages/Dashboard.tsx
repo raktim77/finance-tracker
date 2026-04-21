@@ -7,8 +7,16 @@ import { StatsGrid } from "../components/dashboard/StatsGrid";
 import PendingReviewCard from "../components/pending/PendingReviewCard";
 
 import { useDashboardAnalytics, useDashboardSummary } from "../features/dashboard/hooks/useDashboard";
+import { useHeaderConfig } from "../hooks/useHeaderConfig";
 
 export default function Dashboard() {
+  useHeaderConfig({
+    heroColor: "#2f8c3d",
+    heroHeight: 280,
+    showLogo: true,
+    scrollTitle: null,
+    scrollAction: null,
+  });
   
   const { data, isLoading } = useDashboardSummary();
   const { data: analyticsData, isLoading: analyticsLoading } =

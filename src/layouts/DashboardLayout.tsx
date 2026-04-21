@@ -1,9 +1,11 @@
-import { useContext, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useContext, useEffect, useMemo, useState, type UIEvent } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import Topbar from "../components/layout/Topbar";
 import BottomNav from "../components/layout/BottomNav";
+import { AppHeader } from "../components/app-header/AppHeader";
 import { ThemeContext } from "../context/ThemeContext";
+import { useHeaderContext } from "../context/HeaderContext";
 import { useAccounts } from "../features/accounts/hooks/useAccounts";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import {
@@ -17,6 +19,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { sidebarLayout, toggleSidebarLayout } = useContext(ThemeContext);
   const collapsed = sidebarLayout === "icons";
   const navigate = useNavigate();
+  const location = useLocation();
+  const { onScroll, registerConfig } = useHeaderContext();
   const { accessToken } = useAuth();
   const toast = useToast();
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -51,6 +55,40 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     setQuickAddOpen(true);
   };
 
+  useEffect(() => {
+    if (
+      location.pathname === "/dashboard" ||
+      location.pathname === "/transactions" ||
+      location.pathname.startsWith("/accounts/transactions/")
+    ) {
+      return;
+    }
+
+    const titleByPath: Record<string, string> = {
+      "/accounts": "Accounts",
+      "/budgets": "Budgets",
+      "/analytics": "Analytics",
+      "/settings": "Settings",
+      "/more": "More",
+      "/pending-review": "Pending Review",
+    };
+
+    registerConfig({
+      heroColor: null,
+      heroHeight: 80,
+      showLogo: false,
+      scrollTitle: titleByPath[location.pathname] ?? "Xpensio",
+      scrollAction: null,
+    });
+  }, [location.pathname, registerConfig]);
+
+  const handleMainScroll = useCallback(
+    (event: UIEvent<HTMLElement>) => {
+      onScroll(event.currentTarget.scrollTop);
+    },
+    [onScroll]
+  );
+
   const handleSubmitQuickAdd = async (payload: {
     amount: number;
     type: "expense" | "income" | "transfer";
@@ -67,6 +105,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex h-screen bg-[var(--color-background)]">
+      <AppHeader />
 
       {/* Sidebar */}
       <Sidebar collapsed={collapsed} onAddTransaction={handleOpenQuickAdd} />
@@ -78,7 +117,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <Topbar toggleSidebar={toggleSidebarLayout} />
 
         {/* Page Content */}
-        <main data-route-scroll-container className="flex-1 overflow-auto md:p-6">
+        <main
+          data-route-scroll-container
+          onScroll={handleMainScroll}
+          className="flex-1 overflow-auto pt-[var(--app-header-height,76px)] md:pt-6 md:p-6"
+        >
           {children}
         </main>
 

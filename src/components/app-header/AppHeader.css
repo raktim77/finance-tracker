@@ -1,0 +1,97 @@
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  display: block;
+  transition:
+    background-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.app-header__status-bar {
+  height: var(--app-header-status-height, 28px);
+  min-height: 28px;
+}
+
+.app-header__nav-bar {
+  position: relative;
+  display: flex;
+  height: 48px;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.app-header__logo,
+.app-header__title {
+  position: absolute;
+  left: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.app-header__logo--visible,
+.app-header__title--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.app-header__logo-image {
+  display: block;
+  height: 34px;
+  width: 34px;
+  object-fit: contain;
+}
+
+.app-header__title {
+  max-width: calc(100% - 88px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.app-header__action {
+  position: absolute;
+  right: 14px;
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.86);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    background-color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-header__action--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.app-header__action:active {
+  opacity: 0.75;
+  transform: scale(0.94);
+}
+
+@media (min-width: 768px) {
+  .app-header {
+    display: none;
+  }
+}

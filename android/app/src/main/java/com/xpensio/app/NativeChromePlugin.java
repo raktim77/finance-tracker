@@ -40,7 +40,7 @@ public class NativeChromePlugin extends Plugin {
     }
 
     @PluginMethod
-    public void setSystemBarIcons(final PluginCall call) {
+    public void setStatusBarIcons(final PluginCall call) {
         final String style = call.getString("style", "light");
 
         getBridge().executeOnMainThread(() -> {
@@ -52,7 +52,6 @@ public class NativeChromePlugin extends Plugin {
 
             if (controller != null) {
                 controller.setAppearanceLightStatusBars(useDarkIcons);
-                controller.setAppearanceLightNavigationBars(useDarkIcons);
             }
 
             JSObject result = new JSObject();

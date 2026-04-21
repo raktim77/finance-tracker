@@ -20,6 +20,9 @@ const config: CapacitorConfig = {
     androidScheme: "https",
   },
   plugins: {
+    StatusBar: {
+      overlaysWebView: true,
+    },
     // App: {
     //   disableBackButtonHandler: true,
     // },

@@ -21,6 +21,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { isNativeAndroidApp } from "./lib/capacitor/platform";
 import AndroidBackHandler from "./components/app-back/AndroidBackHandler";
 import { ThemeContext } from "./context/ThemeContext";
+import { HeaderProvider } from "./context/HeaderContext";
 import { NativeChrome } from "./lib/capacitor/nativeChrome";
 window.addEventListener("unhandledrejection", (event) => {
   console.error("UNHANDLED PROMISE:", event.reason);
@@ -166,8 +167,8 @@ function NativeChromeSync() {
     void NativeChrome.setBackgroundColor({ color }).catch((error) => {
       console.error("Failed to sync native background", error);
     });
-    void NativeChrome.setSystemBarIcons({ style: iconStyle }).catch((error) => {
-      console.error("Failed to sync system bar icon style", error);
+    void NativeChrome.setStatusBarIcons({ style: iconStyle }).catch((error) => {
+      console.error("Failed to sync status bar icon style", error);
     });
   }, [location.pathname, theme]);
 
@@ -337,10 +338,11 @@ function App() {
 
   return (
     <Router>
-      <NativeChromeSync />
-      <ScrollRestoration />
-      <AndroidBackHandler />
-      <Routes>
+      <HeaderProvider>
+        <NativeChromeSync />
+        <ScrollRestoration />
+        <AndroidBackHandler />
+        <Routes>
 
         {/* Marketing Pages */}
         <Route path="/" element={<HomeWrapper />} />
@@ -482,9 +484,10 @@ function App() {
           element={<Navigate to={isNativeAndroidApp() ? "/login" : "/"} replace />}
         />
 
-      </Routes>
+        </Routes>
 
-      <Analytics />
+        <Analytics />
+      </HeaderProvider>
     </Router>
   );
 }

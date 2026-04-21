@@ -106,12 +106,12 @@ export const initDB = async () => {
       );
     `);
 
-    // 🔥 Migration (safe)
-    try {
-      await connection.execute(`ALTER TABLE pending_sms_transactions ADD COLUMN hash TEXT`);
-    } catch (e) {
-      console.log("hash column already exists", e);
-    }
+    // // 🔥 Migration (safe)
+    // try {
+    //   await connection.execute(`ALTER TABLE pending_sms_transactions ADD COLUMN hash TEXT`);
+    // } catch (e) {
+    //   console.log("hash column already exists", e);
+    // }
 
     db = connection;
     return connection;

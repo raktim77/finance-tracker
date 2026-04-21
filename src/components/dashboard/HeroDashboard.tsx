@@ -35,7 +35,7 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
 
   if (isLoading) {
     return (
-      <div className="relative z-0 overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-br from-[#2f8c3d] via-[#257d35] to-[#17430f] animate-pulse">
+      <div className="relative z-0 overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-b from-[#2f8c3d] via-[#257d35] to-[#17430f] animate-pulse">
         <div className="h-32 w-full bg-white/10 rounded-2xl" />
       </div>
     );
@@ -61,9 +61,9 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
   };
 
   return (
-    <div className="relative z-0 group overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-5 pt-6 md:p-10 bg-gradient-to-br from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl">
-      <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-black/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
+    <div className="relative z-0 group overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-5 pt-6 md:p-10 bg-gradient-to-b from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl">
+      {/* <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-black/10 rounded-full blur-2xl opacity-40 pointer-events-none" /> */}
 
       <div className="relative z-10">
         {/* MOBILE LAYOUT */}
