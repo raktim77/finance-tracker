@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import { useHeaderContext } from "../../context/HeaderContext";
 import Logo from "../../assets/images/only_logo.png";
 import "./AppHeader.css";
+import { isNativeCapacitorApp } from "../../lib/capacitor/platform";
 
 export function AppHeader() {
   const { state } = useHeaderContext();
@@ -16,32 +17,33 @@ export function AppHeader() {
     logoVisible,
     title,
   } = state;
-
+  const isApp = isNativeCapacitorApp()
   return (
     <header
       className="app-header"
       style={{
         backgroundColor,
-        boxShadow: showShadow ? "0 1px 0 rgba(0,0,0,0.09)" : "none",
+        boxShadow: showShadow
+          ? "0 1px 0 rgba(0,0,0,0.09)"
+          : "0 0 0 rgba(0,0,0,0)",
         color: textColor,
       }}
     >
-      <div className="app-header__status-bar" />
+      {isApp ? (<div className="app-header__status-bar" />) : ""}
+
 
       <nav className="app-header__nav-bar" aria-label="Mobile page header">
         <span
-          className={`app-header__logo ${
-            logoVisible ? "app-header__logo--visible" : ""
-          }`}
+          className={`app-header__logo ${logoVisible ? "app-header__logo--visible" : ""
+            }`}
           aria-hidden={!logoVisible}
         >
           <img src={Logo} alt="Xpensio" className="app-header__logo-image" />
         </span>
 
         <span
-          className={`app-header__title ${
-            titleVisible ? "app-header__title--visible" : ""
-          }`}
+          className={`app-header__title ${titleVisible ? "app-header__title--visible" : ""
+            }`}
           aria-hidden={!titleVisible}
         >
           {title}
@@ -50,9 +52,8 @@ export function AppHeader() {
         {actionLabel && (
           <button
             type="button"
-            className={`app-header__action ${
-              actionVisible ? "app-header__action--visible" : ""
-            }`}
+            className={`app-header__action ${actionVisible ? "app-header__action--visible" : ""
+              }`}
             style={{ color: textColor, borderColor: `${textColor}33` }}
             onClick={onAction ?? undefined}
             aria-label={actionLabel === "+" ? "Add transaction" : actionLabel}

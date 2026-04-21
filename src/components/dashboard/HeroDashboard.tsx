@@ -61,7 +61,7 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
   };
 
   return (
-    <div className="relative z-0 group overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-5 pt-6 md:p-10 bg-gradient-to-b from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl">
+    <div className="relative z-0 group overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-5 pt-0 md:pt-6 md:p-10 bg-gradient-to-b from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl">
       {/* <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-black/10 rounded-full blur-2xl opacity-40 pointer-events-none" /> */}
 

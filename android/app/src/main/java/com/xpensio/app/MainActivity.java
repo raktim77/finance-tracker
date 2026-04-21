@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.community.database.sqlite.CapacitorSQLite;
@@ -28,11 +29,14 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(
+                getWindow(),
+                getWindow().getDecorView()
+        );
+        controller.setAppearanceLightStatusBars(false);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             getWindow().setStatusBarContrastEnforced(false);
-            getWindow().setNavigationBarContrastEnforced(false);
         }
 
         if (hasSmsPermissions()) {

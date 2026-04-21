@@ -69,6 +69,8 @@ async function setupStatusBar(theme: "light" | "dark" | "system") {
 
   await StatusBar.setOverlaysWebView({ overlay: true });
   await StatusBar.setBackgroundColor({ color: '#00000000' }); // transparent
+  if (theme === "system") return;
+
   await StatusBar.setStyle({
     style: theme === "dark" ? Style.Dark : Style.Light,
   });
@@ -153,12 +155,27 @@ function resolveNativeChromeColor(pathname: string) {
   return background;
 }
 
+function isHeaderManagedPath(pathname: string) {
+  return (
+    pathname === "/dashboard" ||
+    pathname === "/transactions" ||
+    pathname.startsWith("/accounts/transactions/") ||
+    pathname === "/accounts" ||
+    pathname === "/budgets" ||
+    pathname === "/analytics" ||
+    pathname === "/settings" ||
+    pathname === "/more" ||
+    pathname === "/pending-review"
+  );
+}
+
 function NativeChromeSync() {
   const location = useLocation();
   const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     if (!isNativeAndroidApp()) return;
+    if (isHeaderManagedPath(location.pathname)) return;
 
     const color = resolveNativeChromeColor(location.pathname);
     const iconStyle = isLightColor(color) ? "dark" : "light";
@@ -228,7 +245,7 @@ function App() {
   const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
-    setupStatusBar(theme);
+    setupStatusBar("system");
   }, [theme]);
 
   // MESSAGES WORK

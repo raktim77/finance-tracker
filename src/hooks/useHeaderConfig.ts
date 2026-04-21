@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { type HeaderConfig, useHeaderContext } from "../context/HeaderContext";
 
 export function useHeaderConfig(config: HeaderConfig) {
   const { registerConfig } = useHeaderContext();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     registerConfig(config);
   }, [
     config.heroColor,

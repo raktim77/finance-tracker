@@ -9,6 +9,7 @@ import { queryClient } from "./lib/react-query/queryClient.ts";
 import { ConfirmProvider } from "./components/ui/confirm-modal/confirm.provider.tsx";
 import { ToastProvider } from "./components/ui/confirm-modal/toast.provider.tsx";
 import { DismissibleLayerProvider } from "./components/app-back/DismissibleLayerProvider.tsx";
+import { HeaderProvider } from "./context/HeaderContext.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -17,9 +18,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <ConfirmProvider>
             <QueryClientProvider client={queryClient}>
               <AuthProvider>
+                <HeaderProvider>
                 <ThemeProvider>
                   <App />
                 </ThemeProvider>
+
+                </HeaderProvider>
               </AuthProvider>
             </QueryClientProvider>
           </ConfirmProvider>

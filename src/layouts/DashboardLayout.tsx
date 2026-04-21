@@ -14,6 +14,7 @@ import {
 import TransactionSheet from "../components/transactions/TransactionSheet";
 import { useAuth } from "../lib/context/useAuth";
 import { useToast } from "../components/ui/confirm-modal/useToast";
+import { isNativeCapacitorApp } from "../lib/capacitor/platform";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { sidebarLayout, toggleSidebarLayout } = useContext(ThemeContext);
@@ -102,7 +103,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     toast.success("Transaction recorded successfully");
     setQuickAddOpen(false);
   };
-
+  const appPadding = "pt-[var(--app-header-height,76px)]"
+  const webPadding = "pt-[48px]"
+  const paddingClass = isNativeCapacitorApp() ? appPadding : webPadding
   return (
     <div className="flex h-screen bg-[var(--color-background)]">
       <AppHeader />
@@ -120,7 +123,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <main
           data-route-scroll-container
           onScroll={handleMainScroll}
-          className="flex-1 overflow-auto pt-[var(--app-header-height,76px)] md:pt-6 md:p-6"
+          className={`flex-1 overflow-auto md:pt-6 md:p-6 ${paddingClass}`}
            style={{ 
           paddingBottom: "env(safe-area-inset-bottom, 0px)"
           
