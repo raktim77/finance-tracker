@@ -32,7 +32,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 items-stretch">
 
   {/* Expense Trend */}
-  <div className="lg:col-span-3 order-3 lg:order-1 p-1 md:p-0 lg:flex">
+  <div className="lg:col-span-3 order-3 lg:order-1 p-3 md:p-0 lg:flex">
     <ExpenseTrend
       data={analyticsData?.trend}
       isLoading={analyticsLoading}
@@ -45,7 +45,7 @@ export default function Dashboard() {
   </div>
 
   {/* Spending Donut */}
-  <div className="lg:col-span-3 h-full order-2 p-1 md:p-0 lg:flex">
+  <div className="lg:col-span-3 h-full order-2 p-3 md:p-0 lg:flex">
     <SpendingDonut
       data={analyticsData?.categories}
       isLoading={analyticsLoading}
@@ -53,7 +53,7 @@ export default function Dashboard() {
   </div>
 
   {/* AI Insights */}
-  <div className="lg:col-span-2 h-full order-4 lg:flex">
+  <div className="lg:col-span-2 h-full order-4 p-3 md:p-0 lg:flex">
     <AIInsights />
   </div>
 

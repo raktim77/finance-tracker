@@ -129,6 +129,10 @@ export default function BottomNav({ onAddTransaction }: BottomNavProps) {
 
         </div>
       </nav>
+      <div 
+      className="fixed bottom-0 left-0 right-0 bg-[var(--color-background)] lg:hidden"
+      style={{ height: 'env(safe-area-inset-bottom, 16px)' }}
+    />
     </div>
   );
 }

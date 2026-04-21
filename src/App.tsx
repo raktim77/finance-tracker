@@ -64,7 +64,7 @@ function LoginWrapper() {
   );
 }
 
-async function setupStatusBar(theme: "light" | "dark") {
+async function setupStatusBar(theme: "light" | "dark" | "system") {
   if (!isNativeAndroidApp()) return;
 
   await StatusBar.setOverlaysWebView({ overlay: true });

@@ -7,9 +7,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("theme") as Theme | null;
-      return stored ? stored : "light";
+      return stored ? stored : "system";
     }
-    return "light";
+    return "system";
   });
   const [sidebarLayout, setSidebarLayout] = useState<SidebarLayout>(() => {
     if (typeof window !== "undefined") {
@@ -20,9 +20,33 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
+    const root = document.documentElement;
+
+    const appliedTheme =
+      theme === "system" ? getSystemTheme() : theme;
+
+    root.classList.remove("light", "dark");
+    root.classList.add(appliedTheme);
+
     localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (theme !== "system") return;
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const listener = () => {
+      const root = document.documentElement;
+      const systemTheme = getSystemTheme();
+
+      root.classList.remove("light", "dark");
+      root.classList.add(systemTheme);
+    };
+
+    media.addEventListener("change", listener);
+
+    return () => media.removeEventListener("change", listener);
   }, [theme]);
 
   useEffect(() => {
@@ -30,11 +54,19 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [sidebarLayout]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) =>
+      prev === "light" ? "dark" : prev === "dark" ? "system" : "light"
+    );
   };
 
   const toggleSidebarLayout = () => {
     setSidebarLayout((prev) => (prev === "expanded" ? "icons" : "expanded"));
+  };
+
+  const getSystemTheme = (): "light" | "dark" => {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   };
 
   return (

@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
     Target,
     ChevronRight,
     BarChart3,
     Settings,
+    Monitor,
+    Moon,
+    Sun,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/context/useAuth";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { isNativeAndroidApp } from "../lib/capacitor/platform";
+import { ThemeContext } from "../context/ThemeContext";
 
 type MenuItem = {
     name: string;
@@ -22,6 +26,42 @@ const items: MenuItem[] = [
     { name: "Analytics", icon: BarChart3, path: "/analytics", description: "Deep spending insights" },
     { name: "Settings", icon: Settings, path: "/settings", description: "App & Security config" },
 ];
+
+function ThemeSwitcher() {
+  const { theme, setTheme } = useContext(ThemeContext);
+
+  const base =
+    "p-2 rounded-lg transition-all duration-200 flex items-center justify-center";
+  const active =
+    "bg-[var(--color-accent)]/20 text-[var(--color-text-primary)]";
+  const inactive =
+    "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]";
+
+  return (
+    <div className="flex items-center gap-2 p-1 rounded-xl bg-[var(--color-surface)] w-fit">
+      <button
+        onClick={() => setTheme("light")}
+        className={`${base} ${theme === "light" ? active : inactive}`}
+      >
+        <Sun size={14} />
+      </button>
+
+      <button
+        onClick={() => setTheme("dark")}
+        className={`${base} ${theme === "dark" ? active : inactive}`}
+      >
+        <Moon size={14} />
+      </button>
+
+      <button
+        onClick={() => setTheme("system")}
+        className={`${base} ${theme === "system" ? active : inactive}`}
+      >
+        <Monitor size={14} />
+      </button>
+    </div>
+  );
+}
 
 export default function MorePage() {
     const navigate = useNavigate();
@@ -106,13 +146,17 @@ export default function MorePage() {
                     </button>
                 ))}
             </div>
+                <div className="flex items-center justify-center mt-10">
+            <ThemeSwitcher />
+
+                </div>
 
             {/* --- SYSTEM FOOTER --- */}
             <footer className="mt-10 text-center space-y-6">
                 {/* Text-Link Logout */}
                 <button 
                     onClick={handleLogout}
-                    className="mb-14 text-[14px] font-black uppercase tracking-[0.3em] text-red-500/80 hover:text-red-500 active:opacity-60 transition-all"
+                    className="pl-1.5 mb-14 text-[14px] font-black uppercase tracking-[0.3em] text-red-500/80 hover:text-red-500 active:opacity-60 transition-all"
                 >
                     Logout
                 </button>

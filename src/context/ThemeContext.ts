@@ -1,6 +1,6 @@
 import { createContext } from "react";
 
-export type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "system";
 export type SidebarLayout = "expanded" | "icons";
 
 export type ThemeContextType = {
@@ -13,7 +13,7 @@ export type ThemeContextType = {
 };
 
 export const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
+  theme: "system",
   setTheme: () => {},
   toggleTheme: () => {},
   sidebarLayout: "expanded",

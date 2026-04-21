@@ -121,6 +121,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           data-route-scroll-container
           onScroll={handleMainScroll}
           className="flex-1 overflow-auto pt-[var(--app-header-height,76px)] md:pt-6 md:p-6"
+           style={{ 
+          paddingBottom: "env(safe-area-inset-bottom, 0px)"
+          
+        }}
         >
           {children}
         </main>
