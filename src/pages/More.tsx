@@ -89,7 +89,7 @@ export default function MorePage() {
     };
 
     return (
-        <div className="section-animate bg-[var(--color-background)] pb-32 md:hidden min-h-screen">
+        <div className=" bg-[var(--color-background)] pb-32 md:hidden min-h-screen">
 
             {/* --- ELEVATED HEADER --- */}
             <header className="mb-12 relative">

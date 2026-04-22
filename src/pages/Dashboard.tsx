@@ -27,7 +27,8 @@ export default function Dashboard() {
     <div className="md:p-1 flex flex-col gap-6 md:gap-8 pb-24 mx-auto">
 
       <HeroDashboard data={data} isLoading={isLoading} />
-      <div className="section-animate ">
+      {/* <div className="section-animate "> */}
+      <div className="">
         {isApp ? (
           <div className="p-2">
             <PendingReviewCard />

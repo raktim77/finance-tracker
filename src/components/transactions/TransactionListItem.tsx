@@ -76,7 +76,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}
               }
           }
         >
-          <Icon size={22} />
+          <Icon size={22} strokeWidth={2.5} />
         </div>
 
         <div className="flex flex-col min-w-0 flex-1 justify-center">

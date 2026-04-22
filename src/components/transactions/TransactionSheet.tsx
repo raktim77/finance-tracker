@@ -298,7 +298,7 @@ export default function TransactionSheet({
                           Source SMS
                         </span>
                       </div>
-                      <p className="max-h-36 overflow-y-auto whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-[var(--color-text-primary)]">
+                      <p className="overflow-y-auto whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-[var(--color-text-primary)]">
                         {sourceMessage}
                       </p>
                     </div>

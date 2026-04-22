@@ -276,7 +276,7 @@ export default function Budgets() {
 
   if (isLoading) {
     return (
-      <div className="section-animate p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+      <div className=" p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
@@ -382,7 +382,7 @@ export default function Budgets() {
 
   if (!budget?.exists && !canCreateBudget) {
     return (
-      <div className="section-animate p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+      <div className=" p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
@@ -434,7 +434,7 @@ export default function Budgets() {
   if (!budget?.exists || isEditingBudget) {
     if (!isEditingBudget && suggestionsLoading) {
       return (
-        <div className="section-animate flex flex-col items-center justify-center py-20 animate-pulse px-6 text-center">
+        <div className=" flex flex-col items-center justify-center py-20 animate-pulse px-6 text-center">
           <div className="w-16 h-16 bg-[var(--color-accent-soft)] rounded-full mb-4 flex items-center justify-center">
             <Sparkles className="text-[var(--color-accent)]" size={32} />
           </div>
@@ -457,7 +457,7 @@ export default function Budgets() {
     const isDraftTotalInputInvalid = !isPositiveCommittedValue(draftTotalInput);
 
     return (
-      <div className="section-animate p-1 flex flex-col gap-6 md:gap-8 pb-32 w-full">
+      <div className=" p-1 flex flex-col gap-6 md:gap-8 pb-32 w-full">
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
@@ -738,7 +738,7 @@ export default function Budgets() {
   }
 
   return (
-    <div className="section-animate p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+    <div className=" p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
 
       <div className="flex flex-col items-start justify-between gap-10">
         <div className="flex flex-col gap-4">

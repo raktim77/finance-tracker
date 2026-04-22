@@ -167,7 +167,7 @@ export default function Accounts() {
   };
 
   return (
-    <div className="section-animate p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+    <div className="p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">

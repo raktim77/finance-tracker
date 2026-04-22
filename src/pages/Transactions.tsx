@@ -237,7 +237,7 @@ export default function Transactions() {
 
   return (<div className="p-2 md:p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}
-    <div className="transaction-section-animate flex flex-col gap-4 w-full min-w-0 overflow-hidden">
+    <div className="transaction- flex flex-col gap-4 w-full min-w-0 overflow-hidden">
       {/* TOP ROW: Back Button (Only shows when scoped) */}
       {isScopedToAccount && (
         <div className="flex animate-in slide-in-from-left-2 duration-500">
@@ -288,7 +288,7 @@ export default function Transactions() {
 
     {/* CONTROLS */}
 
-    <div className="transaction-section-animate flex flex-col gap-3 w-full" style={{ animationDelay: "80ms" }}>
+    <div className="transaction- flex flex-col gap-3 w-full" style={{ animationDelay: "80ms" }}>
 
       {/* SEARCH */}
 
@@ -431,7 +431,7 @@ export default function Transactions() {
     </div>
     {/* TRANSACTION LIST */}
 
-    <div className="md:pl-0 pl-1 transaction-section-animate rounded-xl md:bg-[var(--color-surface)] md:border md:border-[var(--border)] overflow-hidden md:shadow-sm w-full" style={{ animationDelay: "160ms" }}>
+    <div className="md:pl-0 pl-1 transaction- rounded-xl md:bg-[var(--color-surface)] md:border md:border-[var(--border)] overflow-hidden md:shadow-sm w-full" style={{ animationDelay: "160ms" }}>
 <div className="flex flex-col p-0 md:p-1 gap-2">
 
   {isLoading ? (
@@ -522,7 +522,7 @@ export default function Transactions() {
         <div key={month} className="flex flex-col">
 
           {/* MONTH HEADER */}
-          <div className="md:pl-2 mb-3 pt-4 pb-4 md:pb-1 md:text-[14px] text-[18px] font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-70">
+          <div className="md:pl-2 mb-3 pt-4 pb-4 md:pb-1 md:text-[14px] text-[18px] font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-80">
             {month}
           </div>
 
@@ -661,7 +661,7 @@ export default function Transactions() {
       }}
     />
     <style>{`
-      .transaction-section-animate {
+      .transaction- {
         opacity: 0;
         animation: transactionSlideUp 0.45s ease-out forwards;
       }
@@ -678,7 +678,7 @@ export default function Transactions() {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .transaction-section-animate {
+        .transaction- {
           animation: none;
           opacity: 1;
           transform: none;
