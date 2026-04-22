@@ -124,7 +124,8 @@ export default function Dropdown({
       {open &&
         createPortal(
           <div
-            ref={menuRef} // ✅ IMPORTANT
+            ref={menuRef}
+            data-dropdown-portal="true" 
             onWheel={(e) => e.stopPropagation()}
             style={{
               position: "absolute",

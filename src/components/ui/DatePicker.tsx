@@ -86,7 +86,6 @@ function CustomMonthCaption({ calendarMonth, ...props }: MonthCaptionProps) {
             className="custom-day-picker__dropdown"
             menuClassName="custom-day-picker__dropdown-menu"
             optionClassName="custom-day-picker__dropdown-option"
-
           />
         </div>
 
@@ -108,6 +107,8 @@ function CustomMonthCaption({ calendarMonth, ...props }: MonthCaptionProps) {
   );
 }
 
+const PICKER_HEIGHT = 390;
+
 export default function DatePicker({
   value,
   onChange,
@@ -119,6 +120,7 @@ export default function DatePicker({
   modalMode = false,
 }: Props) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const inlinePopoverRef = useRef<HTMLDivElement>(null);
 
@@ -144,16 +146,72 @@ export default function DatePicker({
     [isControlled, onOpenChange]
   );
 
+  const calculateAndOpen = useCallback(() => {
+    if (!containerRef.current) {
+      setOpen(true);
+      return;
+    }
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const isMobile = window.innerWidth < 640;
+
+    if (isMobile) {
+      // Always center on mobile
+      setPopoverStyle({
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      });
+    } else if (spaceBelow >= PICKER_HEIGHT) {
+      // Open downward
+      setPopoverStyle({
+        position: "fixed",
+        top: rect.bottom + 8,
+        left: align === "right" ? undefined : rect.left,
+        right: align === "right" ? window.innerWidth - rect.right : undefined,
+      });
+    } else if (spaceAbove >= PICKER_HEIGHT) {
+      // Flip upward
+      setPopoverStyle({
+        position: "fixed",
+        bottom: window.innerHeight - rect.top + 8,
+        left: align === "right" ? undefined : rect.left,
+        right: align === "right" ? window.innerWidth - rect.right : undefined,
+      });
+    } else {
+      // Not enough space either way — center in viewport
+      setPopoverStyle({
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      });
+    }
+
+    setOpen(true);
+  }, [align, setOpen]);
+
+  // Outside click — ignore clicks inside dropdown portals
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (modalMode) return;
 
+      const target = event.target as Element;
+
+      // Don't close if clicking inside a dropdown portal (month/year selectors)
+      if (target.closest('[data-dropdown-portal="true"]')) return;
+
       if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        containerRef.current?.contains(target) ||
+        inlinePopoverRef.current?.contains(target)
       ) {
-        setOpen(false);
+        return; // click inside → do nothing
       }
+
+      setOpen(false);
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -204,6 +262,18 @@ export default function DatePicker({
   const pickerContent = (
     <div className="custom-day-picker overscroll-contain">
       <DayPicker
+        classNames={{
+          today: `
+      text-[var(--color-warm)]
+      font-extrabold
+    `,
+
+          selected: `
+      bg-[var(--color-accent)]
+      text-white
+      rounded-full
+    `,
+        }}
         mode="single"
         selected={value}
         defaultMonth={getInitialMonth(value)}
@@ -214,7 +284,7 @@ export default function DatePicker({
         components={{
           MonthCaption: CustomMonthCaption,
         }}
-      onSelect={(date) => {
+        onSelect={(date) => {
           onChange(date);
           setOpen(false);
         }}
@@ -226,7 +296,13 @@ export default function DatePicker({
     <div className={`relative w-full min-w-0 ${className}`} ref={containerRef}>
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (open) {
+            setOpen(false);
+          } else {
+            calculateAndOpen();
+          }
+        }}
         className="w-full flex items-center gap-3 text-left bg-transparent border-0 outline-none min-w-0"
       >
         {showIcon && (
@@ -236,7 +312,7 @@ export default function DatePicker({
           />
         )}
 
-        <span className="truncate text-sm font-bold text-[var(--color-text-primary)]">
+        <span className="truncate text-xs font-bold text-[var(--color-text-primary)]">
           {value
             ? value.toLocaleDateString("en-IN", {
               day: "2-digit",
@@ -256,7 +332,6 @@ export default function DatePicker({
                   className="fixed inset-0 z-[260] bg-black/20 backdrop-blur-sm"
                   onClick={() => setOpen(false)}
                 />
-
                 <div className="fixed inset-0 z-[270] flex items-center justify-center p-4">
                   <div
                     className="
@@ -266,7 +341,6 @@ export default function DatePicker({
                         shadow-[0_25px_60px_rgba(0,0,0,0.22)]
                         animate-in fade-in zoom-in-95 duration-200
                         w-max max-w-[95vw]
-                        
                       "
                   >
                     {pickerContent}
@@ -276,38 +350,35 @@ export default function DatePicker({
               document.body
             )
             : null
-          : (
-            <>
-              <div
-                className="fixed inset-0 z-[119] bg-black/10 md:bg-transparent"
-                onClick={() => setOpen(false)}
-              />
+          : typeof document !== "undefined"
+            ? createPortal(
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-[119] bg-black/10 md:bg-transparent"
+                  onClick={() => setOpen(false)}
+                />
 
-              <div
-                ref={inlinePopoverRef}
-                className={`
-                  absolute top-full mt-3 z-[120]
-                  bg-[var(--color-surface)]
-                  border border-[var(--border)]
-                  rounded-[1.5rem] p-3
-                  shadow-[0_20px_50px_rgba(0,0,0,0.15)]
-                  animate-in fade-in zoom-in-95 duration-200
-                  ${align === "right"
-                    ? "right-0 origin-top-right"
-                    : "left-0 origin-top-left"
-                  }
-                  max-sm:fixed
-                  max-sm:left-1/2
-                  max-sm:top-1/2
-                  max-sm:-translate-x-1/2
-                  max-sm:-translate-y-1/2
-                  max-sm:mt-0
-                `}
-              >
-                {pickerContent}
-              </div>
-            </>
-          ))}
+                {/* Popover — positioned via calculated inline style */}
+                <div
+                  ref={inlinePopoverRef}
+                  style={popoverStyle}
+                  className="
+                    z-[120]
+                    bg-[var(--color-surface)]
+                    border border-[var(--border)]
+                    rounded-[1.5rem] p-3
+                    shadow-[0_20px_50px_rgba(0,0,0,0.15)]
+                    animate-in fade-in zoom-in-95 duration-200
+                    w-max
+                  "
+                >
+                  {pickerContent}
+                </div>
+              </>,
+              document.body
+            )
+            : null)}
 
       <style>{`
         .custom-day-picker .rdp {
@@ -391,7 +462,7 @@ export default function DatePicker({
 
         .custom-day-picker__dropdown-option {
           color: var(--color-text-primary);
-          border-radius: 0px !important
+          border-radius: 0px !important;
         }
 
         .custom-day-picker__dropdown-option[aria-selected="true"] {
@@ -457,12 +528,17 @@ export default function DatePicker({
         .rdp-day_selected {
           background-color: var(--color-accent) !important;
           font-weight: 700;
+          color: white !important;
         }
 
         .custom-day-picker .rdp-day_today:not(.rdp-day_selected) {
           color: var(--color-accent);
           font-weight: 800;
         }
+
+        .rdp-selected .rdp-day_button {
+    border: var(--color-accent);
+}
 
         @media (max-width: 640px) {
           .custom-day-picker__caption {

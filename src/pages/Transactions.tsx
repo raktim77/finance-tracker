@@ -10,6 +10,7 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  ArrowRight,
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
@@ -237,7 +238,7 @@ export default function Transactions() {
 
   return (<div className="p-2 md:p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden">
     {/* HEADER */}
-    <div className="transaction- flex flex-col gap-4 w-full min-w-0 overflow-hidden">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
       {/* TOP ROW: Back Button (Only shows when scoped) */}
       {isScopedToAccount && (
         <div className="flex animate-in slide-in-from-left-2 duration-500">
@@ -288,7 +289,7 @@ export default function Transactions() {
 
     {/* CONTROLS */}
 
-    <div className="transaction- flex flex-col gap-3 w-full" style={{ animationDelay: "80ms" }}>
+    <div className="flex flex-col gap-3 w-full" style={{ animationDelay: "80ms" }}>
 
       {/* SEARCH */}
 
@@ -370,9 +371,11 @@ export default function Transactions() {
 
               </div>
 
-              <span className="text-xs font-bold text-[var(--color-text-secondary)] opacity-60">
-                →
-              </span>
+              <ArrowRight
+                size={34}
+                strokeWidth={2.5}
+                className="text-[var(--color-text-secondary)] opacity-60"
+              />
               <div className="w-full flex items-center justify-between px-3 md:px-4 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30">
                 <DatePicker value={endDate} onChange={setEndDate} />
 
@@ -431,136 +434,136 @@ export default function Transactions() {
     </div>
     {/* TRANSACTION LIST */}
 
-    <div className="md:pl-0 pl-1 transaction- rounded-xl md:bg-[var(--color-surface)] md:border md:border-[var(--border)] overflow-hidden md:shadow-sm w-full" style={{ animationDelay: "160ms" }}>
-<div className="flex flex-col p-0 md:p-1 gap-2">
+    <div className="md:pl-0 pl-1  rounded-xl md:bg-[var(--color-surface)] md:border md:border-[var(--border)] overflow-hidden md:shadow-sm w-full" style={{ animationDelay: "160ms" }}>
+      <div className="flex flex-col p-0 md:p-1 gap-2">
 
-  {isLoading ? (
-    <div className="flex flex-col gap-1 md:p-1">
-      {Array.from({ length: 8 }).map((_, index) => (
-        <div
-          key={index}
-          className="relative flex items-center justify-between gap-3 md:gap-8 rounded-2xl px-1 mb-2 mt-2 md:p-3"
-        >
-          {index !== 7 && (
-            <div className="absolute bottom-0 left-4 right-4 md:border-b md:border-dashed md:border-[var(--border)]" />
-          )}
+        {isLoading ? (
+          <div className="flex flex-col gap-1 md:p-1">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="relative flex items-center justify-between gap-3 md:gap-8 rounded-2xl px-1 mb-2 mt-2 md:p-3"
+              >
+                {index !== 7 && (
+                  <div className="absolute bottom-0 left-4 right-4 md:border-b md:border-dashed md:border-[var(--border)]" />
+                )}
 
-          <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-            <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
+                <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
 
-            <div className="flex min-w-0 flex-1 flex-col justify-center">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
-                <div className="h-4 w-32 md:w-44 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
-                <div className="h-4 w-16 md:hidden bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                  <div className="flex min-w-0 flex-1 flex-col justify-center">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
+                      <div className="h-4 w-32 md:w-44 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                      <div className="h-4 w-16 md:hidden bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                    </div>
+
+                    <div className="flex items-center justify-between min-w-0 md:justify-start md:gap-2">
+                      <div className="h-3 w-20 md:w-28 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                      <div className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
+                      <div className="h-3 w-16 bg-[var(--color-text-secondary)]/20 rounded animate-pulse ml-4 md:ml-0" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden md:flex items-center gap-2 shrink-0">
+                  <div className="h-5 w-20 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                  <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
+                </div>
               </div>
+            ))}
+          </div>
 
-              <div className="flex items-center justify-between min-w-0 md:justify-start md:gap-2">
-                <div className="h-3 w-20 md:w-28 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
-                <div className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
-                <div className="h-3 w-16 bg-[var(--color-text-secondary)]/20 rounded animate-pulse ml-4 md:ml-0" />
+        ) : isError ? (
+
+          <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
+            {error instanceof Error ? error.message : "Failed to load transactions"}
+          </div>
+
+        ) : isWaitingForCustomRange ? (
+
+          <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
+            Select both start and end dates
+          </div>
+
+        ) : currentItems.length === 0 ? (
+          <div className="p-8 md:p-12">
+            <div className="relative overflow-hidden rounded-[2rem] text-center">
+              <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4">
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
+                    {hasAccounts ? "No Transactions Yet" : "Add an Account First"}
+                  </h3>
+                  <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
+                    {hasAccounts
+                      ? "Start recording income, expenses, or transfers to build your transaction history here."
+                      : "You need at least one account before you can record transactions. Add an account to get started."}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (hasAccounts) {
+                      setSheetOpen(true);
+                      return;
+                    }
+                    navigate("/accounts");
+                  }}
+                  className="group mt-2 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-3 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
+                >
+                  <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+                  {hasAccounts ? "Record Your First Transaction" : "Add Your First Account"}
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 shrink-0">
-            <div className="h-5 w-20 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
-            <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
-          </div>
-        </div>
-      ))}
-    </div>
+        ) : (
 
-  ) : isError ? (
-
-    <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
-      {error instanceof Error ? error.message : "Failed to load transactions"}
-    </div>
-
-  ) : isWaitingForCustomRange ? (
-
-    <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
-      Select both start and end dates
-    </div>
-
-  ) : currentItems.length === 0 ? (
-    <div className="p-8 md:p-12">
-      <div className="relative overflow-hidden rounded-[2rem] text-center">
-        <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
-              {hasAccounts ? "No Transactions Yet" : "Add an Account First"}
-            </h3>
-            <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
-              {hasAccounts
-                ? "Start recording income, expenses, or transfers to build your transaction history here."
-                : "You need at least one account before you can record transactions. Add an account to get started."}
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              if (hasAccounts) {
-                setSheetOpen(true);
-                return;
-              }
-              navigate("/accounts");
-            }}
-            className="group mt-2 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-3 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
-          >
-            <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
-            {hasAccounts ? "Record Your First Transaction" : "Add Your First Account"}
-          </button>
-        </div>
-      </div>
-    </div>
-
-  ) : (
-
-    Object.entries(groupedTransactions).map(([month, items], groupIndex, arr) => {
-      const isLastGroup = groupIndex === arr.length - 1;
-
-      return (
-        <div key={month} className="flex flex-col">
-
-          {/* MONTH HEADER */}
-          <div className="md:pl-2 mb-3 pt-4 pb-4 md:pb-1 md:text-[14px] text-[18px] font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-80">
-            {month}
-          </div>
-
-          {items.map((t, index) => {
-            const isLast = index === items.length - 1;
-            const categoryLabel = getTransactionCategoryLabel(t);
-            const title = getTransactionTitle(t);
-            const displayDate = formatTransactionDisplayDate(t.date);
+          Object.entries(groupedTransactions).map(([month, items], groupIndex, arr) => {
+            const isLastGroup = groupIndex === arr.length - 1;
 
             return (
-              <TransactionListItem
-                key={t._id}
-                transaction={t}
-                title={title}
-                categoryLabel={categoryLabel}
-                displayDate={displayDate}
-                showDivider={!isLast}
-                onClick={() => {
-                  setSelectedTx(t);
-                  setDetailsOpen(true);
-                }}
-              />
+              <div key={month} className="flex flex-col">
+
+                {/* MONTH HEADER */}
+                <div className="md:pl-2 mb-3 pt-4 pb-4 md:pb-1 md:text-[14px] text-[18px] font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-80">
+                  {month}
+                </div>
+
+                {items.map((t, index) => {
+                  const isLast = index === items.length - 1;
+                  const categoryLabel = getTransactionCategoryLabel(t);
+                  const title = getTransactionTitle(t);
+                  const displayDate = formatTransactionDisplayDate(t.date);
+
+                  return (
+                    <TransactionListItem
+                      key={t._id}
+                      transaction={t}
+                      title={title}
+                      categoryLabel={categoryLabel}
+                      displayDate={displayDate}
+                      showDivider={!isLast}
+                      onClick={() => {
+                        setSelectedTx(t);
+                        setDetailsOpen(true);
+                      }}
+                    />
+                  );
+                })}
+
+                {!isLastGroup && (
+                  <div className="md:hidden relative my-3">
+                    <div className="absolute -bottom-3 left-0 right-0 h-px bg-[var(--border)]" />
+                  </div>
+                )}
+
+              </div>
             );
-          })}
+          })
 
-          {!isLastGroup && (
-            <div className="md:hidden relative my-3">
-              <div className="absolute -bottom-3 left-0 right-0 h-px bg-[var(--border)]" />
-            </div>
-          )}
+        )}
 
-        </div>
-      );
-    })
-
-  )}
-
-</div>
+      </div>
 
 
       {/* Pagination */}
@@ -661,7 +664,7 @@ export default function Transactions() {
       }}
     />
     <style>{`
-      .transaction- {
+      .transaction-section-animate {
         opacity: 0;
         animation: transactionSlideUp 0.45s ease-out forwards;
       }
@@ -678,7 +681,7 @@ export default function Transactions() {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .transaction- {
+        .transaction-section-animate {
           animation: none;
           opacity: 1;
           transform: none;

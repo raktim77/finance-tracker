@@ -733,7 +733,7 @@ export default function Settings() {
 
           {/* PROFILE */}
           {activeTab === "profile" && (
-            <div className="settings- space-y-6">
+            <div className="settings-section-animate space-y-6">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-warm)] p-[2px]">
 
@@ -801,7 +801,7 @@ export default function Settings() {
 
           {/* FINANCIAL */}
           {activeTab === "financial" && (
-            <div className="settings- space-y-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
+            <div className="settings-section-animate space-y-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Default Currency</label>
@@ -830,7 +830,7 @@ export default function Settings() {
 
           {/* ALERTS */}
           {activeTab === "notifications" && (
-            <div className="settings- space-y-4">
+            <div className="settings-section-animate space-y-4">
               <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] overflow-hidden">
                 <ToggleItem
                   title="Budget Alerts"
@@ -853,7 +853,7 @@ export default function Settings() {
 
           {/* APPEARANCE */}
           {activeTab === "appearance" && (
-            <div className="settings- space-y-4">
+            <div className="settings-section-animate space-y-4">
               <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] overflow-visible">
                 <ToggleItem
                   title="Dark Mode"
@@ -891,7 +891,7 @@ export default function Settings() {
 
           {/* SECURITY & DATA */}
           {activeTab === "security" && (
-            <div className="settings- space-y-8">
+            <div className="settings-section-animate space-y-8">
               <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
                 <h3 className="text-sm font-black uppercase tracking-widest mb-6 text-[var(--color-text-primary)] flex items-center gap-2">
                   <Lock size={16} /> Account Security
@@ -1021,7 +1021,7 @@ export default function Settings() {
           cursor: not-allowed;
           opacity: 0.8;
         }
-        .settings- {
+        .settings-section-animate {
           animation: slideUp 0.4s ease-out forwards;
         }
         @keyframes slideUp {
