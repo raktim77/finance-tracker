@@ -69,6 +69,40 @@ export default function Transactions() {
   const toast = useToast();
   const itemsPerPage = 20;
 
+
+  const useTypewriter = (words: string[], speed = 50, delay = 1500) => {
+    const [index, setIndex] = useState(0);
+    const [subIndex, setSubIndex] = useState(0);
+    const [reverse, setReverse] = useState(false);
+
+    useEffect(() => {
+      if (subIndex === words[index].length + 1 && !reverse) {
+        const timeout = setTimeout(() => setReverse(true), delay);
+        return () => clearTimeout(timeout);
+      }
+
+      if (subIndex === 0 && reverse) {
+        setReverse(false);
+        setIndex((prev) => (prev + 1) % words.length);
+        return;
+      }
+
+      const timeout = setTimeout(() => {
+        setSubIndex((prev) => prev + (reverse ? -1 : 1));
+      }, reverse ? speed / 2 : speed);
+
+      return () => clearTimeout(timeout);
+    }, [subIndex, index, reverse, words, speed, delay]);
+
+    return words[index].substring(0, subIndex);
+  };
+
+  const animatedPlaceholder = useTypewriter([
+    "Search transactions",
+    "Search by notes",
+    "Search by category"
+  ]);
+
   const [startDate, setStartDate] = useState<Date | undefined>(
     getPresetDateRange("30").startDate
   );
@@ -297,18 +331,20 @@ export default function Transactions() {
       <div className="flex gap-2 md:block w-full">
 
         {/* SEARCH */}
-        <div className="relative w-[60%] md:w-full">
+        <div className="relative w-[60%] md:w-full group">
           <Search
-            size={16}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]"
+            size={14}
+            className="absolute text-[var(--color-text-secondary)] left-3 top-1/2 -translate-y-1/2 group-focus-within:text-[var(--color-accent)] transition-colors"
           />
 
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search transactions..."
-            className="w-full pl-11 pr-11 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
+            // Shows the animated text only when the input is empty
+            placeholder={search ? "" : `${animatedPlaceholder}`}
+            className="w-full pl-9 pr-8 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-4 focus:ring-[var(--color-accent)]/10 transition-all outline-none"
           />
+
           {search && (
             <button
               type="button"
@@ -319,7 +355,6 @@ export default function Transactions() {
               <X size={14} />
             </button>
           )}
-
         </div>
         {/* DATE DROPDOWN (mobile only here) */}
         <div className="w-[40%] md:hidden">

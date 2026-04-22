@@ -328,20 +328,26 @@ export default function DatePicker({
           ? typeof document !== "undefined"
             ? createPortal(
               <>
-                <div
-                  className="fixed inset-0 z-[260] bg-black/20 backdrop-blur-sm"
-                  onClick={() => setOpen(false)}
-                />
-                <div className="fixed inset-0 z-[270] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[260] flex items-center justify-center p-4">
+                  {/* 1. THE BACKDROP: An absolute sibling that captures the outside click */}
                   <div
+                    className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"
+                    onClick={() => setOpen(false)}
+                  />
+
+                  {/* 2. THE CONTENT: Isolated from the backdrop click via stopPropagation */}
+                  <div
+                    onClick={(e) => e.stopPropagation()} // 👈 Critical: Prevents picker clicks from reaching the backdrop
                     className="
-                        bg-[var(--color-surface)]
-                        border border-[var(--border)]
-                        rounded-[1.75rem] p-4
-                        shadow-[0_25px_60px_rgba(0,0,0,0.22)]
-                        animate-in fade-in zoom-in-95 duration-200
-                        w-max max-w-[95vw]
-                      "
+        relative z-[270]
+        bg-[var(--color-surface)]
+        border border-[var(--border)]
+        rounded-[1.75rem] p-4
+        shadow-[0_25px_60px_rgba(0,0,0,0.22)]
+        animate-in fade-in zoom-in-95 duration-200
+        w-max max-w-[95vw]
+        pointer-events-auto
+      "
                   >
                     {pickerContent}
                   </div>
@@ -355,7 +361,7 @@ export default function DatePicker({
               <>
                 {/* Backdrop */}
                 <div
-                  className="fixed inset-0 z-[119] bg-black/10 md:bg-transparent"
+                  className="fixed inset-0 z-[119] bg-black/20 backdrop-blur-sm"
                   onClick={() => setOpen(false)}
                 />
 

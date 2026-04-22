@@ -105,7 +105,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}
               }`}
           >
             <span
-              className={`text-[10px] font-black text-[var(--color-text-secondary)] uppercase truncate opacity-70 ${isCompact
+              className={`text-[10px] font-black text-[var(--color-text-secondary)] uppercase truncate opacity-80 ${isCompact
                   ? "flex-1 max-w-[120px]"
                   : "flex-1 md:flex-none max-w-[120px] md:max-w-96"
                 }`}
@@ -119,7 +119,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}
             />
 
             <span
-              className={`shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] uppercase opacity-70 tracking-wider ${isCompact ? "ml-4" : "ml-4 md:ml-0"
+              className={`shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] uppercase opacity-80 tracking-wider ${isCompact ? "ml-4" : "ml-4 md:ml-0"
                 }`}
             >
               {displayDate}
