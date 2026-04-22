@@ -83,8 +83,8 @@ export default function Transactions() {
   const isScopedToAccount = !!account_id;
   const scopedAccount = accounts.find((account) => account._id === account_id);
   const displayTitle = isScopedToAccount
-    ? scopedAccount?.name || "Transactions"
-    : "Transactions";
+    ? scopedAccount?.name || "History"
+    : "History";
 
   const mappedAccounts = accounts.map(acc => ({
     _id: acc._id,
@@ -149,7 +149,7 @@ export default function Transactions() {
   }) => {
     console.log(payload);
     console.log(editingId);
-    
+
     try {
       if (editingTx && editingId) {
         await updateTransactionMutation.mutateAsync({
@@ -201,7 +201,17 @@ export default function Transactions() {
   const currentItems = data?.transactions ?? [];
   const totalPages = Math.max(data?.pages ?? 1, 1);
   const totalRecords = data?.total ?? 0;
+  const groupedTransactions = currentItems.reduce((acc, tx) => {
+    const date = new Date(tx.date);
+    const key = date.toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    });
 
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(tx);
+    return acc;
+  }, {} as Record<string, typeof currentItems>);
   const handleClearSearch = () => {
     setSearch("");
     setDebouncedSearch("");
@@ -219,92 +229,111 @@ export default function Transactions() {
   useHeaderConfig({
     heroColor: null,
     heroHeight: 92,
-    showLogo: false,
+    showLogo: true,
     scrollTitle: displayTitle,
     scrollAction: "+",
     onAction: handleOpenTransactionSheet,
   });
 
-  return (<div className="p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden">
-  {/* HEADER */}
-<div className="transaction-section-animate flex flex-col gap-4 w-full min-w-0 overflow-hidden">
-  {/* TOP ROW: Back Button (Only shows when scoped) */}
-  {isScopedToAccount && (
-    <div className="flex animate-in slide-in-from-left-2 duration-500">
-      <button
-        onClick={() => navigate(-1)}
-        className="group inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-3 py-1.5 text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_10px_20px_-5px_rgba(82,61,255,0.3)]"
-        aria-label="Back to accounts"
-      >
-        <ChevronLeft size={14} strokeWidth={3} />
-        <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-          Back to Accounts
-        </span>
-      </button>
+  return (<div className="p-2 md:p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden">
+    {/* HEADER */}
+    <div className="transaction-section-animate flex flex-col gap-4 w-full min-w-0 overflow-hidden">
+      {/* TOP ROW: Back Button (Only shows when scoped) */}
+      {isScopedToAccount && (
+        <div className="flex animate-in slide-in-from-left-2 duration-500">
+          <button
+            onClick={() => navigate(-1)}
+            className="group inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-3 py-1.5 text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_10px_20px_-5px_rgba(82,61,255,0.3)]"
+            aria-label="Back to accounts"
+          >
+            <ChevronLeft size={14} strokeWidth={3} />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+              Back to Accounts
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* MAIN TITLE ROW */}
+      <div className="flex w-full min-w-0 items-start justify-between gap-4 md:gap-6">
+        <div className="flex min-w-0 max-w-[calc(100%-5.5rem)] flex-1 flex-col gap-1.5 md:max-w-[calc(100%-12rem)]">
+          <h2 className="min-w-0 max-w-full text-3xl font-black leading-tight tracking-tighter text-[var(--color-text-primary)] md:text-5xl">
+            <span className="block w-full break-words whitespace-normal md:hidden">
+              {isScopedToAccount ? displayTitle : "History"}
+            </span>
+            <span className="hidden w-full break-words whitespace-normal md:block">
+              {displayTitle}
+            </span>
+          </h2>
+
+          <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
+            {totalRecords} records found
+          </p>
+        </div>
+
+        <button
+          onClick={handleOpenTransactionSheet}
+          className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-2.5 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
+        >
+          <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+          <span className="hidden md:block">
+            {hasAccounts ? "Record transaction" : "Add Account"}
+          </span>
+          <span className="block text-sm md:hidden">
+            {hasAccounts ? "Record" : "Add"}
+          </span>
+        </button>
+      </div>
     </div>
-  )}
-
-  {/* MAIN TITLE ROW */}
-  <div className="flex w-full min-w-0 items-start justify-between gap-4 md:gap-6">
-    <div className="flex min-w-0 max-w-[calc(100%-5.5rem)] flex-1 flex-col gap-1.5 md:max-w-[calc(100%-12rem)]">
-      <h2 className="min-w-0 max-w-full text-3xl font-black leading-tight tracking-tighter text-[var(--color-text-primary)] md:text-5xl">
-        <span className="block w-full break-words whitespace-normal md:hidden">
-          {isScopedToAccount ? displayTitle : "History"}
-        </span>
-        <span className="hidden w-full break-words whitespace-normal md:block">
-          {displayTitle}
-        </span>
-      </h2>
-
-      <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
-        {totalRecords} records found
-      </p>
-    </div>
-
-    <button
-      onClick={handleOpenTransactionSheet}
-      className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-2.5 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
-    >
-      <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
-      <span className="hidden md:block">
-        {hasAccounts ? "Record transaction" : "Add Account"}
-      </span>
-      <span className="block text-sm md:hidden">
-        {hasAccounts ? "Record" : "Add"}
-      </span>
-    </button>
-  </div>
-</div>
 
     {/* CONTROLS */}
 
-    <div className="transaction-section-animate flex flex-col gap-5 w-full" style={{ animationDelay: "80ms" }}>
+    <div className="transaction-section-animate flex flex-col gap-3 w-full" style={{ animationDelay: "80ms" }}>
 
       {/* SEARCH */}
 
-      <div className="relative w-full">
+      {/* MOBILE: SEARCH + DATE IN SAME ROW */}
+      <div className="flex gap-2 md:block w-full">
 
-        <Search
-          size={16}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]"
-        />
+        {/* SEARCH */}
+        <div className="relative w-[60%] md:w-full">
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]"
+          />
 
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search transactions..."
-          className="w-full pl-11 pr-11 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
-        />
-        {search && (
-          <button
-            type="button"
-            onClick={handleClearSearch}
-            aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-background)] hover:text-[var(--color-text-primary)] transition-colors"
-          >
-            <X size={14} />
-          </button>
-        )}
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search transactions..."
+            className="w-full pl-11 pr-11 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all outline-none"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-background)] hover:text-[var(--color-text-primary)] transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+
+        </div>
+        {/* DATE DROPDOWN (mobile only here) */}
+        <div className="w-[40%] md:hidden">
+          <Dropdown
+            icon={Calendar}
+            value={dateRange}
+            onChange={(v) => setDateRange(v as DateRangeType)}
+            options={[
+              { label: "30 Days", value: "30" },
+              { label: "60 Days", value: "60" },
+              { label: "90 Days", value: "90" },
+              { label: "Custom", value: "custom" }
+            ]}
+          />
+        </div>
 
       </div>
 
@@ -312,14 +341,14 @@ export default function Transactions() {
 
       {/* FILTER ROW */}
 
-      <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
+      <div className="flex flex-col md:flex-row md:items-center w-full">
 
         {/* LEFT SIDE (Date controls) */}
 
         <div className="flex flex-col md:flex-row md:items-center gap-3 flex-1">
 
           {/* Date Range Dropdown */}
-          <div className="w-full md:w-[220px]">
+          <div className="hidden md:block md:w-[220px]">
             <Dropdown
               icon={Calendar}
               value={dateRange}
@@ -335,7 +364,7 @@ export default function Transactions() {
 
           {/* Custom Range Dates */}
           {dateRange === "custom" && (
-            <div className="flex items-center gap-3 w-full md:w-auto animate-in slide-in-from-top-2">
+            <div className="flex items-center gap-1 w-full md:w-auto animate-in slide-in-from-top-2 md:mb-0 mb-3">
               <div className="w-full flex items-center justify-between px-3 md:px-4 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30">
                 <DatePicker value={startDate} onChange={setStartDate} />
 
@@ -356,7 +385,7 @@ export default function Transactions() {
 
         {/* RIGHT SIDE (Filter + Sort) */}
 
-        <div className="grid grid-cols-2 md:flex md:items-center gap-8 md:w-auto">
+        <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:w-auto">
 
           {/* Filter */}
           <div className="w-full md:w-[180px]">
@@ -395,105 +424,110 @@ export default function Transactions() {
 
     </div>
 
+    {/* DIVIDER */}
+    <div className="relative">
+      <div className="md:hidden absolute -bottom-1 md:bottom-0 left-0 right-0 h-px bg-[var(--transaction-border)] md:left-4 md:right-4" />
 
-
+    </div>
     {/* TRANSACTION LIST */}
 
-    <div className="transaction-section-animate rounded-xl bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden shadow-sm w-full" style={{ animationDelay: "160ms" }}>
+    <div className="md:pl-0 pl-1 transaction-section-animate rounded-xl md:bg-[var(--color-surface)] md:border md:border-[var(--border)] overflow-hidden md:shadow-sm w-full" style={{ animationDelay: "160ms" }}>
+<div className="flex flex-col p-0 md:p-1 gap-2">
 
-      <div className="flex flex-col p-2 gap-1">
+  {isLoading ? (
+    <div className="flex flex-col gap-1 md:p-1">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div
+          key={index}
+          className="relative flex items-center justify-between gap-3 md:gap-8 rounded-2xl px-1 mb-2 mt-2 md:p-3"
+        >
+          {index !== 7 && (
+            <div className="absolute bottom-0 left-4 right-4 md:border-b md:border-dashed md:border-[var(--border)]" />
+          )}
 
-        {isLoading ? (
-          <div className="flex flex-col gap-1 p-1">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={index}
-                className="relative flex items-center justify-between gap-3 md:gap-8 rounded-2xl p-3 md:p-4"
-              >
-                {index !== 7 && (
-                  <div className="absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
-                )}
+          <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+            <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
 
-                <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
-
-                  <div className="flex min-w-0 flex-1 flex-col justify-center">
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
-                      <div className="h-4 w-32 md:w-44 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
-                      <div className="h-4 w-16 md:hidden bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
-                    </div>
-
-                    <div className="flex items-center justify-between min-w-0 md:justify-start md:gap-2">
-                      <div className="h-3 w-20 md:w-28 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
-                      <div className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
-                      <div className="h-3 w-16 bg-[var(--color-text-secondary)]/10 rounded animate-pulse ml-4 md:ml-0" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="hidden md:flex items-center gap-2 shrink-0">
-                  <div className="h-5 w-20 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
-                  <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
-                </div>
+            <div className="flex min-w-0 flex-1 flex-col justify-center">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
+                <div className="h-4 w-32 md:w-44 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                <div className="h-4 w-16 md:hidden bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
               </div>
-            ))}
-          </div>
 
-        ) : isError ? (
-
-          <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
-            {error instanceof Error ? error.message : "Failed to load transactions"}
-          </div>
-
-        ) : isWaitingForCustomRange ? (
-
-          <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
-            Select both start and end dates
-          </div>
-
-        ) : currentItems.length === 0 ? (
-          <div className="p-8 md:p-12">
-            <div className="relative overflow-hidden rounded-[2rem] text-center">
-              {/* <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(124,108,255,0.08),transparent_35%)]" /> */}
-              <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4">
-                {/* <div className="w-16 h-16 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] flex items-center justify-center shadow-inner">
-                  <PlusCircle size={28} />
-                </div> */}
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
-                    {hasAccounts ? "No Transactions Yet" : "Add an Account First"}
-                  </h3>
-                  <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
-                    {hasAccounts
-                      ? "Start recording income, expenses, or transfers to build your transaction history here."
-                      : "You need at least one account before you can record transactions. Add an account to get started."}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    if (hasAccounts) {
-                      setSheetOpen(true);
-                      return;
-                    }
-                    navigate("/accounts");
-                  }}
-                  className="group mt-2 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-3 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
-                >
-                  <PlusCircle
-                    size={18}
-                    strokeWidth={2.5}
-                    className="group-hover:rotate-90 transition-transform"
-                  />
-                  {hasAccounts ? "Record Your First Transaction" : "Add Your First Account"}
-                </button>
+              <div className="flex items-center justify-between min-w-0 md:justify-start md:gap-2">
+                <div className="h-3 w-20 md:w-28 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                <div className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
+                <div className="h-3 w-16 bg-[var(--color-text-secondary)]/20 rounded animate-pulse ml-4 md:ml-0" />
               </div>
             </div>
           </div>
 
-        ) : (
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            <div className="h-5 w-20 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+            <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
+          </div>
+        </div>
+      ))}
+    </div>
 
-          currentItems.map((t, index) => {
-            const isLast = index === currentItems.length - 1;
+  ) : isError ? (
+
+    <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
+      {error instanceof Error ? error.message : "Failed to load transactions"}
+    </div>
+
+  ) : isWaitingForCustomRange ? (
+
+    <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
+      Select both start and end dates
+    </div>
+
+  ) : currentItems.length === 0 ? (
+    <div className="p-8 md:p-12">
+      <div className="relative overflow-hidden rounded-[2rem] text-center">
+        <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4">
+          <div className="flex flex-col gap-2">
+            <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
+              {hasAccounts ? "No Transactions Yet" : "Add an Account First"}
+            </h3>
+            <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
+              {hasAccounts
+                ? "Start recording income, expenses, or transfers to build your transaction history here."
+                : "You need at least one account before you can record transactions. Add an account to get started."}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              if (hasAccounts) {
+                setSheetOpen(true);
+                return;
+              }
+              navigate("/accounts");
+            }}
+            className="group mt-2 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-3 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
+          >
+            <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+            {hasAccounts ? "Record Your First Transaction" : "Add Your First Account"}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  ) : (
+
+    Object.entries(groupedTransactions).map(([month, items], groupIndex, arr) => {
+      const isLastGroup = groupIndex === arr.length - 1;
+
+      return (
+        <div key={month} className="flex flex-col">
+
+          {/* MONTH HEADER */}
+          <div className="md:pl-2 mb-3 pt-4 pb-4 md:pb-1 md:text-[14px] text-[18px] font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-70">
+            {month}
+          </div>
+
+          {items.map((t, index) => {
+            const isLast = index === items.length - 1;
             const categoryLabel = getTransactionCategoryLabel(t);
             const title = getTransactionTitle(t);
             const displayDate = formatTransactionDisplayDate(t.date);
@@ -512,11 +546,21 @@ export default function Transactions() {
                 }}
               />
             );
-          })
+          })}
 
-        )}
+          {!isLastGroup && (
+            <div className="md:hidden relative my-3">
+              <div className="absolute -bottom-3 left-0 right-0 h-px bg-[var(--border)]" />
+            </div>
+          )}
 
-      </div>
+        </div>
+      );
+    })
+
+  )}
+
+</div>
 
 
       {/* Pagination */}

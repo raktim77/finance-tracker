@@ -77,7 +77,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     registerConfig({
       heroColor: null,
       heroHeight: 80,
-      showLogo: false,
+      showLogo: true,
       scrollTitle: titleByPath[location.pathname] ?? "Xpensio",
       scrollAction: null,
     });

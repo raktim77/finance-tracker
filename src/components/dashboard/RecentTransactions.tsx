@@ -99,9 +99,9 @@ export const RecentTransactions = () => {
   };
 
   return (
-    <div className="w-full rounded-[2rem] px-2 md:bg-[var(--color-surface)] md:border border-[var(--border)] md:shadow-sm md:hover:shadow-md transition-all h-full flex flex-col">
+    <div className="w-full rounded-[2rem] md:pl-0 pl-3 pr-2 md:pr-3 md:pb-4 md:bg-[var(--color-surface)] md:border border-[var(--border)] md:shadow-sm md:hover:shadow-md transition-all h-full flex flex-col mt-4 md:mt-0 mb-2 md:mb-0 ">
       {currentItems.length > 0 ? (
-        <div className="flex items-center justify-between mb-4 md:px-6 md:pt-6">
+        <div className="flex items-center justify-between mb-6 md:px-3 md:pt-6">
           <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
             Recent History
           </h2>
@@ -115,37 +115,37 @@ export const RecentTransactions = () => {
       ) : ''}
 
 
-      <div className="rounded-xl overflow-hidden w-full flex-1">
-        <div className="flex flex-col gap-1 h-full">
+      <div className="md:rounded-xl overflow-hidden w-full flex-1">
+        <div className="flex flex-col h-full">
           {isLoading ? (
             <div className="flex flex-col gap-1 p-1">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="relative flex items-center justify-between gap-1 rounded-2xl p-3 min-w-0"
+                  className="relative flex items-center justify-between gap-1 rounded-2xl px-1 mb-2 mt-2 md:p-3 min-w-0"
                 >
                   {index !== 3 && (
-                    <div className="absolute bottom-0 left-4 right-4 border-b border-dashed border-[var(--border)]" />
+                    <div className="absolute bottom-0 left-4 right-4 md:border-b md:border-dashed md:border-[var(--border)]" />
                   )}
 
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                    <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
 
                     <div className="flex flex-col min-w-0 flex-1 justify-center">
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
-                        <div className="h-4 w-28 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
-                        <div className="h-4 w-14 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+                        <div className="h-4 w-28 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                        <div className="h-4 w-14 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
                       </div>
 
                       <div className="flex items-center justify-between min-w-0">
-                        <div className="h-3 w-20 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
-                        <div className="h-3 w-14 bg-[var(--color-text-secondary)]/10 rounded animate-pulse ml-4" />
+                        <div className="h-3 w-20 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
+                        <div className="h-3 w-14 bg-[var(--color-text-secondary)]/20 rounded animate-pulse ml-4" />
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
-                    <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/10 animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
                   </div>
                 </div>
               ))}

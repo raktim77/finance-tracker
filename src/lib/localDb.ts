@@ -4,7 +4,7 @@ import {
   SQLiteDBConnection,
 } from "@capacitor-community/sqlite";
 import { createSMSHash } from "./hash";
-
+import { v4 as uuidv4 } from "uuid";
 
 const sqlite = new SQLiteConnection(CapacitorSQLite);
 const DB_NAME = "xpensio_local";
@@ -151,7 +151,7 @@ export const insertPendingSMS = async (data: {
       (id, raw_message, sender, amount, type, merchant, confidence, status, received_at, hash)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        crypto.randomUUID(),
+        uuidv4(),
         data.raw_message,
         data.sender,
         data.amount ?? null,

@@ -33,13 +33,65 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
     setIndex(0);
   }, [data]);
 
-  if (isLoading) {
-    return (
-      <div className="relative z-0 overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-6 md:p-10 bg-gradient-to-b from-[#2f8c3d] via-[#257d35] to-[#17430f] animate-pulse">
-        <div className="h-32 w-full bg-white/10 rounded-2xl" />
+if (isLoading) {
+  return (
+    <div>
+
+    <div className="block md:hidden relative z-0 group overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-5 pt-0 md:pt-6 md:p-10 bg-gradient-to-b from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl/50">
+      <div className="flex flex-col gap-4">
+        
+        {/* Top Row: Greeting & Avatar */}
+        <div className="flex justify-between items-start">
+          <div className="space-y-3">
+            <div className="h-3 w-32 bg-white/20 rounded animate-pulse" /> {/* GOOD EVENING */}
+            <div className="h-5 w-48 bg-white/40 rounded-lg animate-pulse" /> {/* Hey, Raktim! */}
+          </div>
+          <div className="h-10 w-10 rounded-full bg-white/30 animate-pulse border-2 border-white/20" /> {/* Avatar */}
+        </div>
+
+        {/* Divider Line */}
+        <div className="h-[1px] w-full bg-white/10" />
+
+        {/* Middle Row: Main Balance + Savings Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          <div className="space-y-2">
+            <div className="h-4 w-20 bg-white/20 rounded animate-pulse" /> {/* THIS MONTH */}
+            <div className="h-8 w-40 bg-white/40 rounded-xl animate-pulse" /> {/* +₹51.7K */}
+          </div>
+          
+        </div>
+
+        {/* Bottom Row: Income/Spent Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-14 w-full bg-black/20 rounded-2xl animate-pulse" /> {/* Income Card */}
+          <div className="h-14 w-full bg-black/20 rounded-2xl animate-pulse" /> {/* Spent Card */}
+        </div>
+
+        {/* Pill Badges */}
+        <div className="flex gap-3">
+          <div className="h-7 w-24 bg-white/10 rounded-full animate-pulse" />
+          <div className="h-7 w-32 bg-white/10 rounded-full animate-pulse" />
+        </div>
+
       </div>
-    );
-  }
+    </div>
+
+    <div className="hidden md:block relative z-0 group overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem] md:rounded-[2.5rem] p-5 pt-0 md:pt-6 md:p-10 bg-gradient-to-b from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl/50">
+        <div className="flex flex-col gap-8">
+          <div className="space-y-3">
+            <div className="h-6 w-24 bg-white/30 rounded animate-pulse" />
+            <div className="h-12 md:h-10 w-48 bg-white/40 rounded animate-pulse" />
+          </div>
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="h-10 w-full md:w-64 bg-white/30 rounded animate-pulse" />
+            <div className="h-16 w-full md:w-110 bg-white/30 rounded-2xl animate-pulse" />
+          </div>
+        </div>
+      </div>
+          </div>
+
+  );
+}
 
   if (!data) return null;
 

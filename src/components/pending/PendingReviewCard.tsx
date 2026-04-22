@@ -35,7 +35,7 @@ export default function PendingReviewCard() {
     return (
         <div
             onClick={() => navigate("/pending-review")}
-            className="group relative w-full overflow-hidden rounded-[2.5rem] border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-5 shadow-sm transition-all hover:shadow-md active:scale-[0.99] cursor-pointer"
+            className="group relative w-full overflow-hidden rounded-[1.5rem] border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-5 shadow-sm transition-all hover:shadow-md active:scale-[0.99] cursor-pointer mb-2"
         >
             <div className="flex w-full items-center justify-between gap-3">
                 {/* 1. Main Content Wrapper: Forced to flex-1 and w-0 to contain children */}

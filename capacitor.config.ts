@@ -10,15 +10,15 @@ const config: CapacitorConfig = {
     "Xpensio",
   webDir: "dist",
   backgroundColor: "#0B0F1A",
-  // server: {
-  //   url: 'http://192-168-29-182.nip.io:5173/',
-  //   cleartext: true,
-  //   // hostname: ''
-  // },
   server: {
-    hostname: "xpensio.vercel.app",
-    androidScheme: "https",
+    url: 'http://192-168-29-182.nip.io:5173/',
+    cleartext: true,
+    // hostname: ''
   },
+  // server: {
+  //   hostname: "xpensio.vercel.app",
+  //   androidScheme: "https",
+  // },
   plugins: {
     StatusBar: {
       overlaysWebView: true,

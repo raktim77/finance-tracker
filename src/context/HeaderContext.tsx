@@ -291,6 +291,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useHeaderContext() {
   const ctx = useContext(HeaderContext);
   if (!ctx) {

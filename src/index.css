@@ -13,7 +13,7 @@
     
     /* Brand Colors */
     --color-primary:         #2F5D1A;
-    --color-success:         #22C55E;
+    --color-success:         #1bb554;
     --color-warm:            #C26D3A;   /* fixed: real terracotta */
     --color-accent-teal:     #8A4B1F;   /* richer earthy tone */
     --color-danger:          #EF4444;
@@ -25,6 +25,7 @@
     --pricing-card-color:    #FFFCF6;
     --input-border:          rgba(28,16,8,0.12);
     --border:                rgba(28,16,8,0.08);
+    --transaction-border:                rgba(0, 0, 0, 0.159);
     
     /* Bottom Nav */
     --color-nav-highlight:      #2F5D1A;
@@ -62,6 +63,7 @@
     --pricing-card-color:    #241F19;
     --input-border:          rgba(242, 232, 216, 0.12);
     --border:                rgba(242, 232, 216, 0.08);
+    --transaction-border:                rgba(250, 240, 224, 0.159);
     
     /* Bottom Nav */
     --color-nav-highlight:      #7AB852;
@@ -254,7 +256,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  /* overflow-x: hidden; */
+  overflow-x: hidden;
 }
 
 :root { --header-h: 64px; }
@@ -393,6 +395,8 @@ button:focus-visible {
 
 *::-webkit-scrollbar {
   display: none;
+    width: 0px;
+  height: 0px;
 }
 
 * {
@@ -403,6 +407,13 @@ button:focus-visible {
   background: transparent;
 }
 
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-container {
+  scrollbar-width: none; /* Firefox */
+}
 *::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--color-text-secondary) 25%, transparent);
   border-radius: 999px;
