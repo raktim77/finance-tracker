@@ -38,15 +38,16 @@ public class SmsReceiver extends BroadcastReceiver {
 
                     String message = sms.getMessageBody();
                     String sender = sms.getOriginatingAddress();
+                    long timestamp = sms.getTimestampMillis();
 
                     if (isFinancialSMS(message) && containsAmount(message)) {
                         Log.d("XPENSIO_SMS", "SMS: " + message);
 
                         // ✅ Save only financial SMS
-                        SmsStorage.saveSms(context, message, sender);
+                        SmsStorage.saveSms(context, message, sender, timestamp);
 
                         // ✅ Send to JS if app open
-                        SmsListenerPlugin.notifySms(message, sender);
+                        SmsListenerPlugin.notifySms(message, sender, timestamp);
 
                         // ✅ Show notification
                         showNotification(context, message, sender);

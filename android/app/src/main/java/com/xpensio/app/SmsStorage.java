@@ -11,7 +11,7 @@ public class SmsStorage {
     private static final String PREF_NAME = "xpensio_sms_store";
     private static final String KEY_SMS = "sms_list";
 
-    public static void saveSms(Context context, String message, String sender) {
+    public static void saveSms(Context context, String message, String sender, long timestamp) {
         try {
             SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             String existing = prefs.getString(KEY_SMS, "[]");
@@ -21,8 +21,7 @@ public class SmsStorage {
             JSONObject obj = new JSONObject();
             obj.put("message", message);
             obj.put("sender", sender);
-            obj.put("timestamp", System.currentTimeMillis());
-
+            obj.put("timestamp", timestamp);
             array.put(obj);
 
             prefs.edit().putString(KEY_SMS, array.toString()).apply();

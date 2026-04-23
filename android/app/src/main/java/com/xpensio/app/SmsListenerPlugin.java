@@ -22,12 +22,12 @@ public class SmsListenerPlugin extends Plugin {
     }
 
     // 🔥 Send SMS to JS (when app is alive)
-    public static void notifySms(String message, String sender) {
+    public static void notifySms(String message, String sender, long timestamp) {
         if (instance != null) {
             JSObject data = new JSObject();
             data.put("message", message);
             data.put("sender", sender);
-
+            data.put("timestamp", timestamp);
             instance.notifyListeners("smsReceived", data);
         }
     }
