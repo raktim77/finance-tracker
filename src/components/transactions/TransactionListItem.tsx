@@ -51,8 +51,8 @@ export default function TransactionListItem({
             ? transaction.category_color
             : "#0d9488",
       }}
-      className={`relative flex items-center justify-between pl-2 py-3 md:mb-0 mb-2
-border-l-[3px] pl-3 md:border-l-0 rounded-r-xl md:rounded-none 
+      className={`relative flex items-center justify-between pl-3 py-3 md:mb-0 mb-2
+border-l-[3px]  md:border-l-0 rounded-r-xl md:rounded-none 
 md:hover:bg-[var(--color-background)] transition-all group min-w-0 cursor-pointer
 active:scale-[0.97] active:brightness-[0.98] active:bg-[var(--color-accent-soft)]
 ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}

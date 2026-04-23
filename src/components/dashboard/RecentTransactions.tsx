@@ -99,7 +99,7 @@ export const RecentTransactions = () => {
   };
 
   return (
-    <div className="w-full rounded-[2rem] md:pl-0 pl-3 pr-2 md:pr-3 md:pb-4 md:bg-[var(--color-surface)] md:border border-[var(--border)] md:shadow-sm md:hover:shadow-md transition-all h-full flex flex-col mt-4 md:mt-0 mb-2 md:mb-0 ">
+    <div className="w-full rounded-[2rem] md:pl-0 pl-3 pr-2 md:pr-3 md:pb-4 md:bg-[var(--color-surface)] md:border border-[var(--border)] md:shadow-sm md:hover:shadow-md transition-all h-full flex flex-col mt-2 md:mt-0 mb-2 md:mb-0 ">
       {currentItems.length > 0 ? (
         <div className="flex items-center justify-between mb-6 md:px-3 md:pt-6">
           <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
