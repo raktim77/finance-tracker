@@ -268,10 +268,10 @@ function App() {
         await insertPendingSMS({
           raw_message: sms.message,
           sender: sms.sender,
-          amount: parsed.amount,
-          type: parsed.type,
-          merchant: parsed.merchant ?? '',
-          confidence: parsed.confidence,
+          amount: parsed?.amount,
+          type: parsed?.type,
+          merchant: parsed?.merchant ?? '',
+          confidence: parsed?.confidence,
           timestamp: sms.timestamp
 
         });
@@ -304,10 +304,10 @@ function App() {
           await insertPendingSMS({
             raw_message: sms.message,
             sender: sms.sender,
-            amount: parsed.amount,
-            type: parsed.type,
-            merchant: parsed.merchant ?? "",
-            confidence: parsed.confidence,
+            amount: parsed?.amount,
+            type: parsed?.type,
+            merchant: parsed?.merchant ?? "",
+            confidence: parsed?.confidence,
             timestamp: sms.timestamp
 
           });
