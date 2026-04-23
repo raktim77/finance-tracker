@@ -31,27 +31,33 @@ public class SmsReceiver extends BroadcastReceiver {
 
         if (bundle != null) {
             Object[] pdus = (Object[]) bundle.get("pdus");
-
+            
             if (pdus != null) {
+                StringBuilder fullMessage = new StringBuilder();
+                String sender = null;
+                long timestamp = 0;
+
+                String format = bundle.getString("format");
+
                 for (Object pdu : pdus) {
-                    SmsMessage sms = SmsMessage.createFromPdu((byte[]) pdu);
+                    SmsMessage sms = SmsMessage.createFromPdu((byte[]) pdu, format);
 
-                    String message = sms.getMessageBody();
-                    String sender = sms.getOriginatingAddress();
-                    long timestamp = sms.getTimestampMillis();
-
-                    if (isFinancialSMS(message) && containsAmount(message)) {
-                        Log.d("XPENSIO_SMS", "SMS: " + message);
-
-                        // ✅ Save only financial SMS
-                        SmsStorage.saveSms(context, message, sender, timestamp);
-
-                        // ✅ Send to JS if app open
-                        SmsListenerPlugin.notifySms(message, sender, timestamp);
-
-                        // ✅ Show notification
-                        showNotification(context, message, sender);
+                    if (sender == null) {
+                        sender = sms.getOriginatingAddress();
+                        timestamp = sms.getTimestampMillis();
                     }
+
+                    fullMessage.append(sms.getMessageBody());
+                }
+
+                String message = fullMessage.toString();
+
+                if (isFinancialSMS(message) && containsAmount(message)) {
+                    Log.d("XPENSIO_SMS", "FULL SMS: " + message);
+
+                    SmsStorage.saveSms(context, message, sender, timestamp);
+                    SmsListenerPlugin.notifySms(message, sender, timestamp);
+                    showNotification(context, message, sender);
                 }
             }
         }

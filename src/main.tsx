@@ -12,7 +12,7 @@ import { DismissibleLayerProvider } from "./components/app-back/DismissibleLayer
 import { HeaderProvider } from "./context/HeaderContext.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  // <React.StrictMode>
+  <React.StrictMode>
     <DismissibleLayerProvider>
       <ToastProvider>
           <ConfirmProvider>
@@ -29,5 +29,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           </ConfirmProvider>
       </ToastProvider>
     </DismissibleLayerProvider>
-  // </React.StrictMode>
+  </React.StrictMode>
 );

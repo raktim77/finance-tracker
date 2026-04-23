@@ -173,20 +173,17 @@ export const getPendingSMS = async () => {
   const database = await getDB();
   const res = await database.query(
     `SELECT * FROM pending_sms_transactions 
-     WHERE status = 'pending'
      ORDER BY received_at DESC`
   );
 
   return res.values || [];
 };
 
-export const updateSMSStatus = async (
-  id: string,
-  status: "processed" | "ignored"
-) => {
+export const removePendingSMS = async (id: string) => {
   const database = await getDB();
   await database.run(
-    `UPDATE pending_sms_transactions SET status = ? WHERE id = ?`,
-    [status, id]
+    `DELETE FROM pending_sms_transactions WHERE id = ?`,
+    [id]
   );
 };
+

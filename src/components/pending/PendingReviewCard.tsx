@@ -29,7 +29,7 @@ export default function PendingReviewCard() {
 
     const count = items.length;
     const latest = items[0];
-
+    const latestColor = latest?.type == 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'
     if (count === 0) return null;
 
     return (
@@ -61,7 +61,7 @@ export default function PendingReviewCard() {
                             <div className="mt-0.5 flex items-center gap-1.5 text-xs font-bold text-[var(--color-text-secondary)]">
                                 <span className="truncate max-w-[60%] opacity-80">{getPendingTitle(latest)}</span>
                                 <span className="h-1 w-1 rounded-full bg-[var(--color-text-secondary)]/30 shrink-0" />
-                                <span className="shrink-0 text-[var(--color-primary)]">{getPendingSignedAmount(latest)}</span>
+                                <span className={`shrink-0 ${latestColor}`}>{getPendingSignedAmount(latest)}</span>
                             </div>
                         )}
                     </div>

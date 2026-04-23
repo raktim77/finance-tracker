@@ -6,7 +6,7 @@ import {
   CircleHelp,
   Inbox,
 } from "lucide-react";
-import { getPendingSMS, updateSMSStatus } from "../lib/localDb";
+import { getPendingSMS, removePendingSMS } from "../lib/localDb";
 import { isNativeAndroidApp } from "../lib/capacitor/platform";
 import TransactionSheet, { type TransactionDraft } from "../components/transactions/TransactionSheet";
 import { useAccounts } from "../features/accounts/hooks/useAccounts";
@@ -131,8 +131,8 @@ export default function PendingReview() {
   const { data: categoriesData } = useCategories({ accessToken });
   const { data: accountsData } = useAccounts({}, { accessToken });
   const createTransactionMutation = useCreateTransaction({ accessToken });
-  
-  const categories = categoriesData?.categories ?? [];  
+
+  const categories = categoriesData?.categories ?? [];
   const accounts = accountsData?.accounts ?? [];
   const mappedAccounts = useMemo(
     () =>
@@ -148,7 +148,7 @@ export default function PendingReview() {
   );
 
   const [shouldShowHint, setShouldShowHint] = useState(false);
-  
+
 
   const loadPendingItems = useCallback(async () => {
     if (!isNativeAndroidApp()) {
@@ -187,11 +187,11 @@ export default function PendingReview() {
   }, []);
 
   useEffect(() => {
-  (async () => {
-    const seen = await hasSeenSwipeHint();
-    setShouldShowHint(!seen);
-  })();
-}, []);
+    (async () => {
+      const seen = await hasSeenSwipeHint();
+      setShouldShowHint(!seen);
+    })();
+  }, []);
 
   const pendingDraft = useMemo<Partial<TransactionDraft> | null>(() => {
     if (!selectedPending) return null;
@@ -224,7 +224,7 @@ export default function PendingReview() {
 
     try {
       await createTransactionMutation.mutateAsync(payload);
-      await updateSMSStatus(selectedPending.id, "processed");
+      await removePendingSMS(selectedPending.id);
       await loadPendingItems();
       toast.success("Transaction recorded successfully");
       setSelectedPending(null);
@@ -247,7 +247,7 @@ export default function PendingReview() {
     if (!ok) return false;
 
     try {
-      await updateSMSStatus(item.id, "ignored");
+      await removePendingSMS(item.id);
       await loadPendingItems();
       toast.success("Transaction ignored");
       return true;
@@ -261,7 +261,7 @@ export default function PendingReview() {
   return (
     <>
       <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-col gap-6 overflow-x-hidden pb-24 animate-in fade-in duration-500 p-2">
-        <section className="relative min-w-0 overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--color-surface)] p-5 md:p-8 shadow-sm">
+        <section className="relative min-w-0 overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--color-surface)] p-5 md:p-8 shadow-sm mb-4">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               {/* <div className="flex h-12 w-12 md:h-14 md:w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] text-[var(--color-accent)]">
@@ -344,7 +344,7 @@ export default function PendingReview() {
                               ? "var(--color-success)"
                               : "var(--color-danger)",
                         }}
-                        className="relative flex w-full items-center justify-between 
+                        className="text left relative flex w-full items-center justify-between 
     pl-3 py-3 border-l-[3px] rounded-r-xl
     hover:bg-[var(--color-surface)] transition-all group cursor-pointer
     active:scale-[0.97] active:bg-[var(--color-accent-soft)] gap-3"
@@ -364,11 +364,10 @@ export default function PendingReview() {
                             <Icon size={22} strokeWidth={2.5} />
                           </div>
 
-                          <div className="min-w-0 flex-1 overflow-hidden">
-                            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 mb-2">
-                              <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight leading-tight">
+                          <div className="flex flex-col min-w-0 flex-1 justify-center">
+                            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0 w-full">
+                              <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-left text-[var(--color-text-primary)] tracking-tight leading-tight">
                                 {getPendingTitle(item)}
-                                {/* sdf */}
                               </span>
                               <span className={`shrink-0 text-right text-sm font-black whitespace-nowrap ${getPendingAmountClass(item)}`}>
                                 {getPendingSignedAmount(item)}

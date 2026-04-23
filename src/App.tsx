@@ -263,7 +263,7 @@ function App() {
 
         const parsed = parseSMS(sms.message);
 
-        console.log("PARSED:", parsed);
+        console.log("PARSED:", JSON.stringify(parsed));
 
         await insertPendingSMS({
           raw_message: sms.message,
