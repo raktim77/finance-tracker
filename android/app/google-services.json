@@ -14,19 +14,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "1004204555948-73nq528n2crlr7sbdpa3o9ava4rh7qev.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.xpensio.app",
-            "certificate_hash": "f2889c94dc90d79cdd22bfac74fb665b14c355ba"
-          }
-        },
-        {
           "client_id": "1004204555948-8m3v4k3mu4pe5oe7skshf28rnuukgmdr.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.xpensio.app",
             "certificate_hash": "b691f3d497c98ca26a86c80da43e164ddc4ddac0"
+          }
+        },
+        {
+          "client_id": "1004204555948-lo9uhncilt53slk81b3486d5lpu8b6cl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.xpensio.app",
+            "certificate_hash": "21d248d5a65fec5530dd266ec19809ed57deb2da"
           }
         },
         {
