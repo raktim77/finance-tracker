@@ -146,6 +146,7 @@ export const insertPendingSMS = async (data: {
   );
 
   try {
+    console.log("[INSERTED INTO DB]")
     await database.run(
       `INSERT OR IGNORE INTO pending_sms_transactions 
       (id, raw_message, sender, amount, type, merchant, confidence, status, received_at, hash)

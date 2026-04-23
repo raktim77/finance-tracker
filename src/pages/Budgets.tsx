@@ -276,7 +276,7 @@ export default function Budgets() {
 
   if (isLoading) {
     return (
-      <div className="section-animate p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+      <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
@@ -382,7 +382,7 @@ export default function Budgets() {
 
   if (!budget?.exists && !canCreateBudget) {
     return (
-      <div className="section-animate p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+      <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
@@ -457,7 +457,7 @@ export default function Budgets() {
     const isDraftTotalInputInvalid = !isPositiveCommittedValue(draftTotalInput);
 
     return (
-      <div className="section-animate p-1 flex flex-col gap-6 md:gap-8 pb-32 w-full">
+      <div className="section-animate p-2 md:p-1 flex flex-col gap-6 md:gap-8 pb-32 w-full">
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
@@ -530,7 +530,7 @@ export default function Budgets() {
                     }}
                   />
                 </div>
-                <p className="mt-3 text-[9px] font-bold text-[var(--color-text-secondary)] opacity-60 leading-tight">
+                <p className="mt-3 text-[11px] font-bold text-[var(--color-text-secondary)] opacity-60 leading-tight">
                   {isInvalid
                     ? "⚠️ Warning: Total allocation exceeds your monthly limit."
                     : `You have ₹${(draftTotal - allocated).toLocaleString()} left to allocate.`}
@@ -738,7 +738,7 @@ export default function Budgets() {
   }
 
   return (
-    <div className="section-animate p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+    <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
 
       <div className="flex flex-col items-start justify-between gap-10">
         <div className="flex flex-col gap-4">

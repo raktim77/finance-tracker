@@ -54,10 +54,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [sidebarLayout]);
 
   const toggleTheme = () => {
-    setTheme((prev) =>
-      prev === "light" ? "dark" : prev === "dark" ? "system" : "light"
-    );
-  };
+  setTheme((prev) => {
+    if (prev === "system") return "light";
+    if (prev === "light") return "dark";
+    return "system";
+  });
+};
 
   const toggleSidebarLayout = () => {
     setSidebarLayout((prev) => (prev === "expanded" ? "icons" : "expanded"));

@@ -30,7 +30,7 @@ export default function Dashboard() {
       {/* <div className="section-animate "> */}
       <div className="">
         {isApp ? (
-          <div className="p-2">
+          <div className="px-2">
             <PendingReviewCard />
 
           </div>

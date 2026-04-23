@@ -23,6 +23,10 @@ import {
   getPendingTitle,
   type PendingSMSItem,
 } from "../components/pending/pendingDisplay";
+import SwipeablePendingItem from "../components/pending/SwipeablePendingItem";
+import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
+import { hasSeenSwipeHint } from "../utils/appPreferences";
+
 
 function getPendingIcon(item: PendingSMSItem) {
   const kind = getPendingKind(item);
@@ -115,18 +119,20 @@ function toSupportedTransactionType(type: PendingSMSItem["type"]): TransactionTy
   if (type === "income" || type === "expense") return type;
   return "expense";
 }
-
 export default function PendingReview() {
+
+
   const { accessToken } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [items, setItems] = useState<PendingSMSItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPending, setSelectedPending] = useState<PendingSMSItem | null>(null);
   const { data: categoriesData } = useCategories({ accessToken });
   const { data: accountsData } = useAccounts({}, { accessToken });
   const createTransactionMutation = useCreateTransaction({ accessToken });
-
-  const categories = categoriesData?.categories ?? [];
+  
+  const categories = categoriesData?.categories ?? [];  
   const accounts = accountsData?.accounts ?? [];
   const mappedAccounts = useMemo(
     () =>
@@ -140,6 +146,9 @@ export default function PendingReview() {
       })),
     [accounts]
   );
+
+  const [shouldShowHint, setShouldShowHint] = useState(false);
+  
 
   const loadPendingItems = useCallback(async () => {
     if (!isNativeAndroidApp()) {
@@ -163,7 +172,7 @@ export default function PendingReview() {
       }
 
       const data = await getPendingSMS();
-      console.log("[RETRIEVED MESSAGES]",JSON.stringify(data))
+      console.log("[RETRIEVED MESSAGES]", JSON.stringify(data))
       if (!cancelled) {
         setItems(data);
         setLoading(false);
@@ -176,6 +185,13 @@ export default function PendingReview() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+  (async () => {
+    const seen = await hasSeenSwipeHint();
+    setShouldShowHint(!seen);
+  })();
+}, []);
 
   const pendingDraft = useMemo<Partial<TransactionDraft> | null>(() => {
     if (!selectedPending) return null;
@@ -218,6 +234,29 @@ export default function PendingReview() {
       throw error;
     }
   };
+  const handleIgnorePending = async (item: PendingSMSItem) => {
+    const ok = await confirm({
+      title: "Ignore this transaction?",
+      message:
+        "This SMS will be removed from your review queue and won’t be added to your transactions.",
+      confirmText: "Ignore",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!ok) return false;
+
+    try {
+      await updateSMSStatus(item.id, "ignored");
+      await loadPendingItems();
+      toast.success("Transaction ignored");
+      return true;
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to ignore transaction");
+      return false;
+    }
+  };
 
   return (
     <>
@@ -236,7 +275,7 @@ export default function PendingReview() {
                   {items.length} Pending {items.length > 1 ? "Transactions" : "Transaction"}
                 </h2>
                 <p className="mt-2 max-w-xl text-xs font-medium text-[var(--color-text-secondary)]">
-                  Confirm detected SMS activity before it becomes part of your transaction history.
+                  Confirm detected SMS activity before it becomes part of your transaction history. <span className="font-black font-extrabold">Tap to review or swipe from  right to left sto ignore.</span>
                 </p>
               </div>
             </div>
@@ -284,77 +323,80 @@ export default function PendingReview() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col">
               {items.map((item, index) => {
                 const Icon = getPendingIcon(item);
 
                 return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    style={{
-                      borderLeftColor:
-                        item.type === "income"
-                          ? "var(--color-success)"
-                          : "var(--color-danger)",
-                    }}
-                    className={`relative flex items-center justify-between pl-2 py-3 md:mb-0 mb-2
-border-l-[3px] pl-3 md:border-l-0 rounded-r-xl md:rounded-none 
-md:hover:bg-[var(--color-background)] transition-all group min-w-0 cursor-pointer
-active:scale-[0.97] active:brightness-[0.98] active:bg-[var(--color-accent-soft)] gap-1`}
+                  <div className="relative mb-2">
+                    <SwipeablePendingItem
+                      key={item.id}
+                      item={item}
+                      onIgnore={handleIgnorePending}
+                      showHint={index === 0 && shouldShowHint}
+                    >
+                      {/* 👇 EXACT SAME BUTTON — DO NOT MODIFY */}
+                      <button
+                        type="button"
+                        style={{
+                          borderLeftColor:
+                            item.type === "income"
+                              ? "var(--color-success)"
+                              : "var(--color-danger)",
+                        }}
+                        className="relative flex w-full items-center justify-between 
+    pl-3 py-3 border-l-[3px] rounded-r-xl
+    hover:bg-[var(--color-surface)] transition-all group cursor-pointer
+    active:scale-[0.97] active:bg-[var(--color-accent-soft)] gap-3"
+                        onClick={() => {
+                          if (mappedAccounts.length === 0) {
+                            toast.error("Please add an account first");
+                            return;
+                          }
+                          setSelectedPending(item);
+                        }}
+                      >
 
-                    // className="group relative flex w-full min-w-0 items-center justify-between gap-2 rounded-2xl py-3 px-2 text-left transition-all hover:bg-[var(--color-background)] active:scale-[0.995] overflow-hidden"
-                    onClick={() => {
-                      if (mappedAccounts.length === 0) {
-                        toast.error("Please add an account first");
-                        return;
-                      }
-                      setSelectedPending(item);
-                    }}
-                  >
+
+                        {/* Icon + text — remove w-0, just use min-w-0 flex-1 */}
+                        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)]/10 ${getPendingIconStyle(item)}`}>
+                            <Icon size={22} strokeWidth={2.5} />
+                          </div>
+
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 mb-2">
+                              <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight leading-tight">
+                                {getPendingTitle(item)}
+                                {/* sdf */}
+                              </span>
+                              <span className={`shrink-0 text-right text-sm font-black whitespace-nowrap ${getPendingAmountClass(item)}`}>
+                                {getPendingSignedAmount(item)}
+                              </span>
+                            </div>
+
+                            <div className="flex min-w-0 items-center justify-between gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">
+                              <span className="truncate opacity-70">{getPendingSubtitle(item)}</span>
+                              <span className="shrink-0 truncate opacity-70 tracking-wider">
+                                {formatPendingDateTime(item.received_at)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <ChevronRight
+                          size={16}
+                          strokeWidth={2.5}
+                          className="shrink-0 text-[var(--color-text-secondary)] opacity-30 transition-all group-hover:translate-x-0.5 group-hover:text-[var(--color-accent)] group-hover:opacity-100"
+                        />
+                      </button>
+                    </SwipeablePendingItem>
                     {index !== items.length - 1 && (
-                      <span className="absolute bottom-0 left-16 right-4 border-b border-[var(--border)]" />
+                      <span
+                        className="absolute -bottom-1 left-16 right-4 border-b border-[var(--border)]" />
                     )}
 
-                    <div className="flex w-0 min-w-0 flex-1 items-center gap-3 md:gap-4 overflow-hidden">
-                      <div className={`flex h-11 w-11 md:h-11 md:w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)]/10 ${getPendingIconStyle(item)}`}>
-                        <Icon size={22} strokeWidth={2.5} />
-                      </div>
-
-                      <div className="w-0 min-w-0 flex-1 overflow-hidden">
-                        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 sm:gap-4 mb-3">
-                          <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight leading-tight">
-                            {getPendingTitle(item)}
-                          </span>
-                          <span className={`max-w-[40vw] sm:max-w-none truncate shrink-0 text-right text-sm font-black whitespace-nowrap ${getPendingAmountClass(item)}`}>
-                            {getPendingSignedAmount(item)}
-                          </span>
-                        </div>
-
-                        <div className="mt-2 flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 overflow-hidden text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">
-                          <span className="max-w-[40%] truncate opacity-70">{getPendingSubtitle(item)}</span>
-                          {/* <span className="h-1 w-1 rounded-full bg-[var(--color-text-secondary)]/25" /> */}
-                          <span className="flex min-w-0 items-center gap-1 truncate">
-                            <span className="truncate text-[var(--color-text-secondary)] uppercase opacity-70 tracking-wider">{formatPendingDateTime(item.received_at)}</span>
-                          </span>
-                          {/* <span className="h-1 w-1 rounded-full bg-[var(--color-text-secondary)]/25" /> */}
-                          {/* <div className="flex items-center leading-none gap-0.5 opacity-50">
-                                                    <span className="shrink-0 text-[var(--color-text-primary)] pt-0.5">Review</span>
-                                                    <ChevronRight
-                                                        size={16}
-                                                        strokeWidth={2.5}
-                                                        className="shrink-0 text-[var(--color-accent)] translate-y-[0.5px]"
-                                                    />
-                                                </div> */}
-                        </div>
-                      </div>
-                    </div>
-                    <ChevronRight
-                      size={16}
-                      strokeWidth={2.5}
-                      className="shrink-0 text-[var(--color-text-secondary)] opacity-30 transition-all group-hover:translate-x-0.5 group-hover:text-[var(--color-accent)] group-hover:opacity-100 "
-                    />
-                  </button>
+                  </div>
                 );
               })}
             </div>

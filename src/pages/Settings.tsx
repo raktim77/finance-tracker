@@ -382,7 +382,7 @@ export default function Settings() {
       await deleteAccount(password);
 
       toast.success("Account deleted. Please wait while we log you out.");
-      
+
       await wait(2000);
 
       await logout();
@@ -644,7 +644,7 @@ export default function Settings() {
   return (
 
 
-    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-1">
+    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-2 md:p-1">
       <input
         ref={avatarInputRef}
         type="file"
@@ -855,13 +855,41 @@ export default function Settings() {
           {activeTab === "appearance" && (
             <div className="settings-section-animate space-y-4">
               <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] overflow-visible">
-                <ToggleItem
-                  title="Dark Mode"
-                  desc="Switch between light and high-contrast dark theme"
-                  value={theme === "dark"}
-                  onChange={(value) => setTheme(value ? "dark" : "light")}
-                  icon={theme === "dark" ? <Moon className="text-[var(--color-primary)]" size={18} /> : <Sun className="text-orange-400" size={18} />}
-                />
+                <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between md:p-6">
+                  <div className="flex min-w-0 items-start gap-3 md:gap-4">
+                    <div className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
+                      {theme === "dark" ? (
+                        <Moon className="text-[var(--color-primary)]" size={18} />
+                      ) : theme === "light" ? (
+                        <Sun className="text-orange-400" size={18} />
+                      ) : (
+                        <Globe className="text-[var(--color-accent)]" size={18} />
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight leading-tight">
+                        Theme
+                      </p>
+                      <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70 leading-relaxed">
+                        Choose how Xpensio looks across your device
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="w-full md:w-[180px] md:shrink-0">
+                    <Dropdown
+                      icon={Palette}
+                      value={theme}
+                      onChange={(value) => setTheme(value as "light" | "dark" | "system")}
+                      options={[
+                        { label: "Light", value: "light" },
+                        { label: "Dark", value: "dark" },
+                        { label: "System", value: "system" },
+                      ]}
+                    />
+                  </div>
+                </div>
                 <div className="h-px bg-[var(--border)] mx-8 opacity-50" />
                 <div className="hidden md:flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between md:p-6">
                   <div className="flex min-w-0 items-start gap-3 md:gap-4">

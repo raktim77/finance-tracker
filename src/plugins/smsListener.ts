@@ -4,7 +4,7 @@ import type { PluginListenerHandle } from "@capacitor/core";
 type SmsListenerPlugin = {
   addListener(
     eventName: "smsReceived",
-    callback: (data: { message: string; sender: string }) => void
+    callback: (data: { message: string; sender: string; timestamp: number }) => void
   ): Promise<PluginListenerHandle>;
 
   getStoredSms(): Promise<{ data: string }>;
@@ -12,7 +12,7 @@ type SmsListenerPlugin = {
   clearStoredSms(): Promise<void>;
 
   // 🔥 ADD THIS
-  getLastClickedSms(): Promise<{ message: string | null; sender: string | null }>;
+  getLastClickedSms(): Promise<{ message: string | null; sender: string | null; timestamp:number }>;
 };
 
 export const SmsListener = registerPlugin<SmsListenerPlugin>("SmsListener");

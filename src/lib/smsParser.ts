@@ -6,6 +6,7 @@ export type ParsedSMS = {
 };
 
 export function parseSMS(message: string): ParsedSMS {
+  console.log("FOR PARSING", message)
   const lower = message.toLowerCase();
 
   let amount: number | undefined;

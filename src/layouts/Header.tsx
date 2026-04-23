@@ -1,7 +1,7 @@
 // src/components/Header.tsx
 "use client";
-import { useContext, useState } from "react";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Moon, Sun, Menu, X, Monitor } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeContext } from "../context/ThemeContext";
 import Logo from "../assets/images/logo.png";
@@ -40,8 +40,11 @@ function scrollToId(id: string) {
   window.scrollTo({ top, behavior: "smooth" });
 }
 
+
 const Header = ({ toggleSidebar }: HeaderProps) => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const { theme, setTheme } = useContext(ThemeContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -118,6 +121,25 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
     }
   };
 
+  useEffect(() => {
+    if (!themeMenuOpen) return;
+
+    const handleClick = (e: MouseEvent) => {
+      if (!menuRef.current) return;
+
+      // 👇 if click is OUTSIDE → close
+      if (!menuRef.current.contains(e.target as Node)) {
+        setThemeMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+    };
+  }, [themeMenuOpen]);
+
   return (
     <header
       className="fixed inset-x-0 top-0 z-50 bg-[var(--color-background)] text-[var(--color-text-primary)]"
@@ -165,15 +187,55 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
         {/* Actions */}
         <div className="flex items-center md:gap-6">
           {/* Theme toggle - always visible */}
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center rounded-full 
-      bg-[var(--color-background)] text-[var(--color-text-primary)] 
-      hover:bg-[var(--color-primary)] hover:text-white transition cursor-pointer"
-            aria-label="Toggle theme"
-          >
-            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
+          <div className="relative" ref={menuRef}>
+            {/* Trigger */}
+            <button
+              onClick={() => setThemeMenuOpen((p) => !p)}
+              className="w-10 h-10 flex items-center justify-center rounded-full 
+    bg-[var(--color-background)] text-[var(--color-text-primary)] 
+    hover:bg-[var(--color-warm)] hover:text-white transition"
+            >
+              {theme === "light" && <Sun size={18} />}
+              {theme === "dark" && <Moon size={18} />}
+              {theme === "system" && <Monitor size={18} />}
+            </button>
+
+            {/* Popover */}
+            {themeMenuOpen && (
+              <div className="absolute right-0 mt-2 rounded-2xl 
+      bg-[var(--color-surface)] border border-[var(--border)] 
+      shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
+
+                <div className="flex items-center gap-1 p-1 rounded-xl border border-[var(--border)]">
+                  {([
+                    { key: "light", icon: Sun },
+                    { key: "dark", icon: Moon },
+                    { key: "system", icon: Monitor },
+                  ] as const).map(({ key, icon: Icon }) => {
+                    const active = theme === key;
+
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setTheme(key);
+                          setThemeMenuOpen(false);
+                        }}
+                        className={`w-10 h-9 flex items-center justify-center rounded-lg transition
+          ${active
+                            ? "bg-[var(--color-warm)]/90 text-white shadow-sm"
+                            : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]"
+                          }`}
+                        aria-label={key}
+                      >
+                        <Icon size={16} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Desktop view */}
           <div className="hidden md:flex items-center gap-4">

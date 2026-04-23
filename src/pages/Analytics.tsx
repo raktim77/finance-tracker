@@ -97,7 +97,7 @@ export default function Analytics() {
 
   const mode = getAnalyticsMode(activeRange.from, activeRange.to);
   
-  return (<div className="flex flex-col gap-8 pb-24 mx-auto w-full p-1">
+  return (<div className="flex flex-col gap-8 pb-24 mx-auto w-full p-2 md:p-1">
     <AnalyticsHeader
       selectedPreset={selectedPreset}
       overviewText={overviewText}

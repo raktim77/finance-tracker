@@ -259,7 +259,7 @@ function App() {
     let listener: PluginListenerHandle | null = null;
     const setupListener = async () => {
       listener = await SmsListener.addListener("smsReceived", async (sms) => {
-        console.log("SMS RECEIVED:", sms);
+        console.log("SMS RECEIVED:", JSON.stringify(sms));
 
         const parsed = parseSMS(sms.message);
 
@@ -272,7 +272,7 @@ function App() {
           type: parsed.type,
           merchant: parsed.merchant ?? '',
           confidence: parsed.confidence,
-          timestamp: Date.now()
+          timestamp: sms.timestamp
 
         });
       });
@@ -308,7 +308,7 @@ function App() {
             type: parsed.type,
             merchant: parsed.merchant ?? "",
             confidence: parsed.confidence,
-            timestamp: Date.now()
+            timestamp: sms.timestamp
 
           });
         }
