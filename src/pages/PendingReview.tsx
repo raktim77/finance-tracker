@@ -172,7 +172,6 @@ export default function PendingReview() {
       }
 
       const data = await getPendingSMS();
-      console.log("[RETRIEVED MESSAGES]", JSON.stringify(data))
       if (!cancelled) {
         setItems(data);
         setLoading(false);

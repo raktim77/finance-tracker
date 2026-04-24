@@ -16,7 +16,6 @@ export function getPendingKind(item: PendingSMSItem) {
 }
 
 export function getPendingTitle(item: PendingSMSItem) {
-  console.log("LOOGGING", JSON.stringify(item));
   
   return item.merchant?.trim() || item.sender?.trim() || "Unknown merchant";
 }

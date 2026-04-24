@@ -35,6 +35,44 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final String TAG = "XPENSIO_SMS";
     private static final String CHANNEL_ID = "xpensio_sms_channel";
 
+    private static class ParsedResult {
+    String amount;
+    String merchant;
+    String sender;
+    String message;
+    long timestamp;
+    TxType type;
+    } 
+
+    private ParsedResult buildNormalizedResult(
+        String message,
+        String sender,
+        long timestamp,
+        String lower
+    ) {
+        ParsedResult r = new ParsedResult();
+
+        r.message = message;
+        r.sender = sender;
+        r.timestamp = timestamp;
+
+        // ✅ USE YOUR NEW PIPELINE (NO CHANGE)
+        r.type = classifyType(lower);
+        r.amount = extractAmountForDisplay(message);
+        r.merchant = extractMerchant(message);
+
+        // 🔥 BACKWARD COMPATIBILITY (THIS IS THE FIX)
+
+        // Old behavior: merchant fallback to sender
+        if (r.merchant == null || r.merchant.isEmpty()) {
+            r.merchant = sender;
+        }
+
+        // Old behavior: amount can be null (do NOT force anything)
+        // keep as-is
+
+        return r;
+    }
     // ─── Stage 1: Noise / spam gate ──────────────────────────────────────────
 
     /**
@@ -59,12 +97,47 @@ public class SmsReceiver extends BroadcastReceiver {
             lower.contains("awb no") ||
             lower.contains("tracking")) return true;
 
+        // ── Merchant-side payment acknowledgements ────────────────────────────
+        // The merchant / payment processor is confirming they received YOUR
+        // payment. The bank already sent the real debit SMS. Letting these
+        // through would double-count every expense.
+        if (lower.contains("we have received") ||
+            lower.contains("payment has been received") ||
+            lower.contains("has been received") ||
+            lower.contains("payment received successfully") ||
+            lower.contains("payment successfully received")) return true;
+ 
+        // "payment of Rs X for your <service> has been received" — Jio/telecom
+        if (lower.matches(".*payment\\s+of\\s+(rs|inr|₹|\\$|€|£)[\\s.]?\\d.*") &&
+            lower.contains("has been received")) return true;
+ 
+        // "received payment of Rs X via BBPS" — starts from merchant POV
+        if (lower.matches("^(dear\\s+\\w+[,.]?\\s+)?(we\\s+have\\s+)?received\\s+payment\\s+of.*")) return true;
+ 
+        // ── Bill / due-date reminders ─────────────────────────────────────────
+        // No real transaction — just a reminder that a payment is due.
+        if (lower.contains("is due on") ||
+            lower.contains("due date") ||
+            lower.contains("minimum amount due") ||
+            lower.contains("min. amount due") ||
+            lower.contains("min amount due") ||
+            lower.contains("payment due") ||
+            lower.contains("please pay by") ||
+            lower.contains("kindly pay") ||
+            lower.contains("pay before") ||
+            lower.contains("bill generated") ||
+            lower.contains("bill amount due")) return true;
+ 
+        // "outstanding of Rs X ... is due" — credit card statement reminder
+        if (lower.contains("outstanding of") && lower.contains("is due")) return true;
+
+
         // Promotional — only reject if there is NO financial verb present
         boolean hasFinancialVerb = hasFinancialVerb(lower);
         if (!hasFinancialVerb) {
             if (lower.contains("offer") || lower.contains("discount") ||
                 lower.contains("sale") || lower.contains("coupon") ||
-                lower.contains("promo") || lower.contains("exclusive") ||
+                lower.contains("promo") || lower.contains("exclusive") || lower.contains("cashback") || 
                 lower.contains("hurry") || lower.contains("limited time") ||
                 lower.contains("click here") || lower.contains("subscribe")) {
                 return true;
@@ -117,11 +190,11 @@ public class SmsReceiver extends BroadcastReceiver {
             lower.contains("standing instruction") ||
             lower.contains("mutual fund") || lower.contains("mf purchase") ||
             lower.contains("refund") || lower.contains("reversal") ||
-            lower.contains("dividend") || lower.contains("salary") ||
-            lower.contains("cashback") || lower.contains("investment") ||
+            lower.contains("dividend") || lower.contains("salary") || lower.contains("investment") ||
             lower.contains("insurance premium") || lower.contains("atm") ||
             lower.contains("purchase") || lower.contains("transaction") ||
-            lower.contains("charged");
+            lower.contains("charged") || lower.contains("withdrawal") ||
+            lower.contains("subscription");
 
         boolean hasCurrencyAndDigit = hasCurrencySymbol(original) && original.matches(".*\\d+.*");
 
@@ -171,111 +244,160 @@ public class SmsReceiver extends BroadcastReceiver {
     private enum TxType { EXPENSE, INCOME, TRANSFER, INVESTMENT, UNKNOWN }
 
     private TxType classifyType(String lower) {
-        // Investment — check before income/expense to avoid misclassifying
-        // "SIP debited" as expense, or "MF units credited" as income
-        if (lower.contains("sip") || lower.contains("systematic investment") ||
-            lower.contains("mutual fund") || lower.contains("mf purchase") ||
-            lower.contains("mf invest") || lower.contains("nav") ||
-            lower.contains("folio") || lower.contains("units allotted") ||
-            lower.contains("units allocated") || lower.contains("elss") ||
-            lower.contains("nps") || lower.contains("ppf") ||
-            lower.contains("insurance premium") || lower.contains("ulip") ||
-            lower.contains("ipo allot") || lower.contains("sovereign gold")) {
-            return TxType.INVESTMENT;
-        }
 
-        // Transfer — internal fund movement (not incoming credit to your account)
-        if ((lower.contains("neft") || lower.contains("rtgs") ||
-             lower.contains("fund transfer") || lower.contains("transferred to") ||
-             lower.contains("self transfer")) &&
-            !lower.contains("received") && !lower.contains("credited")) {
-            return TxType.TRANSFER;
-        }
-
-        // Expense
-        if (lower.contains("debited") || lower.contains("deducted") ||
-            lower.contains("spent") || lower.contains("paid") ||
-            lower.contains("payment") || lower.contains("purchase") ||
-            lower.contains("charged") || lower.contains("withdraw") ||
-            lower.contains("withdrawn") || lower.contains("atm") ||
-            lower.contains("emi") || lower.contains("mandate executed") ||
-            lower.contains("auto debit") || lower.contains("auto-debit") ||
-            lower.contains("standing instruction")) {
-            return TxType.EXPENSE;
-        }
-
-        // Income
-        if (lower.contains("credited") || lower.contains("received") ||
-            lower.contains("deposited") || lower.contains("deposit") ||
-            lower.contains("salary") || lower.contains("payroll") ||
-            lower.contains("refund") || lower.contains("reversal") ||
-            lower.contains("reversed") || lower.contains("cashback") ||
-            lower.contains("reward") || lower.contains("dividend") ||
-            lower.contains("interest credited")) {
-            return TxType.INCOME;
-        }
-
-        return TxType.UNKNOWN;
+    // ─── Investment (keep first) ───
+    if (lower.contains("sip") || lower.contains("systematic investment") ||
+        lower.contains("mutual fund") || lower.contains("mf purchase") ||
+        lower.contains("mf invest") || lower.contains("nav") ||
+        lower.contains("folio") || lower.contains("units allotted") ||
+        lower.contains("units allocated") || lower.contains("elss") ||
+        lower.contains("nps") || lower.contains("ppf") ||
+        lower.contains("insurance premium") || lower.contains("ulip") ||
+        lower.contains("ipo allot") || lower.contains("sovereign gold")) {
+        return TxType.INVESTMENT;
     }
 
-    // ─── Stage 5: Merchant extraction ────────────────────────────────────────
+    // ─── Transfer (NEW — IMPORTANT) ───
+    if ((lower.contains("transfer") || lower.contains("transferred") ||
+         lower.contains("neft") || lower.contains("rtgs") ||
+         lower.contains("imps") || lower.contains("fund transfer") ||
+         lower.contains("self transfer")) &&
+        !lower.contains("received") && !lower.contains("credited")) {
+        return TxType.TRANSFER;
+    }
 
+    // ─── Expense ───
+    if (lower.contains("debited") || lower.contains("deducted") ||
+        lower.contains("spent") || lower.contains("paid") || lower.contains("sent") || 
+        lower.contains("payment") || lower.contains("purchase") ||
+        lower.contains("charged") || lower.contains("withdraw") ||
+        lower.contains("withdrawn") || lower.contains("atm") ||
+        lower.contains("emi") || lower.contains("mandate executed") ||
+        lower.contains("auto debit") || lower.contains("auto-debit") ||
+        lower.contains("standing instruction") ||
+
+        // 🔥 NEW additions
+        lower.contains("dr.") || lower.contains("dr ") ||
+        lower.contains("fee") || lower.contains("charges") ||
+        lower.contains("gst") || lower.contains("txn") ||
+        lower.contains("upi payment") || lower.contains("upi txn")
+    ) {
+        return TxType.EXPENSE;
+    }
+
+    // ─── Income ───
+    if (lower.contains("credited") || lower.contains("received") ||
+        lower.contains("deposited") || lower.contains("deposit") ||
+        lower.contains("salary") || lower.contains("payroll") ||
+        lower.contains("refund") || lower.contains("reversal") ||
+        lower.contains("reversed") ||
+        lower.contains("reward") || lower.contains("dividend") ||
+        lower.contains("interest credited") ||
+
+        // 🔥 NEW additions
+        lower.contains("cr.") || lower.contains("cr ") ||
+        lower.contains("interest") // sometimes appears alone
+    ) {
+        return TxType.INCOME;
+    }
+
+    return TxType.UNKNOWN;
+}
+
+    // ─── Stage 5: Merchant extraction ────────────────────────────────────────
+ 
     /**
      * Priority cascade — tries reliable patterns first, stops on first clean match.
+     *
+     * Pattern parity with parseSMS.ts:
+     *  P1  "to/at <merchant>" with terminator guard — @ included for VPAs
+     *  P2  "paid/sent to <merchant>" with terminator guard
+     *  P3  "received from <source>" with terminator guard
+     *  P4  explicit VPA prefix (vpa: / upi id: / upi ref:) — full addr@domain
+     *  P5  bare VPA anywhere — word@word (catches Kotak-style messages)
+     *  P6  fallback "at <Merchant>" no terminator
+     *  P7  fallback "to <Merchant>" no terminator
      */
     private String extractMerchant(String message) {
-        // Pattern 1: "to/at <MERCHANT> via/on/for/ref/rs/₹"
+        // P1: "from beneficiary <n>" — explicit in NEFT/RTGS credit SMS
+        // e.g. "credited ... via NEFT from beneficiary LOGICASANA PRIVATE LIMITED. UTR"
         Pattern p1 = Pattern.compile(
-            "\\b(?:to|at)\\s+([A-Z0-9][A-Za-z0-9 &.\\-_/]{1,40}?)\\s+" +
-            "(?:via|on|for|using|with|ref|upi|vpa|a\\/c|ac|account|rs|inr|\u20B9|\\d)",
+            "\\bfrom\\s+beneficiary\\s+([A-Z][A-Za-z0-9 &.\\-_]{1,60}?)(?:\\.|,|$|\\s+(?:utr|ref|on\\s+\\d))",
             Pattern.CASE_INSENSITIVE);
         String r1 = firstMatch(p1, message);
         if (r1 != null) return r1;
-
-        // Pattern 2: "paid to / sent to <MERCHANT>"
+ 
+        // P2: "to/at <MERCHANT>" with look-ahead terminator; @ included for VPA addresses
         Pattern p2 = Pattern.compile(
-            "\\b(?:paid|sent)\\s+(?:to\\s+)?([A-Z0-9][A-Za-z0-9 &.\\-_/]{1,40?})\\s+" +
-            "(?:via|on|for|using|with|ref|upi|a\\/c|rs|inr|\u20B9|\\d)",
+            "\\b(?:to|at)\\s+([A-Z0-9][A-Za-z0-9 &.\\-_/@]{1,60}?)\\s+" +
+            "(?:via|on|for|using|with|ref|upi\\s*ref|a\\/c|ac|account|rs|inr|\u20B9|\\d)",
             Pattern.CASE_INSENSITIVE);
         String r2 = firstMatch(p2, message);
         if (r2 != null) return r2;
+ 
+        // P3a: Kotak-style "Sent Rs.X from <Bank> AC XXXX to <recipient> on ..."
+        // Captures "Bank AC XXXX to YYYY" as merchant. Returned directly (no cleanMerchant)
+        // because the result starts with a bank name which is blocklisted.
+        Pattern p3a = Pattern.compile(
+            "\\bsent\\s+(?:rs\\.?|\u20B9|inr)\\s*[\\d,.]+\\s+from\\s+" +
+            "([A-Za-z ]+(?:bank\\s+)?(?:a\\/c|ac|account)\\s+[A-Za-z0-9]+\\s+to\\s+[A-Za-z0-9][A-Za-z0-9._@\\-]*)\\s+on\\b",
+            Pattern.CASE_INSENSITIVE);
+        Matcher m3a = p3a.matcher(message);
+        if (m3a.find()) {
+            String raw = m3a.group(1).trim().replaceAll("[.,;:]+$", "");
+            if (raw.length() >= 2) return raw;
+        }
 
-        // Pattern 3: "received from <SOURCE>"
+        // P3: "paid/sent to <MERCHANT>" with look-ahead terminator
         Pattern p3 = Pattern.compile(
-            "\\breceived\\s+(?:from\\s+)?([A-Z0-9][A-Za-z0-9 &.\\-_/]{1,40?})\\s+" +
-            "(?:via|on|for|using|ref|a\\/c|rs|inr|\u20B9|\\d)",
+            "\\b(?:paid|sent)\\s+(?:to\\s+)?([A-Z0-9][A-Za-z0-9 &.\\-_/@]{1,60}?)\\s+" +
+            "(?:via|on|for|using|with|ref|upi\\s*ref|a\\/c|rs|inr|\u20B9|\\d)",
             Pattern.CASE_INSENSITIVE);
         String r3 = firstMatch(p3, message);
         if (r3 != null) return r3;
-
-        // Pattern 4: UPI VPA — extract label before @
+ 
+        // P4: "received from <SOURCE>" with look-ahead terminator
         Pattern p4 = Pattern.compile(
-            "(?:vpa|upi id|upi ref)[:\\s]+([a-z0-9.\\-_]+)@",
+            "\\breceived\\s+(?:from\\s+)?([A-Z0-9][A-Za-z0-9 &.\\-_/@]{1,60}?)\\s+" +
+            "(?:via|on|for|using|ref|a\\/c|rs|inr|\u20B9|\\d)",
             Pattern.CASE_INSENSITIVE);
         String r4 = firstMatch(p4, message);
         if (r4 != null) return r4;
-
-        // Pattern 5: "at <MERCHANT>" without look-ahead (wider, lower confidence)
+ 
+        // P5: explicit VPA prefix — captures full addr@domain
         Pattern p5 = Pattern.compile(
-            "\\bat\\s+([A-Z][A-Za-z0-9 &.\\-]{1,35})",
+            "(?:vpa|upi\\s*id|upi\\s*ref)[:\\s]+([A-Za-z0-9.\\-_]+@[A-Za-z0-9.\\-_]+)",
             Pattern.CASE_INSENSITIVE);
         String r5 = firstMatch(p5, message);
         if (r5 != null) return r5;
-
-        // Pattern 6: "to <MERCHANT>" without look-ahead
+ 
+        // P6: bare VPA anywhere in message — word@word (e.g. tataplaylt.bdpg@kotakpay)
         Pattern p6 = Pattern.compile(
+            "\\b([A-Za-z0-9][A-Za-z0-9.\\-_]{2,40}@[A-Za-z0-9][A-Za-z0-9.\\-_]{2,30})\\b");
+        String r6 = firstMatch(p6, message);
+        if (r6 != null) return r6;
+ 
+        // P7: fallback "at <MERCHANT>" — no terminator
+        Pattern p7 = Pattern.compile(
+            "\\bat\\s+([A-Z][A-Za-z0-9 &.\\-]{1,35})",
+            Pattern.CASE_INSENSITIVE);
+        String r7 = firstMatch(p7, message);
+        if (r7 != null) return r7;
+ 
+        // P8: fallback "to <MERCHANT>" — no terminator
+        Pattern p8 = Pattern.compile(
             "\\bto\\s+([A-Z][A-Za-z0-9 &.\\-]{1,35})",
             Pattern.CASE_INSENSITIVE);
-        return firstMatch(p6, message);
+        return firstMatch(p8, message);
     }
-
+ 
     /** Runs a pattern against message, cleans result, returns null if blocklisted. */
     private String firstMatch(Pattern p, String message) {
         Matcher m = p.matcher(message);
         if (!m.find()) return null;
         return cleanMerchant(m.group(1));
     }
-
+ 
     private static final java.util.Set<String> MERCHANT_BLOCKLIST;
     static {
         MERCHANT_BLOCKLIST = new java.util.HashSet<>(java.util.Arrays.asList(
@@ -289,13 +411,33 @@ public class SmsReceiver extends BroadcastReceiver {
         ));
     }
 
-    private String cleanMerchant(String raw) {
+      /**
+     * Returns true if the candidate's first word is a blocklisted template word.
+     * Catches multi-word false positives like "your Kotak Bank" or "the account".
+     */
+    private boolean startsWithBlocklisted(String s) {
+        if (s == null || s.isEmpty()) return false;
+        String firstWord = s.trim().split("\\s+")[0].toLowerCase();
+        return MERCHANT_BLOCKLIST.contains(firstWord);
+    }
+ 
+    /**
+     * Cleans a raw merchant candidate.
+     * VPA strings (containing @) are treated differently — the blocklist is
+     * not applied and @ is preserved, mirroring parseSMS.ts cleanMerchant().
+     */
+      private String cleanMerchant(String raw) {
         if (raw == null) return null;
-        String cleaned = raw.trim().replaceAll("\\s+", " ").replaceAll("[^A-Za-z0-9 &.\\-_/@]", "").trim();
+        boolean isVpa = raw.contains("@");
+        String cleaned = raw.trim()
+            .replaceAll("\\s+", " ")
+            .replaceAll(isVpa ? "[^A-Za-z0-9.\\-_/@]" : "[^A-Za-z0-9 &.\\-_]", "")
+            .trim();
         if (cleaned.length() < 2) return null;
-        if (MERCHANT_BLOCKLIST.contains(cleaned.toLowerCase())) return null;
-        if (cleaned.matches("^\\d+$")) return null;                // pure number
-        if (cleaned.matches("^[Xx*]+\\d{3,6}$")) return null;     // masked account tail
+        if (!isVpa && MERCHANT_BLOCKLIST.contains(cleaned.toLowerCase())) return null;
+        if (!isVpa && startsWithBlocklisted(cleaned)) return null;
+        if (cleaned.matches("^\\d+$")) return null;           // pure number
+        if (cleaned.matches("^[Xx*]+\\d{3,6}$")) return null; // masked account tail
         return cleaned;
     }
 
@@ -380,14 +522,19 @@ public class SmsReceiver extends BroadcastReceiver {
 
         Log.d(TAG, "Financial SMS accepted from " + sender + ": " + message);
 
-        SmsStorage.saveSms(context, message, sender, timestamp);
-        SmsListenerPlugin.notifySms(message, sender, timestamp);
-        showNotification(context, message, sender, lower);
+        ParsedResult parsed = buildNormalizedResult(message, sender, timestamp, lower);
+
+        // ✅ KEEP OLD STRUCTURE
+        SmsStorage.saveSms(context, parsed.message, parsed.sender, parsed.timestamp);
+        SmsListenerPlugin.notifySms(parsed.message, parsed.sender, parsed.timestamp);
+
+        // ✅ use parsed for notification
+        showNotification(context, parsed);
     }
 
     // ─── Notification ─────────────────────────────────────────────────────────
 
-    private void showNotification(Context context, String message, String sender, String lower) {
+    private void showNotification(Context context, ParsedResult parsed) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -408,12 +555,15 @@ public class SmsReceiver extends BroadcastReceiver {
             manager.createNotificationChannel(channel);
         }
 
+        String lower = parsed.message.toLowerCase();
+
+
         TxType type = classifyType(lower);
-        String title = buildNotificationTitle(type, lower);
-        String summary = buildNotificationSummary(message, sender, type);
+        String title = buildNotificationTitle(parsed.type, lower);
+        String summary = buildNotificationSummary(parsed.message, parsed.sender, type);
 
         Intent clickIntent = new Intent(context, MainActivity.class);
-        clickIntent.putExtra("sms_message", message);
+        clickIntent.putExtra("sms_message", parsed.message);
         clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(

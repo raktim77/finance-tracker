@@ -58,54 +58,125 @@ export type ParsedSMS = {
 };
 
 // ─── Stage 1: Noise gate ─────────────────────────────────────────────────────
-
+ 
 /**
  * Returns true when the message should be REJECTED before any parsing.
- * Catches OTPs, delivery notifications, service alerts, and promotional spam.
+ * Catches OTPs, delivery notifications, service alerts, promotional spam,
+ * merchant-side acknowledgements, and bill / due-date reminders.
  */
 function isNoise(raw: string): boolean {
   const msg = raw.toLowerCase();
 
   // OTP / authentication codes
-  if (/\b(otp|one.?time.?pass|verification code|auth.?code|login code)\b/.test(msg)) return true;
+  if (
+    /\b(otp|one.?time.?pass|verification code|auth.?code|login code)\b/.test(
+      msg,
+    )
+  )
+    return true;
   if (/\b\d{4,8}\b.{0,30}\b(otp|code|pin)\b/.test(msg)) return true;
 
   // Delivery / logistics
-  if (/\b(out for delivery|your order|shipment|parcel|courier|awb|tracking)\b/.test(msg)) return true;
+  if (
+    /\b(out for delivery|your order|shipment|parcel|courier|awb|tracking)\b/.test(
+      msg,
+    )
+  )
+    return true;
+
+  // ── Merchant-side payment acknowledgements ─────────────────────────────────
+  // These come from the merchant / payment processor confirming they received
+  // YOUR payment. The bank already sent the real debit SMS. Counting these
+  // would double-count the expense.
+  if (/\b(we\s+have\s+received|payment\s+has\s+been\s+received|has\s+been\s+received|payment\s+received\s+successfully|payment\s+successfully\s+received)\b/.test(msg)) return true;
+ 
+  // "payment of Rs X for your <service> has been received" — Jio/telecom style
+  if (/\bpayment\s+of\s+(?:rs|₹|\$|€|£)[\s.]?\d/.test(msg) && /\bhas\s+been\s+received\b/.test(msg)) return true;
+ 
+  // "received payment of Rs X via BBPS" — merchant POV, not bank
+  if (/^(?:dear\s+\w+[,.]?\s+)?(?:we\s+have\s+)?received\s+payment\s+of\b/.test(msg)) return true;
+ 
+  // ── Bill / due-date reminders ──────────────────────────────────────────────
+  // No real transaction happened — just a reminder that something is due.
+  if (/\b(is\s+due\s+on|due\s+date|minimum\s+amount\s+due|min\.?\s+amount\s+due|payment\s+due|please\s+pay\s+by|kindly\s+pay|pay\s+before|bill\s+generated|bill\s+amount\s+due)\b/.test(msg)) return true;
+ 
+  // "outstanding of Rs X on your credit card ... is due"
+  if (/\boutstanding\s+of\b/.test(msg) && /\bis\s+due\b/.test(msg)) return true;
+
 
   // Pure promotional with no financial verb
   const hasFinancialVerb =
-    /\b(debited|credited|paid|spent|withdrawn|deposited|transferred|received|sent|deducted|reversed|refunded|mandated|auto.?debit|standing instruction|emi|sip|neft|rtgs|imps|upi)\b/.test(msg);
+    /\b(debited|credited|paid|spent|withdrawn|deposited|transferred|received|sent|deducted|reversed|refunded|mandated|auto.?debit|standing instruction|emi|sip|neft|rtgs|imps|upi)\b/.test(
+      msg,
+    );
   if (!hasFinancialVerb) {
-    if (/\b(offer|discount|cashback|sale|coupon|promo|reward|exclusive|hurry|limited time|click here|subscribe|deal)\b/.test(msg)) return true;
+    if (
+      /\b(offer|discount|cashback|sale|coupon|promo|reward|exclusive|hurry|limited time|click here|subscribe|deal)\b/.test(
+        msg,
+      )
+    )
+      return true;
   }
 
   // KYC / account activation
-  if (/\b(kyc|pan|aadhaar|update your|verify your|activate your)\b/.test(msg)) return true;
+  if (/\b(kyc|pan|aadhaar|update your|verify your|activate your)\b/.test(msg))
+    return true;
 
   // Pure balance enquiry replies (no debit/credit event)
-  if (/\b(your balance is|available balance|bal\s*:)\b/.test(msg) && !hasFinancialVerb) return true;
+  if (
+    /\b(your balance is|available balance|bal\s*:)\b/.test(msg) &&
+    !hasFinancialVerb
+  )
+    return true;
 
   return false;
 }
-
 // ─── Stage 2: Financial signal check ─────────────────────────────────────────
 
 const FINANCIAL_KEYWORDS = [
-  "debited", "credited", "debit", "credit",
-  "spent", "paid", "payment", "withdraw", "withdrawal",
-  "deposited", "deposit", "transfer", "transferred",
-  "received", "sent", "sent to",
-  "emi", "sip", "neft", "rtgs", "imps", "upi",
-  "auto debit", "auto-debit", "standing instruction",
-  "mandate", "subscription",
-  "refund", "reversal", "reversed",
-  "dividend", "interest credited",
-  "salary", "payroll",
-  "cashback", "reward",
-  "purchase", "transaction",
-  "charged", "deducted",
-  "mutual fund", "mf purchase", "investment",
+  "debited",
+  "credited",
+  "debit",
+  "credit",
+  "spent",
+  "paid",
+  "payment",
+  "withdraw",
+  "withdrawal",
+  "deposited",
+  "deposit",
+  "transfer",
+  "transferred",
+  "received",
+  "sent",
+  "sent to",
+  "emi",
+  "sip",
+  "neft",
+  "rtgs",
+  "imps",
+  "upi",
+  "auto debit",
+  "auto-debit",
+  "standing instruction",
+  "mandate",
+  "subscription",
+  "refund",
+  "reversal",
+  "reversed",
+  "dividend",
+  "interest credited",
+  "salary",
+  "payroll",
+  "cashback",
+  "reward",
+  "purchase",
+  "transaction",
+  "charged",
+  "deducted",
+  "mutual fund",
+  "mf purchase",
+  "investment",
   "insurance premium",
   "atm",
 ];
@@ -129,20 +200,20 @@ function isFinancialSMS(msg: string): boolean {
  * Ordered by detection specificity (longer / more unique prefixes first).
  */
 const CURRENCY_MAP: { pattern: RegExp; code: string }[] = [
-  { pattern: /₹|rs\.?\s|inr/i,  code: "INR" },
-  { pattern: /\$(?!g|a)/i,       code: "USD" },  // bare $ (not SGD/AUD prefix)
-  { pattern: /aud|\$a|a\$/i,     code: "AUD" },
-  { pattern: /cad|\$c|c\$/i,     code: "CAD" },
-  { pattern: /sgd|s\$/i,         code: "SGD" },
-  { pattern: /€|eur/i,           code: "EUR" },
-  { pattern: /£|gbp/i,           code: "GBP" },
-  { pattern: /¥|jpy|cny|cnh/i,   code: "JPY" },
-  { pattern: /aed/i,             code: "AED" },
-  { pattern: /myr|rm\s/i,        code: "MYR" },
-  { pattern: /brl|r\$/i,         code: "BRL" },
-  { pattern: /zar/i,             code: "ZAR" },
-  { pattern: /krw|₩/i,           code: "KRW" },
-  { pattern: /thb|฿/i,           code: "THB" },
+  { pattern: /₹|rs\.?\s|inr/i, code: "INR" },
+  { pattern: /\$(?!g|a)/i, code: "USD" }, // bare $ (not SGD/AUD prefix)
+  { pattern: /aud|\$a|a\$/i, code: "AUD" },
+  { pattern: /cad|\$c|c\$/i, code: "CAD" },
+  { pattern: /sgd|s\$/i, code: "SGD" },
+  { pattern: /€|eur/i, code: "EUR" },
+  { pattern: /£|gbp/i, code: "GBP" },
+  { pattern: /¥|jpy|cny|cnh/i, code: "JPY" },
+  { pattern: /aed/i, code: "AED" },
+  { pattern: /myr|rm\s/i, code: "MYR" },
+  { pattern: /brl|r\$/i, code: "BRL" },
+  { pattern: /zar/i, code: "ZAR" },
+  { pattern: /krw|₩/i, code: "KRW" },
+  { pattern: /thb|฿/i, code: "THB" },
 ];
 
 function detectCurrency(msg: string): string {
@@ -209,118 +280,227 @@ function classifyType(lower: string): {
   type: TransactionType;
   score: number;
 } {
-  // ── Investment signals (check before income/expense — "credited to your MF folio" is investment, not income)
+  // ── Investment (same as Java)
   if (
-    /\b(sip|systematic investment|mutual fund|mf\s*(purchase|invest)|nav|folio|units allotted|units allocated|redemption|elss|nps|ppf|nsc|sgb|sovereign gold|ipo allot)\b/.test(lower)
+    /\b(sip|systematic investment|mutual fund|mf\s*(purchase|invest)|nav|folio|units allotted|units allocated|redemption|elss|nps|ppf|nsc|sgb|sovereign gold|ipo allot)\b/.test(
+      lower,
+    )
   ) {
     return { type: "investment", score: 0.35 };
   }
-  if (/\b(insurance premium|life insurance|health insurance|term plan|ulip)\b/.test(lower)) {
+
+  if (
+    /\b(insurance premium|life insurance|health insurance|term plan|ulip)\b/.test(
+      lower,
+    )
+  ) {
     return { type: "investment", score: 0.3 };
   }
 
-  // ── Transfer / internal movement (higher priority than generic debit/credit)
+  // ── Transfer (aligned with Java — slightly broadened)
   if (
-    /\b(transferred to|transfer to|neft|rtgs|imps|internal transfer|fund transfer|self transfer)\b/.test(lower) &&
+    /\b(transfer|transferred|transfer to|transferred to|neft|rtgs|imps|internal transfer|fund transfer|self transfer)\b/.test(
+      lower,
+    ) &&
     !/\b(received|credited)\b/.test(lower)
   ) {
     return { type: "transfer", score: 0.3 };
   }
 
-  // ── Expense
+  // ── Expense (FULL parity with Java)
   if (
-    /\b(debited|deducted|spent|paid|payment|purchase|charged|withdraw|withdrawn|atm|emi|mandate executed|auto.?debit|standing instruction)\b/.test(lower)
+    /\b(debited|deducted|spent|paid|sent|payment|purchase|charged|withdraw|withdrawn|atm|emi|mandate executed|auto\s?debit|auto-debit|standing instruction|dr\.?|fee|charges|gst|txn|upi payment|upi txn)\b/i.test(
+      lower,
+    )
   ) {
     return { type: "expense", score: 0.35 };
   }
 
-  // ── Income
+  // ── Income (FULL parity with Java)
   if (
-    /\b(credited|received|deposited|deposit|salary|payroll|refund|reversal|reversed|cashback|reward|dividend|interest credited)\b/.test(lower)
+    /\b(credited|received|deposited|deposit|salary|payroll|refund|reversal|reversed|cashback|reward|dividend|interest credited|cr\.?|interest)\b/i.test(
+      lower,
+    )
   ) {
     return { type: "income", score: 0.35 };
   }
-
   return { type: "unknown", score: 0 };
 }
 
 // ─── Stage 4b: Sub-category ──────────────────────────────────────────────────
 
-function classifySubCategory(lower: string, type: TransactionType): SubCategory {
+function classifySubCategory(
+  lower: string,
+  type: TransactionType,
+): SubCategory {
   if (/\batm\b/.test(lower)) return "atm";
   if (/\bupi\b/.test(lower)) return "upi";
   if (/\b(neft|rtgs)\b/.test(lower)) return "neft_rtgs";
   if (/\bimps\b/.test(lower)) return "imps";
   if (/\bemi\b/.test(lower)) return "emi";
   if (/\b(sip|systematic investment)\b/.test(lower)) return "sip";
-  if (/\b(mutual fund|mf\s*(purchase|invest)|nav|folio|units)\b/.test(lower)) return "mutual_fund";
-  if (/\b(insurance premium|life insurance|health insurance|term plan|ulip)\b/.test(lower)) return "insurance";
+  if (/\b(mutual fund|mf\s*(purchase|invest)|nav|folio|units)\b/.test(lower))
+    return "mutual_fund";
+  if (
+    /\b(insurance premium|life insurance|health insurance|term plan|ulip)\b/.test(
+      lower,
+    )
+  )
+    return "insurance";
   if (/\b(dividend)\b/.test(lower)) return "dividend";
   if (/\b(salary|payroll|ctc)\b/.test(lower)) return "salary";
   if (/\b(refund|reversal|reversed)\b/.test(lower)) return "refund";
   if (/\b(cashback|reward)\b/.test(lower)) return "cashback";
   if (/\b(card|pos|swipe|tap to pay)\b/.test(lower)) return "card_payment";
-  if (/\b(bank charge|service charge|annual fee|late fee|penalty)\b/.test(lower)) return "bank_charge";
+  if (
+    /\b(bank charge|service charge|annual fee|late fee|penalty)\b/.test(lower)
+  )
+    return "bank_charge";
   if (type === "investment") return "investment_other";
   return "general";
 }
 
+ 
 // ─── Stage 5: Merchant extraction ────────────────────────────────────────────
-
+ 
 /**
  * Priority cascade — tries the most reliable patterns first and stops
  * at the first match. Cleans the result before returning.
+ *
+ *  P1  "from beneficiary <NAME>" — NEFT/RTGS income, highest priority
+ *  P2  "to/at <merchant>" with terminator guard — @ included for VPAs
+ *  P3  "paid/sent to <merchant>" with terminator guard
+ *  P4  "received from <source>" with terminator guard
+ *  P5  explicit VPA prefix (vpa: / upi id: / upi ref:) — full addr@domain
+ *  P6  bare VPA anywhere — word@word (catches Kotak-style messages)
+ *  P7  fallback "at <Merchant>" no terminator
+ *  P8  fallback "to <Merchant>" no terminator
  */
 const MERCHANT_PATTERNS: RegExp[] = [
-  // 1. "to <MERCHANT>" or "at <MERCHANT>" — most common in Indian bank SMS
-  /\b(?:to|at)\s+([A-Z0-9][A-Za-z0-9 &.\-_/]{1,40}?)(?:\s+(?:via|on|for|using|with|ref|upi|vpa|a\/c|ac|account|rs|inr|₹|\d))/i,
-  // 2. "paid to <X>" / "sent to <X>"
-  /\b(?:paid|sent)\s+(?:to\s+)?([A-Z0-9][A-Za-z0-9 &.\-_/]{1,40}?)(?:\s+(?:via|on|for|using|with|ref|upi|vpa|a\/c|ac|rs|inr|₹|\d))/i,
-  // 3. "from <X>" for income context
-  /\breceived\s+(?:from\s+)?([A-Z0-9][A-Za-z0-9 &.\-_/]{1,40}?)(?:\s+(?:via|on|for|using|with|ref|upi|a\/c|rs|inr|₹|\d))/i,
-  // 4. UPI VPA — last segment before @ is often business name
-  /(?:vpa|upi id|upi ref)[:\s]+([a-z0-9._-]+)@/i,
-  // 5. "at <MERCHANT>" without look-ahead (lower confidence, wider match)
+  // P1: "from beneficiary <NAME>" — explicit in NEFT/RTGS credit SMS
+  // e.g. "credited ... via NEFT from beneficiary LOGICASANA PRIVATE LIMITED"
+  /\bfrom\s+beneficiary\s+([A-Z][A-Za-z0-9 &.\-_]{1,60}?)(?:\.|,|$|\s+(?:utr|ref|on\s+\d))/i,
+
+  // P2: "to/at <MERCHANT>" with look-ahead terminator — @ included for VPAs
+  /\b(?:to|at)\s+([A-Z0-9][A-Za-z0-9 &._/@-]{1,60}?)\s+(?:via|on|for|using|with|ref|upi\s*ref|a\/c|ac|account|rs|inr|₹|\d)/i,
+
+  // P3: "paid/sent to <merchant>" with look-ahead terminator
+  /\b(?:paid|sent)\s+(?:to\s+)?([A-Z0-9][A-Za-z0-9 &._/@-]{1,60}?)\s+(?:via|on|for|using|with|ref|upi\s*ref|a\/c|rs|inr|₹|\d)/i,
+  // ← P3a is handled separately in extractMerchant() below, not in this array
+
+  // P4: "received from <source>" with look-ahead terminator
+  /\breceived\s+(?:from\s+)?([A-Z0-9][A-Za-z0-9 &._/@-]{1,60}?)\s+(?:via|on|for|using|ref|a\/c|rs|inr|₹|\d)/i,
+
+  // P5: explicit VPA prefix — captures full addr@domain
+  /(?:vpa|upi\s*id|upi\s*ref)[:\s]+([A-Za-z0-9._-]+@[A-Za-z0-9._-]+)/i,
+
+  // P6: bare VPA anywhere in message — word@word
+  /\b([A-Za-z0-9][A-Za-z0-9._-]{2,40}@[A-Za-z0-9][A-Za-z0-9._-]{2,30})\b/,
+
+  // P7: fallback "at <Merchant>" — no terminator
   /\bat\s+([A-Z][A-Za-z0-9 &.-]{1,35})/,
-  // 6. "to <MERCHANT>" without look-ahead
+
+  // P8: fallback "to <Merchant>" — no terminator
   /\bto\s+([A-Z][A-Za-z0-9 &.-]{1,35})/,
 ];
 
 /** Words that commonly appear in SMS templates and are NOT merchants */
 const MERCHANT_BLOCKLIST = new Set([
-  "your", "you", "the", "a", "an", "our", "us",
-  "bank", "axis", "sbi", "hdfc", "icici", "kotak", "yes", "rbl",
-  "account", "acc", "a/c", "card", "wallet", "upi", "neft", "imps", "rtgs",
-  "ref", "reference", "txn", "tran", "transaction", "id",
-  "avl", "bal", "balance", "available",
-  "rs", "inr", "mr", "mrs", "ms", "dr",
-  "dear", "customer", "info", "alert", "update",
+  "your",
+  "you",
+  "the",
+  "a",
+  "an",
+  "our",
+  "us",
+  "bank",
+  "axis",
+  "sbi",
+  "hdfc",
+  "icici",
+  "kotak",
+  "yes",
+  "rbl",
+  "account",
+  "acc",
+  "a/c",
+  "card",
+  "wallet",
+  "upi",
+  "neft",
+  "imps",
+  "rtgs",
+  "ref",
+  "reference",
+  "txn",
+  "tran",
+  "transaction",
+  "id",
+  "avl",
+  "bal",
+  "balance",
+  "available",
+  "rs",
+  "inr",
+  "mr",
+  "mrs",
+  "ms",
+  "dr",
+  "dear",
+  "customer",
+  "info",
+  "alert",
+  "update",
 ]);
 
+/**
+ * Returns true if the candidate starts with a blocklisted word.
+ * Catches multi-word false positives like "your Kotak Bank" or "the account".
+ */
+function startsWithBlocklisted(s: string): boolean {
+  const firstWord = s.split(/\s+/)[0].toLowerCase();
+  return MERCHANT_BLOCKLIST.has(firstWord);
+}
+
 function cleanMerchant(raw: string): string | null {
+  if (!raw) return null;
+
+  const isVpa = raw.includes("@");
+
   const cleaned = raw
     .trim()
     .replace(/\s+/g, " ")
-    .replace(/[^A-Za-z0-9 &.\-_/@]/g, "")
+    .replace(isVpa ? /[^A-Za-z0-9._/@-]/g : /[^A-Za-z0-9 &.\-_]/g, "")
     .trim();
 
   if (cleaned.length < 2) return null;
-  if (MERCHANT_BLOCKLIST.has(cleaned.toLowerCase())) return null;
-  // Reject pure numeric strings (likely account numbers)
+  if (!isVpa && MERCHANT_BLOCKLIST.has(cleaned.toLowerCase())) return null;
+  if (!isVpa && startsWithBlocklisted(cleaned)) return null;
   if (/^\d+$/.test(cleaned)) return null;
-  // Reject strings that look like account tails (XX1234)
   if (/^[Xx*]+\d{3,6}$/.test(cleaned)) return null;
 
   return cleaned;
 }
 
 function extractMerchant(msg: string): string | null {
+  // P3a: Kotak-style "Sent Rs.X from <Bank> AC XXXX to <recipient> on ..."
+  // Captures the full "Bank AC XXXX to YYYY" as merchant. Handled separately
+  // because the result starts with a bank name (blocklisted) and must bypass
+  // cleanMerchant's startsWithBlocklisted check.
+  const p3a =
+    /\bsent\s+(?:rs\.?|₹|inr)\s*[\d,.]+\s+from\s+([A-Za-z ]+(?:bank\s+)?(?:a\/c|ac|account)\s+[A-Za-z0-9]+\s+to\s+[A-Za-z0-9][A-Za-z0-9._@-]*)\s+on\b/i;
+  const p3aMatch = p3a.exec(msg);
+  if (p3aMatch) {
+    const raw = p3aMatch[1].trim().replace(/[.,;:]+$/, "");
+    if (raw.length >= 2) return raw;
+  }
+
   for (const pattern of MERCHANT_PATTERNS) {
     const m = pattern.exec(msg);
-    if (m) {
-      const result = cleanMerchant(m[1]);
-      if (result) return result;
-    }
+    if (!m) continue;
+
+    const cleaned = cleanMerchant(m[1]);
+    if (cleaned) return cleaned;
   }
   return null;
 }
@@ -330,7 +510,9 @@ function extractMerchant(msg: string): string | null {
 function extractAccountRef(msg: string): string | null {
   // Masked card / account: XX1234, **1234, ending 1234, a/c xx1234
   const m =
-    /(?:a\/c|account|card|ac)\s*(?:no\.?\s*)?(?:[Xx*]{2,4})(\d{4})\b/i.exec(msg) ||
+    /(?:a\/c|account|card|ac)\s*(?:no\.?\s*)?(?:[Xx*]{2,4})(\d{4})\b/i.exec(
+      msg,
+    ) ||
     /(?:ending|ending in|ending with|last 4)\s*(\d{4})\b/i.exec(msg) ||
     /\b([Xx*]{2,4}\d{4})\b/.exec(msg);
   return m ? m[1] || m[0] : null;
@@ -341,7 +523,9 @@ function extractAccountRef(msg: string): string | null {
 function extractBalance(msg: string): string | null {
   // "Avl Bal: Rs 12,345.67" / "Available balance INR 1234"
   const m =
-    /(?:avl\.?\s*bal|available\s*bal(?:ance)?|a\/c\s*bal(?:ance)?|bal(?:ance)?)\s*[:-]?\s*((?:₹|rs\.?\s*|inr\s*)?[0-9,]+(?:\.[0-9]{1,2})?)/i.exec(msg);
+    /(?:avl\.?\s*bal|available\s*bal(?:ance)?|a\/c\s*bal(?:ance)?|bal(?:ance)?)\s*[:-]?\s*((?:₹|rs\.?\s*|inr\s*)?[0-9,]+(?:\.[0-9]{1,2})?)/i.exec(
+      msg,
+    );
   return m ? m[1].trim() : null;
 }
 
@@ -353,7 +537,7 @@ function computeConfidence(
   typeScore: number,
   merchant: string | null,
   msg: string,
-  flags: string[]
+  flags: string[],
 ): number {
   let score = 0;
 
@@ -375,7 +559,8 @@ function computeConfidence(
 
   // Bank sender heuristic — 2–6 char alphanumeric senders are almost always banks
   // (We don't have sender here, but presence of "ACCT", "A/C", "XX" masked cards adds trust)
-  if (/\b(a\/c|account|xx\d{4}|card ending|avl bal)\b/i.test(msg)) score += 0.05;
+  if (/\b(a\/c|account|xx\d{4}|card ending|avl bal)\b/i.test(msg))
+    score += 0.05;
 
   // Penalise ambiguity
   if (type === "unknown") {
@@ -415,7 +600,12 @@ export function parseSMS(message: string): ParsedSMS | null {
 
   // Stage 6 — Confidence
   const confidence = computeConfidence(
-    amount, type, typeScore, merchant, message, flags
+    amount,
+    type,
+    typeScore,
+    merchant,
+    message,
+    flags,
   );
 
   return {
@@ -439,4 +629,58 @@ export function parseSMS(message: string): ParsedSMS | null {
 export function shouldNotify(parsed: ParsedSMS | null): boolean {
   if (!parsed) return false;
   return parsed.confidence >= 0.45 && parsed.type !== "unknown";
+}
+
+// ─────────────────────────────────────────────────────────────
+// ✅ COMPATIBILITY LAYER (OLD STRUCTURE SAFE)
+// ─────────────────────────────────────────────────────────────
+
+export type ParsedSMSLegacy = {
+  amount?: number;
+  type: "expense" | "income" | "unknown";
+  merchant?: string | null;
+  confidence: number;
+  parsed_log: ParsedSMS;
+};
+
+/**
+ * Converts new parser output → old format (NO BREAKING CHANGES)
+ */
+export function parseSMSLegacy(message: string): ParsedSMSLegacy {
+  const parsed = parseSMS(message);
+
+  if (!parsed) {
+    return {
+      amount: undefined,
+      type: "unknown",
+      merchant: null,
+      confidence: 0,
+      parsed_log: {
+        amount: 0,
+        currency: "",
+        type: "unknown",
+        subCategory: "general",
+        merchant: null,
+        accountRef: null,
+        balance: null,
+        confidence: 0,
+        flags: [""],
+      },
+    };
+  }
+
+  // 🔥 CRITICAL: normalize type back to old system
+  let type: "expense" | "income" | "unknown" = "unknown";
+
+  if (parsed.type === "expense") type = "expense";
+  else if (parsed.type === "income") type = "income";
+  else type = "unknown"; // transfer/investment collapse
+
+  return {
+    amount: parsed.amount,
+    type,
+    merchant: parsed.merchant ?? null,
+    confidence: parsed.confidence,
+    parsed_log: parsed,
+  };
 }

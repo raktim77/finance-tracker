@@ -30,7 +30,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { useContext, useEffect } from "react";
 import { initDB, insertPendingSMS } from "./lib/localDb";
 import { SmsListener } from "./plugins/smsListener";
-import { parseSMS } from "./lib/smsParser";
+import { parseSMSLegacy } from "./lib/smsParser";
 import type { PluginListenerHandle } from "@capacitor/core";
 import PendingReview from "./pages/PendingReview";
 
@@ -261,7 +261,7 @@ function App() {
       listener = await SmsListener.addListener("smsReceived", async (sms) => {
         console.log("SMS RECEIVED:", JSON.stringify(sms));
 
-        const parsed = parseSMS(sms.message);
+        const parsed = parseSMSLegacy(sms.message);
 
         console.log("PARSED:", JSON.stringify(parsed));
 
@@ -297,7 +297,7 @@ function App() {
         console.log("SYNC LIST:", list);
 
         for (const sms of list) {
-          const parsed = parseSMS(sms.message);
+          const parsed = parseSMSLegacy(sms.message);
 
           console.log("SYNC PARSED:", parsed);
 

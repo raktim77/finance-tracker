@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 2,
-      "versionName": "1.0.1",
-      "outputFile": "app-release-20260421-1250.apk"
+      "versionCode": 3,
+      "versionName": "1.0.2",
+      "outputFile": "app-release-20260423-2042.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/app-release-20260421-1250.dm"
+        "baselineProfiles/1/app-release-20260423-2042.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/app-release-20260421-1250.dm"
+        "baselineProfiles/0/app-release-20260423-2042.dm"
       ]
     }
   ],
