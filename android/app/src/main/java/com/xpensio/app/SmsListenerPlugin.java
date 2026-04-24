@@ -75,4 +75,15 @@ public class SmsListenerPlugin extends Plugin {
             call.reject("Failed to clear SMS");
         }
     }
+
+    public static void notifyNotificationClick(String message, String sender, long timestamp) {
+    if (instance != null) {
+        JSObject data = new JSObject();
+        data.put("message", message);
+        data.put("sender", sender);
+        data.put("timestamp", timestamp);
+
+        instance.notifyListeners("notificationClicked", data, true);
+    }
+}
 }

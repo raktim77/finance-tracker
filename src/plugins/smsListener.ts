@@ -7,6 +7,11 @@ type SmsListenerPlugin = {
     callback: (data: { message: string; sender: string; timestamp: number }) => void
   ): Promise<PluginListenerHandle>;
 
+    addListener(
+    eventName: "notificationClicked",
+    callback: (data: { message: string; sender: string; timestamp: number }) => void
+  ): Promise<PluginListenerHandle>;
+
   getStoredSms(): Promise<{ data: string }>;
 
   clearStoredSms(): Promise<void>;

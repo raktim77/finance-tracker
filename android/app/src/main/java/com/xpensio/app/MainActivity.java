@@ -61,20 +61,26 @@ public class MainActivity extends BridgeActivity {
         setIntent(intent);
         handleNotificationIntent(intent);
     }
+private void handleNotificationIntent(Intent intent) {
+    if (intent == null) return;
 
-    private void handleNotificationIntent(Intent intent) {
-        if (intent == null) {
-            return;
-        }
+    String message = intent.getStringExtra("sms_message");
+    if (message == null || message.isEmpty()) return;
 
-        String message = intent.getStringExtra("sms_message");
-        if (message == null || message.isEmpty()) {
-            return;
-        }
+    // ✅ FIX: extract sender + timestamp safely
+    String sender = intent.getStringExtra("sms_sender");
+    if (sender == null) sender = "";
 
-        SmsListenerPlugin.setLastClickedSms(message, "");
-        intent.removeExtra("sms_message");
-    }
+    long timestamp = intent.getLongExtra("sms_timestamp", System.currentTimeMillis());
+
+    // 🔥 existing logic
+    SmsListenerPlugin.setLastClickedSms(message, sender);
+
+    // 🔥 event push
+    SmsListenerPlugin.notifyNotificationClick(message, sender, timestamp);
+
+    intent.removeExtra("sms_message");
+}
 
     private boolean hasSmsPermissions() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)

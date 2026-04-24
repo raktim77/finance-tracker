@@ -564,6 +564,8 @@ public class SmsReceiver extends BroadcastReceiver {
 
         Intent clickIntent = new Intent(context, MainActivity.class);
         clickIntent.putExtra("sms_message", parsed.message);
+        clickIntent.putExtra("sms_sender", parsed.sender);
+        clickIntent.putExtra("sms_timestamp", parsed.timestamp);
         clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(
