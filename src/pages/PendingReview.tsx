@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -7,6 +8,7 @@ import {
   Inbox,
 } from "lucide-react";
 import { getPendingSMS, removePendingSMS } from "../lib/localDb";
+import { listenForPendingSMSUpdates } from "../lib/pendingSmsEvents";
 import { isNativeAndroidApp } from "../lib/capacitor/platform";
 import TransactionSheet, { type TransactionDraft } from "../components/transactions/TransactionSheet";
 import { useAccounts } from "../features/accounts/hooks/useAccounts";
@@ -47,6 +49,14 @@ function getPendingIconStyle(item: PendingSMSItem) {
 }
 
 type TransactionType = TransactionDraft["type"];
+
+type PendingReviewLocationState = {
+  highlightSms?: {
+    message?: string | null;
+    sender?: string | null;
+    timestamp?: number | null;
+  };
+};
 
 type SheetAccount = {
   _id: string;
@@ -119,14 +129,49 @@ function toSupportedTransactionType(type: PendingSMSItem["type"]): TransactionTy
   if (type === "income" || type === "expense") return type;
   return "expense";
 }
+
+function normalizeOptionalText(value?: string | null) {
+  return value?.trim() ?? "";
+}
+
+function getNotificationHighlightKey(highlightSms: PendingReviewLocationState["highlightSms"]) {
+  if (!highlightSms?.message) return null;
+
+  return [
+    highlightSms.message,
+    normalizeOptionalText(highlightSms.sender),
+    highlightSms.timestamp ?? "",
+  ].join("|");
+}
+
+function isClickedNotificationItem(
+  item: PendingSMSItem,
+  highlightSms: PendingReviewLocationState["highlightSms"],
+) {
+  if (!highlightSms?.message) return false;
+
+  const messageMatches = item.raw_message === highlightSms.message;
+  const senderMatches = normalizeOptionalText(item.sender) === normalizeOptionalText(highlightSms.sender);
+  const timestampMatches =
+    !highlightSms.timestamp ||
+    !item.received_at ||
+    Number(item.received_at) === Number(highlightSms.timestamp);
+
+  return messageMatches && senderMatches && timestampMatches;
+}
+
 export default function PendingReview() {
 
 
   const { accessToken } = useAuth();
+  const location = useLocation();
+  const locationState = location.state as PendingReviewLocationState | null;
+  const consumedHighlightNavigationKeyRef = useRef<string | null>(null);
   const toast = useToast();
   const confirm = useConfirm();
   const [items, setItems] = useState<PendingSMSItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [highlightedPendingId, setHighlightedPendingId] = useState<string | null>(null);
   const [selectedPending, setSelectedPending] = useState<PendingSMSItem | null>(null);
   const { data: categoriesData } = useCategories({ accessToken });
   const { data: accountsData } = useAccounts({}, { accessToken });
@@ -148,18 +193,32 @@ export default function PendingReview() {
   );
 
   const [shouldShowHint, setShouldShowHint] = useState(false);
+  const notificationHighlightKey = useMemo(
+    () => getNotificationHighlightKey(locationState?.highlightSms),
+    [
+      locationState?.highlightSms?.message,
+      locationState?.highlightSms?.sender,
+      locationState?.highlightSms?.timestamp,
+    ]
+  );
 
 
-  const loadPendingItems = useCallback(async () => {
+  const loadPendingItems = useCallback(async (options?: { showLoading?: boolean }) => {
     if (!isNativeAndroidApp()) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    const data = await getPendingSMS();
-    setItems(data);
-    setLoading(false);
+    if (options?.showLoading ?? true) {
+      setLoading(true);
+    }
+
+    try {
+      const data = await getPendingSMS();
+      setItems(data);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -186,11 +245,41 @@ export default function PendingReview() {
   }, []);
 
   useEffect(() => {
+    return listenForPendingSMSUpdates(() => {
+      void loadPendingItems({ showLoading: false });
+    });
+  }, [loadPendingItems]);
+
+  useEffect(() => {
     (async () => {
       const seen = await hasSeenSwipeHint();
       setShouldShowHint(!seen);
     })();
   }, []);
+
+  useEffect(() => {
+    if (!notificationHighlightKey) return;
+    if (consumedHighlightNavigationKeyRef.current === location.key) return;
+
+    const highlightedItem = items.find((item) =>
+      isClickedNotificationItem(item, locationState?.highlightSms)
+    );
+
+    if (!highlightedItem) return;
+
+    consumedHighlightNavigationKeyRef.current = location.key;
+    setHighlightedPendingId(highlightedItem.id);
+
+    const timeoutId = window.setTimeout(() => {
+      setHighlightedPendingId((currentId) =>
+        currentId === highlightedItem.id ? null : currentId
+      );
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [items, location.key, locationState?.highlightSms, notificationHighlightKey]);
 
   const pendingDraft = useMemo<Partial<TransactionDraft> | null>(() => {
     if (!selectedPending) return null;
@@ -325,11 +414,11 @@ export default function PendingReview() {
             <div className="flex flex-col">
               {items.map((item, index) => {
                 const Icon = getPendingIcon(item);
+                const isHighlighted = highlightedPendingId === item.id;
 
                 return (
-                  <div className="relative mb-2">
+                  <div key={item.id} className="relative mb-2">
                     <SwipeablePendingItem
-                      key={item.id}
                       item={item}
                       onIgnore={handleIgnorePending}
                       showHint={index === 0 && shouldShowHint}
@@ -343,10 +432,11 @@ export default function PendingReview() {
                               ? "var(--color-success)"
                               : "var(--color-danger)",
                         }}
-                        className="text left relative flex w-full items-center justify-between 
-    pl-3 py-3 border-l-[3px] rounded-r-xl
+                        className={`text left relative flex w-full items-center justify-between 
+    pl-3 py-3 border-l-[3px]
     hover:bg-[var(--color-surface)] transition-all group cursor-pointer
-    active:scale-[0.97] active:bg-[var(--color-accent-soft)] gap-3"
+    active:scale-[0.97] active:bg-[var(--color-accent-soft)] gap-3
+    ${isHighlighted ? "pending-highlight" : ""}`}
                         onClick={() => {
                           if (mappedAccounts.length === 0) {
                             toast.error("Please add an account first");

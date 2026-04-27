@@ -74,7 +74,7 @@ private void handleNotificationIntent(Intent intent) {
     long timestamp = intent.getLongExtra("sms_timestamp", System.currentTimeMillis());
 
     // 🔥 existing logic
-    SmsListenerPlugin.setLastClickedSms(message, sender);
+    SmsListenerPlugin.setLastClickedSms(message, sender, timestamp);
 
     // 🔥 event push
     SmsListenerPlugin.notifyNotificationClick(message, sender, timestamp);

@@ -131,6 +131,16 @@ public class SmsReceiver extends BroadcastReceiver {
         // "outstanding of Rs X ... is due" — credit card statement reminder
         if (lower.contains("outstanding of") && lower.contains("is due")) return true;
 
+        // ── Mandate / AutoPay setup confirmations ─────────────────────────────
+        // "Mandate successfully created/registered" is a SETUP confirmation,
+        // not an actual debit. Only block when no actual debit verb is present.
+        boolean hasMandateTerm = lower.contains("mandate") || lower.contains("autopay") ||
+            lower.contains("auto-pay") || lower.contains("enach") || lower.contains("nach");
+        boolean hasCreationVerb = lower.matches(".*\\b(created|registered|set\\s*up|setup|activated|established|successful)\\b.*");
+        boolean hasActualDebit = lower.contains("executed") || lower.contains("debited") ||
+            lower.contains("deducted") || lower.contains("auto debit");
+        if (hasMandateTerm && hasCreationVerb && !hasActualDebit) return true;
+
 
         // Promotional — only reject if there is NO financial verb present
         boolean hasFinancialVerb = hasFinancialVerb(lower);
@@ -336,8 +346,8 @@ public class SmsReceiver extends BroadcastReceiver {
         if (r2 != null) return r2;
  
         // P3a: Kotak-style "Sent Rs.X from <Bank> AC XXXX to <recipient> on ..."
-        // Captures "Bank AC XXXX to YYYY" as merchant. Returned directly (no cleanMerchant)
-        // because the result starts with a bank name which is blocklisted.
+        // Captures "Bank AC XXXX to YYYY" as merchant. Returned directly (bypasses
+        // cleanMerchant) because the result starts with a bank name which is blocklisted.
         Pattern p3a = Pattern.compile(
             "\\bsent\\s+(?:rs\\.?|\u20B9|inr)\\s*[\\d,.]+\\s+from\\s+" +
             "([A-Za-z ]+(?:bank\\s+)?(?:a\\/c|ac|account)\\s+[A-Za-z0-9]+\\s+to\\s+[A-Za-z0-9][A-Za-z0-9._@\\-]*)\\s+on\\b",
@@ -564,8 +574,6 @@ public class SmsReceiver extends BroadcastReceiver {
 
         Intent clickIntent = new Intent(context, MainActivity.class);
         clickIntent.putExtra("sms_message", parsed.message);
-        clickIntent.putExtra("sms_sender", parsed.sender);
-        clickIntent.putExtra("sms_timestamp", parsed.timestamp);
         clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(

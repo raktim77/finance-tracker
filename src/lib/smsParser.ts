@@ -103,6 +103,14 @@ function isNoise(raw: string): boolean {
   // "outstanding of Rs X on your credit card ... is due"
   if (/\boutstanding\s+of\b/.test(msg) && /\bis\s+due\b/.test(msg)) return true;
 
+  // ── Mandate / AutoPay setup confirmations ─────────────────────────────────
+  // "Mandate successfully created/registered" — this is a SETUP confirmation,
+  // not an actual debit. Only block when no actual debit verb is present.
+  const hasMandateTerm = /\b(mandate|autopay|auto-pay|enach|nach)\b/.test(msg);
+  const hasCreationVerb = /\b(created|registered|set\s*up|setup|activated|established|successful)\b/.test(msg);
+  const hasActualDebit = /\b(executed|debited|deducted|auto\s*debit)\b/.test(msg);
+  if (hasMandateTerm && hasCreationVerb && !hasActualDebit) return true;
+
 
   // Pure promotional with no financial verb
   const hasFinancialVerb =
@@ -386,7 +394,6 @@ const MERCHANT_PATTERNS: RegExp[] = [
 
   // P3: "paid/sent to <merchant>" with look-ahead terminator
   /\b(?:paid|sent)\s+(?:to\s+)?([A-Z0-9][A-Za-z0-9 &._/@-]{1,60}?)\s+(?:via|on|for|using|with|ref|upi\s*ref|a\/c|rs|inr|₹|\d)/i,
-  // ← P3a is handled separately in extractMerchant() below, not in this array
 
   // P4: "received from <source>" with look-ahead terminator
   /\breceived\s+(?:from\s+)?([A-Z0-9][A-Za-z0-9 &._/@-]{1,60}?)\s+(?:via|on|for|using|ref|a\/c|rs|inr|₹|\d)/i,

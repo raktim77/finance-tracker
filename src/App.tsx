@@ -24,8 +24,9 @@ import { ThemeContext } from "./context/ThemeContext";
 import { HeaderProvider } from "./context/HeaderContext";
 import { NativeChrome } from "./lib/capacitor/nativeChrome";
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect } from "react";
 import { initDB, insertPendingSMS } from "./lib/localDb";
+import { notifyPendingSMSUpdated } from "./lib/pendingSmsEvents";
 import { SmsListener } from "./plugins/smsListener";
 import { parseSMSLegacy } from "./lib/smsParser";
 import type { PluginListenerHandle } from "@capacitor/core";
@@ -45,7 +46,7 @@ type SmsNotification = {
 type NullableSmsNotification = {
   message: string | null;
   sender: string | null;
-  timestamp: number;
+  timestamp?: number | null;
 };
 
 function HomeWrapper() {
@@ -218,7 +219,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppCore() {
   const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
-  const handledRef = useRef(false);
 
   useEffect(() => {
     setupStatusBar("system");
@@ -245,6 +245,7 @@ function AppCore() {
           confidence: parsed?.confidence,
           timestamp: sms.timestamp
         });
+        notifyPendingSMSUpdated();
       });
     };
 
@@ -275,6 +276,7 @@ function AppCore() {
         }
         if (list.length > 0) {
           await SmsListener.clearStoredSms();
+          notifyPendingSMSUpdated();
         }
       } catch (err) {
         console.error("SMS sync failed", err);
@@ -290,10 +292,16 @@ function AppCore() {
     let appListener: PluginListenerHandle | null = null;
 
     const handleNotification = (res: NullableSmsNotification) => {
-      if (handledRef.current) return;
       if (res?.message) {
-        handledRef.current = true;
-        navigate("/pending-review");
+        navigate("/pending-review", {
+          state: {
+            highlightSms: {
+              message: res.message,
+              sender: res.sender ?? "",
+              timestamp: res.timestamp ?? null,
+            },
+          },
+        });
       }
     };
 

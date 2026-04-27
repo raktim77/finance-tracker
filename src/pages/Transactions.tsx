@@ -270,7 +270,7 @@ export default function Transactions() {
     onAction: handleOpenTransactionSheet,
   });
 
-  return (<div className="p-2 md:p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden">
+  return (<div className="p-2 md:p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden md:pb-24">
     {/* HEADER */}
     <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
       {/* TOP ROW: Back Button (Only shows when scoped) */}

@@ -276,7 +276,7 @@ export default function Budgets() {
 
   if (isLoading) {
     return (
-      <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+      <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full md:pb-24">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
@@ -382,7 +382,7 @@ export default function Budgets() {
 
   if (!budget?.exists && !canCreateBudget) {
     return (
-      <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+      <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full md:pb-24">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter leading-tight">
@@ -738,7 +738,7 @@ export default function Budgets() {
   }
 
   return (
-    <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full">
+    <div className="section-animate p-2 md:p-1 flex flex-col gap-8 pb-24 mx-auto w-full md:pb-24">
 
       <div className="flex flex-col items-start justify-between gap-10">
         <div className="flex flex-col gap-4">

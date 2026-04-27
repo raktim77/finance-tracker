@@ -117,7 +117,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex flex-col flex-1">
 
         {/* Topbar */}
-        <Topbar toggleSidebar={toggleSidebarLayout} />
+        {/* <Topbar toggleSidebar={toggleSidebarLayout} /> */}
 
         {/* Page Content */}
         <main

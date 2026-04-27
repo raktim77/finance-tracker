@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Clock3, Inbox, Sparkles } from "lucide-react";
 import { getPendingSMS } from "../../lib/localDb";
+import { listenForPendingSMSUpdates } from "../../lib/pendingSmsEvents";
 import { isNativeAndroidApp } from "../../lib/capacitor/platform";
 import {
     formatPendingDateTime,
@@ -16,13 +17,22 @@ export default function PendingReviewCard() {
 
     useEffect(() => {
         let cancelled = false;
+
         const load = async () => {
             if (!isNativeAndroidApp()) return;
             const data = await getPendingSMS();
             if (!cancelled) setItems(data);
         };
+
         load();
-        return () => { cancelled = true; };
+        const removePendingSMSListener = listenForPendingSMSUpdates(() => {
+            void load();
+        });
+
+        return () => {
+            cancelled = true;
+            removePendingSMSListener();
+        };
     }, []);
 
     if (!isNativeAndroidApp()) return null;
