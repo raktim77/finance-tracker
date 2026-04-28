@@ -93,7 +93,7 @@ export default function Dropdown({
       <button
         type="button"
         onClick={toggleDropdown}
-        className={`w-full flex items-center justify-between bg-[var(--color-surface)] border font-bold transition-all hover:border-[var(--color-accent)]/30 border-[var(--color-accent)]/20 ${compact
+        className={`w-full flex items-center justify-between bg-[var(--color-surface)] border font-bold transition-all hover:border-[var(--color-accent)]/30 border-[var(--border)] ${compact
             ? "pl-3 pr-2 h-9 rounded-lg text-[13px]"
             : "pl-9 pr-3 h-11 rounded-xl text-[12px]"
           } ${buttonClassName ?? ""}`}
@@ -129,6 +129,7 @@ export default function Dropdown({
             <div
               ref={menuRef}
               data-dropdown-portal="true"
+              role="listbox"
               onWheel={(e) => e.stopPropagation()}
               style={{
                 position: "absolute",
@@ -146,6 +147,8 @@ export default function Dropdown({
                   type="button"
                   key={option.value}
                   ref={option.value === value ? selectedOptionRef : null}
+                  role="option"
+                  aria-selected={value === option.value}
                   onClick={() => {
                     onChange(option.value);
                     setOpen(false);

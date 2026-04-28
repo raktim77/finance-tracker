@@ -460,7 +460,6 @@ export default function DatePicker({
         }
 
         .custom-day-picker__dropdown-menu {
-          background: color-mix(in srgb, var(--color-surface) 88%, black);
           border-color: color-mix(in srgb, var(--border) 80%, black);
           box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
           backdrop-filter: blur(14px);

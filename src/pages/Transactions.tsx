@@ -9,11 +9,11 @@ import {
   PlusCircle,
   Calendar,
   Wallet,
-  SlidersHorizontal,
   CircleAlert,
   ChartColumn,
   ChevronRight,
   ChevronLeft,
+  FileDown,
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
@@ -396,13 +396,13 @@ export default function Transactions() {
             {isCustomRange && (
               <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
                 <div className="h-10 rounded-lg border border-[var(--input-border)] px-3 flex items-center gap-2 bg-[var(--color-surface)] text-sm">
-                  <Calendar size={14} className="text-[var(--color-text-secondary)] shrink-0" />
+                  {/* <Calendar size={14} className="text-[var(--color-text-secondary)] shrink-0" /> */}
                   <DatePicker value={startDate} onChange={(d) => setStartDate(d)} />
-                  {startDate && (
+                  {/* {startDate && (
                     <button type="button" onClick={() => setStartDate(undefined)} className="ml-auto">
                       <X size={13} className="text-[var(--color-text-secondary)]" />
                     </button>
-                  )}
+                  )} */}
                 </div>
               </div>
             )}
@@ -411,13 +411,13 @@ export default function Transactions() {
             {isCustomRange && (
               <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
                 <div className="h-10 rounded-lg border border-[var(--input-border)] px-3 flex items-center gap-2 bg-[var(--color-surface)] text-sm">
-                  <Calendar size={14} className="text-[var(--color-text-secondary)] shrink-0" />
+                  {/* <Calendar size={14} className="text-[var(--color-text-secondary)] shrink-0" /> */}
                   <DatePicker value={endDate} onChange={(d) => setEndDate(d)} />
-                  {endDate && (
+                  {/* {endDate && (
                     <button type="button" onClick={() => setEndDate(undefined)} className="ml-auto">
                       <X size={13} className="text-[var(--color-text-secondary)]" />
                     </button>
-                  )}
+                  )} */}
                 </div>
               </div>
             )}
@@ -469,7 +469,7 @@ export default function Transactions() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search transactions, notes..."
-                  className="h-10 w-full rounded-lg border border-[var(--input-border)] bg-[var(--color-surface)] pl-9 pr-9 text-sm"
+                  className="h-11 w-full rounded-lg border border-[var(--input-border)] bg-[var(--color-surface)] pl-9 pr-9 text-sm"
                 />
                 {search && (
                   <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -656,7 +656,7 @@ export default function Transactions() {
                     <button
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((prev) => prev - 1)}
-                      className="flex items-center gap-1 rounded-lg border border border-[var(--color-accent)]/20 px-3 py-1.5 text-sm text-[var(--color-primary)] disabled:text-[var(--color-text-secondary)] disabled:opacity-40 hover:bg-[var(--color-accent-soft)]/80"
+                      className="flex items-center gap-1 rounded-lg border border border-[var(--color-accent)]/20 px-3 py-2 text-sm text-[var(--color-primary)] disabled:text-[var(--color-text-secondary)] disabled:opacity-40 hover:bg-[var(--color-accent-soft)]/80"
                     >
                       <ChevronLeft
                         size={16}
@@ -689,7 +689,7 @@ export default function Transactions() {
                     <button
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage((prev) => prev + 1)}
-                      className="flex items-center gap-1 rounded-lg border border border-[var(--color-accent)]/20 px-3 py-1.5 text-sm text-[var(--color-primary)] disabled:text-[var(--color-text-secondary)] disabled:opacity-40 hover:bg-[var(--color-accent-soft)]/80"
+                      className="flex items-center gap-1 rounded-lg border border border-[var(--color-accent)]/20 px-3 py-2 text-sm text-[var(--color-primary)] disabled:text-[var(--color-text-secondary)] disabled:opacity-40 hover:bg-[var(--color-accent-soft)]/80"
                     >
                       Next
                       <ChevronRight
@@ -711,44 +711,40 @@ export default function Transactions() {
 
             {/* Summary */}
             <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Summary</h3>
                 <div className="rounded-lg border border-[var(--border)] p-1.5">
                   <ChartColumn size={15} className="text-[var(--color-text-secondary)]" />
                 </div>
               </div>
-              <p className="text-xs text-[var(--color-text-secondary)] mb-4">{activeDateLabel}</p>
+              <p className="text-[13px] text-[var(--color-text-secondary)] mb-6">{activeDateLabel}</p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[var(--color-text-secondary)]">Total Spent</span>
-                  <span className="text-sm font-semibold text-red-500">₹4,853</span>
+                  <span className="text-sm font-semibold text-(--color-danger)">₹4,853</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[var(--color-text-secondary)]">Total Received</span>
-                  <span className="text-sm font-semibold text-emerald-400">₹33,900</span>
+                  <span className="text-sm font-semibold text-(--color-success)">₹33,900</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[var(--color-text-secondary)]">Net Flow</span>
-                  <span className="text-sm font-semibold text-emerald-400">₹29,047</span>
+                  <span className="text-sm font-semibold text-(--color-success)">₹29,047</span>
                 </div>
               </div>
             </div>
 
             {/* Quick Actions */}
             <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
-              <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-3">Quick Actions</h3>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors">
-                  <Wallet className="mx-auto text-emerald-400 mb-1.5" size={18} />
-                  <p className="text-[11px] text-[var(--color-text-secondary)] leading-tight">Export CSV</p>
+              <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-2">
+                  <FileDown className="mx-auto text-[var(--color-success)] mb-1.5" size={22} />
+                  <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">Export CSV</p>
                 </div>
-                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors">
-                  <SlidersHorizontal className="mx-auto text-emerald-400 mb-1.5" size={18} />
-                  <p className="text-[11px] text-[var(--color-text-secondary)] leading-tight">Filter rules</p>
-                </div>
-                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors">
-                  <CircleAlert className="mx-auto text-[var(--color-text-secondary)] mb-1.5" size={18} />
-                  <p className="text-[11px] text-[var(--color-text-secondary)] leading-tight">Report issue</p>
+                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-2">
+                  <CircleAlert className="mx-auto text-[var(--color-text-primary)] mb-1.5" size={22} />
+                  <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">Report issue</p>
                 </div>
               </div>
             </div>
@@ -756,10 +752,10 @@ export default function Transactions() {
             {/* Spending by Type */}
             <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
               <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">Spending by Type</h3>
-              <div className="space-y-3">
+              <div className="space-y-5">
                 {desktopSpendingByType.map((item) => (
                   <div key={item.label}>
-                    <div className="flex justify-between items-center mb-1.5">
+                    <div className="flex justify-between items-center mb-2">
                       <span className="text-xs text-[var(--color-text-secondary)]">{item.label}</span>
                       <span className="text-xs text-[var(--color-text-secondary)]">{item.value}</span>
                     </div>
