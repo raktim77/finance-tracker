@@ -15,7 +15,7 @@ export function BalanceOverviewCard({ data, isLoading }: Props) {
 
   if (isLoading) {
     return (
-      <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-5 shadow-sm">
+      <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-5 shadow-sm">
         <div className="h-6 w-40 rounded bg-[var(--color-text-secondary)]/15 animate-pulse" />
         <div className="mt-4 h-10 w-52 rounded bg-[var(--color-text-secondary)]/15 animate-pulse" />
         <div className="mt-4 h-7 w-44 rounded-full bg-[var(--color-text-secondary)]/15 animate-pulse" />
@@ -50,7 +50,7 @@ export function BalanceOverviewCard({ data, isLoading }: Props) {
   // ] as const;
 
   return (
-    <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-6 shadow-sm">
+    <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-6 shadow-sm">
 
       <div className="flex flex-col lg:flex-row gap-2">
 

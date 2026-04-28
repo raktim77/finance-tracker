@@ -34,7 +34,7 @@ export function getTransactionCategoryLabel(transaction: Transaction) {
   }
 
   if (transaction.type === "transfer") {
-    return `${transaction.account_id.name} ↔ ${transaction?.to_account_id?.name}`;
+    return `${transaction.account_id.name} ➔ ${transaction?.to_account_id?.name}`;
   }
 
   return transaction.account_id.name;

@@ -90,7 +90,7 @@ export default function ProfileMenu() {
       <button
         aria-haspopup="true"
         aria-expanded={open}
-        className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-primary)] text-white font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]"
+        className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-primary)] text-white font-semibold focus:outline-none ring-2 ring-offset-2 ring-[var(--color-primary)]"
         onClick={handleProfileClick}
         title={meUser?.name ?? meUser?.email ?? "Account"}
       >

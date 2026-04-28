@@ -1,6 +1,6 @@
 import { useCreateTransaction, useDeleteTransaction, useTransactions, useUpdateTransaction } from "../features/transactions/hooks/useTransactions";
 import type { Transaction as ApiTransaction, Transaction } from "../features/transactions/types/transaction.types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Search,
   X,
@@ -8,9 +8,12 @@ import {
   ArrowUpDown,
   PlusCircle,
   Calendar,
-  ChevronLeft,
+  Wallet,
+  SlidersHorizontal,
+  CircleAlert,
+  ChartColumn,
   ChevronRight,
-  ArrowRight,
+  ChevronLeft,
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
@@ -26,9 +29,11 @@ import TransactionListItem from "../components/transactions/TransactionListItem"
 import {
   formatTransactionDisplayDate,
   getTransactionCategoryLabel,
+  getTransactionDisplayAmount,
   getTransactionTitle,
 } from "../features/transactions/utils/transactionDisplay";
 import { useHeaderConfig } from "../hooks/useHeaderConfig";
+import resolveLucideIcon from "../utils/LucideIconsResolver";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -38,7 +43,6 @@ function formatApiDate(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
 }
 
@@ -46,8 +50,13 @@ function getPresetDateRange(range: Exclude<DateRangeType, "custom">) {
   const endDate = new Date();
   const startDate = new Date(endDate);
   startDate.setDate(endDate.getDate() - (Number(range) - 1));
-
   return { startDate, endDate };
+}
+
+function typeBadgeClass(type: Transaction["type"]) {
+  if (type === "income") return "bg-[var(--color-success)]/10 text-[var(--color-success)]";
+  if (type === "expense") return "bg-[var(--color-danger)]/10 text-[var(--color-danger)]";
+  return "bg-[#0d9488]/15 text-[#0d9488]";
 }
 
 export default function Transactions() {
@@ -69,46 +78,13 @@ export default function Transactions() {
   const toast = useToast();
   const itemsPerPage = 20;
 
-
-  const useTypewriter = (words: string[], speed = 50, delay = 1500) => {
-    const [index, setIndex] = useState(0);
-    const [subIndex, setSubIndex] = useState(0);
-    const [reverse, setReverse] = useState(false);
-
-    useEffect(() => {
-      if (subIndex === words[index].length + 1 && !reverse) {
-        const timeout = setTimeout(() => setReverse(true), delay);
-        return () => clearTimeout(timeout);
-      }
-
-      if (subIndex === 0 && reverse) {
-        setReverse(false);
-        setIndex((prev) => (prev + 1) % words.length);
-        return;
-      }
-
-      const timeout = setTimeout(() => {
-        setSubIndex((prev) => prev + (reverse ? -1 : 1));
-      }, reverse ? speed / 2 : speed);
-
-      return () => clearTimeout(timeout);
-    }, [subIndex, index, reverse, words, speed, delay]);
-
-    return words[index].substring(0, subIndex);
-  };
-
-  const animatedPlaceholder = useTypewriter([
-    "Search transactions",
-    "Search by notes",
-    "Search by category"
-  ]);
-
   const [startDate, setStartDate] = useState<Date | undefined>(
     getPresetDateRange("30").startDate
   );
   const [endDate, setEndDate] = useState<Date | undefined>(
     getPresetDateRange("30").endDate
   );
+
   const { data: categoriesData } = useCategories();
   const { data: accountsData } = useAccounts();
 
@@ -117,37 +93,27 @@ export default function Transactions() {
   const hasAccounts = accounts.length > 0;
   const isScopedToAccount = !!account_id;
   const scopedAccount = accounts.find((account) => account._id === account_id);
-  const displayTitle = isScopedToAccount
-    ? scopedAccount?.name || "History"
-    : "History";
+  const displayTitle = isScopedToAccount ? scopedAccount?.name || "History" : "History";
 
-  const mappedAccounts = accounts.map(acc => ({
+  const mappedAccounts = accounts.map((acc) => ({
     _id: acc._id,
     name: acc.name,
-    type: acc.account_category_group || "account", // or fallback
+    type: acc.account_category_group || "account",
     balance: acc.current_balance,
-    icon: acc.account_category_icon || 'help',
-    iconColor: acc.account_category_color || '#ddd',
+    icon: acc.account_category_icon || "help",
+    iconColor: acc.account_category_color || "#ddd",
   }));
+
   const defaultTransactionDraft: Partial<TransactionDraft> | null =
-    isScopedToAccount && scopedAccount
-      ? {
-        account_id: scopedAccount._id,
-      }
-      : null;
+    isScopedToAccount && scopedAccount ? { account_id: scopedAccount._id } : null;
 
   const createTransactionMutation = useCreateTransaction();
   const updateTransactionMutation = useUpdateTransaction();
   const deleteTransactionMutation = useDeleteTransaction();
-  useEffect(() => {
-    if (dateRange === "custom") {
-      setStartDate(undefined);
-      setEndDate(undefined);
-      return;
-    }
 
-    const { startDate: nextStartDate, endDate: nextEndDate } =
-      getPresetDateRange(dateRange);
+  useEffect(() => {
+    if (dateRange === "custom") return;
+    const { startDate: nextStartDate, endDate: nextEndDate } = getPresetDateRange(dateRange);
     setStartDate(nextStartDate);
     setEndDate(nextEndDate);
   }, [dateRange]);
@@ -156,10 +122,7 @@ export default function Transactions() {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search);
     }, 350);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    return () => { window.clearTimeout(timeoutId); };
   }, [search]);
 
   function mapToDraft(tx: ApiTransaction): TransactionDraft {
@@ -173,6 +136,7 @@ export default function Transactions() {
       date: new Date(tx.date),
     };
   }
+
   const handleSubmitTransaction = async (payload: {
     amount: number;
     type: "expense" | "income" | "transfer";
@@ -182,20 +146,13 @@ export default function Transactions() {
     note?: string;
     date: Date;
   }) => {
-    console.log(payload);
-    console.log(editingId);
-
     try {
       if (editingTx && editingId) {
-        await updateTransactionMutation.mutateAsync({
-          id: editingId,
-          payload: payload,
-        });
+        await updateTransactionMutation.mutateAsync({ id: editingId, payload });
       } else {
         await createTransactionMutation.mutateAsync(payload);
         toast.success("Transaction recorded successfully");
       }
-
       setSheetOpen(false);
       setEditingTx(null);
       setSelectedTx(null);
@@ -207,10 +164,7 @@ export default function Transactions() {
 
   const formattedStartDate = startDate ? formatApiDate(startDate) : undefined;
   const formattedEndDate = endDate ? formatApiDate(endDate) : undefined;
-  const isWaitingForCustomRange =
-    dateRange === "custom" && (!formattedStartDate || !formattedEndDate);
-  const canFetchTransactions =
-    !loading && !!accessToken && !!formattedStartDate && !!formattedEndDate;
+  const canFetchTransactions = !loading && !!accessToken && !!formattedStartDate && !!formattedEndDate;
 
   const queryParams = {
     page: currentPage,
@@ -223,12 +177,7 @@ export default function Transactions() {
     endDate: formattedEndDate,
   };
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useTransactions(queryParams, {
+  const { data, isLoading, isError, error } = useTransactions(queryParams, {
     accessToken,
     enabled: canFetchTransactions,
   });
@@ -236,21 +185,15 @@ export default function Transactions() {
   const currentItems = data?.transactions ?? [];
   const totalPages = Math.max(data?.pages ?? 1, 1);
   const totalRecords = data?.total ?? 0;
+
+  // Group by "Month Year" — same logic for both mobile and desktop
   const groupedTransactions = currentItems.reduce((acc, tx) => {
     const date = new Date(tx.date);
-    const key = date.toLocaleString("default", {
-      month: "long",
-      year: "numeric",
-    });
-
+    const key = date.toLocaleString("default", { month: "short", year: "numeric" });
     if (!acc[key]) acc[key] = [];
     acc[key].push(tx);
     return acc;
   }, {} as Record<string, typeof currentItems>);
-  const handleClearSearch = () => {
-    setSearch("");
-    setDebouncedSearch("");
-  };
 
   const handleOpenTransactionSheet = useCallback(() => {
     if (!hasAccounts) {
@@ -270,460 +213,619 @@ export default function Transactions() {
     onAction: handleOpenTransactionSheet,
   });
 
-  return (<div className="p-2 md:p-1 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden md:pb-24">
-    {/* HEADER */}
-    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
-      {/* TOP ROW: Back Button (Only shows when scoped) */}
-      {isScopedToAccount && (
-        <div className="flex animate-in slide-in-from-left-2 duration-500">
+  const desktopSpendingByType = [
+    { label: "Investment", value: "₹2,145 (44%)", width: 44, color: "#8b5cf6" },
+    { label: "Bills & Utilities", value: "₹1,020 (21%)", width: 21, color: "#f97316" },
+    { label: "Food & Dining", value: "₹730 (15%)", width: 15, color: "#22c55e" },
+    { label: "Transfer", value: "₹480 (10%)", width: 10, color: "#06b6d4" },
+    { label: "Others", value: "₹478 (10%)", width: 10, color: "#64748b" },
+  ];
+
+  const activeDateLabel = useMemo(() => {
+    if (!startDate || !endDate) return "";
+    const fmt = (d: Date) =>
+      d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    return `${fmt(startDate)} – ${fmt(endDate)}`;
+  }, [startDate, endDate]);
+
+  // Build pagination pages array
+  const getPaginationPages = () => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | "...")[] = [];
+    pages.push(1);
+    if (currentPage > 3) pages.push("...");
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(i);
+    }
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+    return pages;
+  };
+
+  const isCustomRange = dateRange === "custom";
+
+  return (
+    <>
+      {/* MOBILE VIEW */}
+      <div className="p-2 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden md:hidden">
+        <div className="flex w-full items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-3xl font-black text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "History"}</h2>
+            <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
+              {totalRecords} records found
+            </p>
+          </div>
           <button
-            onClick={() => navigate(-1)}
-            className="group inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-3 py-1.5 text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_10px_20px_-5px_rgba(82,61,255,0.3)]"
-            aria-label="Back to accounts"
+            onClick={handleOpenTransactionSheet}
+            className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-4 py-2 text-xs font-black text-[var(--color-accent)]"
           >
-            <ChevronLeft size={14} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-              Back to Accounts
-            </span>
+            <PlusCircle size={16} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+            {hasAccounts ? "Record" : "Add"}
           </button>
         </div>
-      )}
 
-      {/* MAIN TITLE ROW */}
-      <div className="flex w-full min-w-0 items-start justify-between gap-4 md:gap-6">
-        <div className="flex min-w-0 max-w-[calc(100%-5.5rem)] flex-1 flex-col gap-1.5 md:max-w-[calc(100%-12rem)]">
-          <h2 className="min-w-0 max-w-full text-3xl font-black leading-tight tracking-tighter text-[var(--color-text-primary)] md:text-5xl">
-            <span className="block w-full break-words whitespace-normal md:hidden">
-              {isScopedToAccount ? displayTitle : "History"}
-            </span>
-            <span className="hidden w-full break-words whitespace-normal md:block">
-              {displayTitle}
-            </span>
-          </h2>
-
-          <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
-            {totalRecords} records found
-          </p>
-        </div>
-
-        <button
-          onClick={handleOpenTransactionSheet}
-          className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-2.5 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
-        >
-          <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
-          <span className="hidden md:block">
-            {hasAccounts ? "Record transaction" : "Add Account"}
-          </span>
-          <span className="block text-sm md:hidden">
-            {hasAccounts ? "Record" : "Add"}
-          </span>
-        </button>
-      </div>
-    </div>
-
-    {/* CONTROLS */}
-
-    <div className="flex flex-col gap-3 w-full" style={{ animationDelay: "80ms" }}>
-
-      {/* SEARCH */}
-
-      {/* MOBILE: SEARCH + DATE IN SAME ROW */}
-      <div className="flex gap-2 md:block w-full">
-
-        {/* SEARCH */}
-        <div className="relative w-[60%] md:w-full group">
-          <Search
-            size={14}
-            className="absolute text-[var(--color-text-secondary)] left-3 top-1/2 -translate-y-1/2 group-focus-within:text-[var(--color-accent)] transition-colors"
-          />
-
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            // Shows the animated text only when the input is empty
-            placeholder={search ? "" : `${animatedPlaceholder}`}
-            className="w-full pl-9 pr-8 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm font-medium focus:ring-4 focus:ring-[var(--color-accent)]/10 transition-all outline-none"
-          />
-
-          {search && (
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              aria-label="Clear search"
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-background)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-        {/* DATE DROPDOWN (mobile only here) */}
-        <div className="w-[40%] md:hidden">
-          <Dropdown
-            icon={Calendar}
-            value={dateRange}
-            onChange={(v) => setDateRange(v as DateRangeType)}
-            options={[
-              { label: "30 Days", value: "30" },
-              { label: "60 Days", value: "60" },
-              { label: "90 Days", value: "90" },
-              { label: "Custom", value: "custom" }
-            ]}
-          />
-        </div>
-
-      </div>
-
-      {/* FILTER ROW */}
-
-      {/* FILTER ROW */}
-
-      <div className="flex flex-col md:flex-row md:items-center w-full">
-
-        {/* LEFT SIDE (Date controls) */}
-
-        <div className="flex flex-col md:flex-row md:items-center gap-3 flex-1">
-
-          {/* Date Range Dropdown */}
-          <div className="hidden md:block md:w-[220px]">
+        <div className="flex gap-2 w-full">
+          <div className="relative w-[60%] group">
+            <Search size={14} className="absolute text-[var(--color-text-secondary)] left-3 top-1/2 -translate-y-1/2" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search transactions"
+              className="w-full pl-9 pr-8 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm"
+            />
+            {search && (
+              <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          <div className="w-[40%]">
             <Dropdown
               icon={Calendar}
               value={dateRange}
               onChange={(v) => setDateRange(v as DateRangeType)}
               options={[
-                { label: "Last 30 Days", value: "30" },
-                { label: "Last 60 Days", value: "60" },
-                { label: "Last 90 Days", value: "90" },
-                { label: "Custom Range", value: "custom" }
+                { label: "30 Days", value: "30" },
+                { label: "60 Days", value: "60" },
+                { label: "90 Days", value: "90" },
+                { label: "Custom", value: "custom" },
               ]}
             />
           </div>
-
-          {/* Custom Range Dates */}
-          {dateRange === "custom" && (
-            <div className="flex items-center gap-1 w-full md:w-auto animate-in slide-in-from-top-2 md:mb-0 mb-3">
-              <div className="w-full flex items-center justify-between px-3 md:px-4 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30">
-                <DatePicker value={startDate} onChange={setStartDate} />
-
-              </div>
-
-              <ArrowRight
-                size={34}
-                strokeWidth={2.5}
-                className="text-[var(--color-text-secondary)] opacity-60"
-              />
-              <div className="w-full flex items-center justify-between px-3 md:px-4 h-11 bg-[var(--color-surface)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30">
-                <DatePicker value={endDate} onChange={setEndDate} />
-
-              </div>
-
-            </div>
-          )}
-
         </div>
 
-        {/* RIGHT SIDE (Filter + Sort) */}
-
-        <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:w-auto">
-
-          {/* Filter */}
-          <div className="w-full md:w-[180px]">
-            <Dropdown
-              icon={Filter}
-              value={filter}
-              onChange={(v) => setFilter(v as FilterType)}
-              options={[
-                { label: "All Types", value: "all" },
-                { label: "Income", value: "income" },
-                { label: "Expense", value: "expense" },
-                { label: "Transfer", value: "transfer" }
-              ]}
-            />
-          </div>
-
-          {/* Sort */}
-          <div className="w-full md:w-[180px]">
-            <Dropdown
-              icon={ArrowUpDown}
-              value={sort}
-              onChange={(v) => setSort(v as SortType)}
-              options={[
-                { label: "Latest", value: "latest" },
-                { label: "Highest", value: "highest" },
-                { label: "Lowest", value: "lowest" }
-              ]}
-            />
-          </div>
-
+        <div className="grid grid-cols-2 gap-2">
+          <Dropdown
+            icon={Filter}
+            value={filter}
+            onChange={(v) => setFilter(v as FilterType)}
+            options={[
+              { label: "All Types", value: "all" },
+              { label: "Income", value: "income" },
+              { label: "Expense", value: "expense" },
+              { label: "Transfer", value: "transfer" },
+            ]}
+          />
+          <Dropdown
+            icon={ArrowUpDown}
+            value={sort}
+            onChange={(v) => setSort(v as SortType)}
+            options={[
+              { label: "Latest", value: "latest" },
+              { label: "Highest", value: "highest" },
+              { label: "Lowest", value: "lowest" },
+            ]}
+          />
         </div>
 
-      </div>
-
-
-
-    </div>
-
-    {/* DIVIDER */}
-    <div className="relative">
-      <div className="md:hidden absolute -bottom-1 md:bottom-0 left-0 right-0 h-px bg-[var(--transaction-border)] md:left-4 md:right-4" />
-
-    </div>
-    {/* TRANSACTION LIST */}
-
-    <div className="md:pl-0 pl-1  rounded-xl md:bg-[var(--color-surface)] md:border md:border-[var(--border)] overflow-hidden md:shadow-sm w-full" style={{ animationDelay: "160ms" }}>
-      <div className="flex flex-col p-0 md:p-1 gap-2">
-
-        {isLoading ? (
-          <div className="flex flex-col gap-1 md:p-1">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={index}
-                className="relative flex items-center justify-between gap-3 md:gap-8 rounded-2xl px-1 mb-2 mt-2 md:p-3"
-              >
-                {index !== 7 && (
-                  <div className="absolute bottom-0 left-4 right-4 md:border-b md:border-dashed md:border-[var(--border)]" />
-                )}
-
-                <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
-
-                  <div className="flex min-w-0 flex-1 flex-col justify-center">
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
-                      <div className="h-4 w-32 md:w-44 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
-                      <div className="h-4 w-16 md:hidden bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
-                    </div>
-
-                    <div className="flex items-center justify-between min-w-0 md:justify-start md:gap-2">
-                      <div className="h-3 w-20 md:w-28 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
-                      <div className="hidden md:block w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
-                      <div className="h-3 w-16 bg-[var(--color-text-secondary)]/20 rounded animate-pulse ml-4 md:ml-0" />
-                    </div>
+        <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden">
+          <div className="flex flex-col p-1 gap-2">
+            {isLoading ? (
+              <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">Loading...</div>
+            ) : isError ? (
+              <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
+                {error instanceof Error ? error.message : "Failed to load transactions"}
+              </div>
+            ) : currentItems.length === 0 ? (
+              <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">No transactions</div>
+            ) : (
+              Object.entries(groupedTransactions).map(([month, items]) => (
+                <div key={month} className="flex flex-col">
+                  <div className="pl-2 mb-2 pt-3 pb-1 text-sm font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-80">
+                    {month}
                   </div>
-                </div>
-
-                <div className="hidden md:flex items-center gap-2 shrink-0">
-                  <div className="h-5 w-20 bg-[var(--color-text-secondary)]/20 rounded animate-pulse" />
-                  <div className="w-3 h-3 rounded-full bg-[var(--color-text-secondary)]/20 animate-pulse" />
-                </div>
-              </div>
-            ))}
-          </div>
-
-        ) : isError ? (
-
-          <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
-            {error instanceof Error ? error.message : "Failed to load transactions"}
-          </div>
-
-        ) : isWaitingForCustomRange ? (
-
-          <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">
-            Select both start and end dates
-          </div>
-
-        ) : currentItems.length === 0 ? (
-          <div className="p-8 md:p-12">
-            <div className="relative overflow-hidden rounded-[2rem] text-center">
-              <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4">
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-xl md:text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
-                    {hasAccounts ? "No Transactions Yet" : "Add an Account First"}
-                  </h3>
-                  <p className="text-sm md:text-base text-[var(--color-text-secondary)] leading-relaxed opacity-80">
-                    {hasAccounts
-                      ? "Start recording income, expenses, or transfers to build your transaction history here."
-                      : "You need at least one account before you can record transactions. Add an account to get started."}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    if (hasAccounts) {
-                      setSheetOpen(true);
-                      return;
-                    }
-                    navigate("/accounts");
-                  }}
-                  className="group mt-2 inline-flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-5 py-3 text-xs font-black text-[var(--color-accent)] transition-all active:scale-95 hover:bg-[var(--color-accent)] hover:text-white hover:shadow-[0_15px_30px_-10px_rgba(82,61,255,0.4)] disabled:opacity-40 md:text-sm"
-                >
-                  <PlusCircle size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
-                  {hasAccounts ? "Record Your First Transaction" : "Add Your First Account"}
-                </button>
-              </div>
-            </div>
-          </div>
-
-        ) : (
-
-          Object.entries(groupedTransactions).map(([month, items], groupIndex, arr) => {
-            const isLastGroup = groupIndex === arr.length - 1;
-
-            return (
-              <div key={month} className="flex flex-col">
-
-                {/* MONTH HEADER */}
-                <div className="md:pl-2 mb-3 pt-4 pb-4 md:pb-1 md:text-[14px] text-[18px] font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-80">
-                  {month}
-                </div>
-
-                {items.map((t, index) => {
-                  const isLast = index === items.length - 1;
-                  const categoryLabel = getTransactionCategoryLabel(t);
-                  const title = getTransactionTitle(t);
-                  const displayDate = formatTransactionDisplayDate(t.date);
-
-                  return (
+                  {items.map((t, index) => (
                     <TransactionListItem
                       key={t._id}
                       transaction={t}
-                      title={title}
-                      categoryLabel={categoryLabel}
-                      displayDate={displayDate}
-                      showDivider={!isLast}
+                      title={getTransactionTitle(t)}
+                      categoryLabel={getTransactionCategoryLabel(t)}
+                      displayDate={formatTransactionDisplayDate(t.date)}
+                      showDivider={index !== items.length - 1}
                       onClick={() => {
                         setSelectedTx(t);
                         setDetailsOpen(true);
                       }}
                     />
-                  );
-                })}
-
-                {!isLastGroup && (
-                  <div className="md:hidden relative my-3">
-                    <div className="absolute -bottom-3 left-0 right-0 h-px bg-[var(--border)]" />
-                  </div>
-                )}
-
-              </div>
-            );
-          })
-
-        )}
-
+                  ))}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
+      {/* DESKTOP VIEW */}
+      <div className="hidden md:flex md:flex-col gap-5 pb-10">
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border)] bg-[var(--color-surface)]">
-
-          <span className="text-xs font-bold text-[var(--color-text-secondary)]">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <div className="flex gap-2">
-
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
-              className="p-2 rounded-lg border border-[var(--border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
-            >
-
-              <ChevronLeft size={16} />
-
-            </button>
-
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => prev + 1)}
-              className="p-2 rounded-lg border border-[var(--border)] disabled:opacity-30 hover:bg-[var(--color-background)] transition-colors text-[var(--color-text-primary)] active:scale-90"
-            >
-
-              <ChevronRight size={16} />
-
-            </button>
-
+        {/* Header */}
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)]">{displayTitle}</h1>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{totalRecords} transactions found</p>
           </div>
-
+          <button
+            onClick={handleOpenTransactionSheet}
+            className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/60 px-4 py-2.5 text-sm font-semibold text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+          >
+            <PlusCircle size={16} />
+            {hasAccounts ? "Record transaction" : "Add Account"}
+          </button>
         </div>
 
-      )}
+        {/* Filter Bar */}
+        <div className="rounded-xl border border-[var(--color-accent-soft)] bg-[var(--color-accent-soft)]/80 px-3 py-4">
+          <div className="flex items-end gap-3 flex-wrap">
 
-    </div>
+            {/* Date range preset — always visible */}
+            <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
+              <Dropdown
+                icon={Calendar}
+                value={dateRange}
+                onChange={(v) => setDateRange(v as DateRangeType)}
+                options={[
+                  { label: "Last 30 days", value: "30" },
+                  { label: "Last 60 days", value: "60" },
+                  { label: "Last 90 days", value: "90" },
+                  { label: "Custom range", value: "custom" },
+                ]}
+              />
+            </div>
 
-    <TransactionSheet
-      open={sheetOpen}
-      onClose={() => {
-        setSheetOpen(false);
-        setEditingTx(null); // reset after close
-      }}
-      categories={categories}
-      accounts={mappedAccounts}
-      onSubmit={handleSubmitTransaction}
-      loading={
-        createTransactionMutation.isPending ||
-        updateTransactionMutation.isPending
-      }
-      initialData={editingTx} // 👈 IMPORTANT
-      defaultData={editingTx ? null : defaultTransactionDraft}
-    />
-    <TransactionDetails
-      transaction={selectedTx}
-      open={detailsOpen}
-      onClose={() => {
-        setDetailsOpen(false);
-        setSelectedTx(null);
-      }}
-      onEdit={(tx) => {
-        //  setDetailsOpen(false);
-        setEditingTx(mapToDraft(tx));
-        setEditingId(tx._id); // 👈 IMPORTANT
-        setSheetOpen(true);
-      }}
-      onDelete={async (tx) => {
-        const ok = await confirm({
-          title: "Delete Transaction?",
-          message: "This transaction will be permanently deleted from your history. This action is irreversible.",
-          confirmText: "Delete",
-          cancelText: "Cancel",
-          variant: "danger",
-        });
+            {/* From date — only when custom */}
+            {isCustomRange && (
+              <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
+                <div className="h-10 rounded-lg border border-[var(--input-border)] px-3 flex items-center gap-2 bg-[var(--color-surface)] text-sm">
+                  <Calendar size={14} className="text-[var(--color-text-secondary)] shrink-0" />
+                  <DatePicker value={startDate} onChange={(d) => setStartDate(d)} />
+                  {startDate && (
+                    <button type="button" onClick={() => setStartDate(undefined)} className="ml-auto">
+                      <X size={13} className="text-[var(--color-text-secondary)]" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
-        if (!ok) return;
+            {/* To date — only when custom */}
+            {isCustomRange && (
+              <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
+                <div className="h-10 rounded-lg border border-[var(--input-border)] px-3 flex items-center gap-2 bg-[var(--color-surface)] text-sm">
+                  <Calendar size={14} className="text-[var(--color-text-secondary)] shrink-0" />
+                  <DatePicker value={endDate} onChange={(d) => setEndDate(d)} />
+                  {endDate && (
+                    <button type="button" onClick={() => setEndDate(undefined)} className="ml-auto">
+                      <X size={13} className="text-[var(--color-text-secondary)]" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
-        try {
-          // 🔥 Optimistic delete (already handled in hook)
-          await deleteTransactionMutation.mutateAsync(tx._id);
+            {/* Type filter */}
+            <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
+              <Dropdown
+                icon={Filter}
+                value={filter}
+                onChange={(v) => setFilter(v as FilterType)}
+                options={[
+                  { label: "All Types", value: "all" },
+                  { label: "Income", value: "income" },
+                  { label: "Expense", value: "expense" },
+                  { label: "Transfer", value: "transfer" },
+                ]}
+              />
+            </div>
 
-          // close details modal
+            {/* Accounts filter */}
+            <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
+              <Dropdown
+                icon={Wallet}
+                value="all_accounts"
+                onChange={() => undefined}
+                options={[{ label: "All Accounts", value: "all_accounts" }]}
+              />
+            </div>
+
+            {/* Sort */}
+            <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
+              <Dropdown
+                icon={ArrowUpDown}
+                value={sort}
+                onChange={(v) => setSort(v as SortType)}
+                options={[
+                  { label: "Latest", value: "latest" },
+                  { label: "Highest", value: "highest" },
+                  { label: "Lowest", value: "lowest" },
+                ]}
+              />
+            </div>
+
+            {/* Search */}
+            <div className="flex flex-col gap-1 flex-[2] min-w-[180px]">
+              <div className="relative">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search transactions, notes..."
+                  className="h-10 w-full rounded-lg border border-[var(--input-border)] bg-[var(--color-surface)] pl-9 pr-9 text-sm"
+                />
+                {search && (
+                  <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <X size={14} className="text-[var(--color-text-secondary)]" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div className="grid grid-cols-12 gap-4">
+
+          {/* Transaction List */}
+          <div className="col-span-9 rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 overflow-hidden">
+
+            {/* Table header */}
+            {/* <div className="grid items-center px-4 py-3 border-b border-[var(--border)] bg-[var(--color-surface)]/40"
+              style={{ gridTemplateColumns: "90px 1fr 140px 150px 130px" }}>
+              <span className="text-[11px] font-semibold tracking-widest uppercase text-[var(--color-text-secondary)]">Date</span>
+              <span className="text-[11px] font-semibold tracking-widest uppercase text-[var(--color-text-secondary)]">Transaction</span>
+              <span className="text-[11px] font-semibold tracking-widest uppercase text-[var(--color-text-secondary)]">Type</span>
+              <span className="text-[11px] font-semibold tracking-widest uppercase text-[var(--color-text-secondary)]">Date</span>
+              <span className="text-[11px] font-semibold tracking-widest uppercase text-[var(--color-text-secondary)] text-right">Amount</span>
+            </div> */}
+
+            {isLoading ? (
+              <div className="py-20 text-center text-sm text-[var(--color-text-secondary)]">Loading transactions...</div>
+            ) : isError ? (
+              <div className="py-20 text-center text-sm font-semibold text-[var(--color-danger)]">
+                {error instanceof Error ? error.message : "Failed to load transactions"}
+              </div>
+            ) : currentItems.length === 0 ? (
+              <div className="py-24 text-center">
+                <p className="text-base font-semibold text-[var(--color-text-primary)]">No Transactions Yet</p>
+                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Start recording transactions to build your history.</p>
+              </div>
+            ) : (
+              <>
+                {/* Month-grouped timeline */}
+                <div className="relative">
+                  {Object.entries(groupedTransactions).map(([month, items], groupIdx, groupsArr) => (
+                    <div className="p-2" key={month}>
+
+
+                      {/* Rows for this month */}
+                      {items.map((t, idx) => {
+                        const Icon =
+                          t.type === "income" || t.type === "expense"
+                            ? resolveLucideIcon(t.category_icon)
+                            : resolveLucideIcon("arrow-left-right");
+
+                        const amount = getTransactionDisplayAmount(t);
+                        const isSignedType =
+                          t.type === "expense" || t.type === "income";
+
+                        const dateObj = new Date(t.date);
+                        const amountColor =
+                          t.type === "expense"
+                            ? "text-[var(--color-danger)]"
+                            : t.type === "income"
+                              ? "text-[var(--color-success)]"
+                              : "text-[var(--color-text-primary)]";
+
+                        // Show date label only when date differs from previous row within this month
+                        const prevTx = items[idx - 1];
+                        const prevDay = prevTx ? new Date(prevTx.date).getDate() : null;
+                        const showDateLabel = prevDay !== dateObj.getDate();
+                        console.log(showDateLabel);
+
+                        const dotColor = t.category_color ?? "#0d9488";
+                        const showMonthLabel = idx === 0;
+                        // Hide the vertical line after the very last row of the last group
+                        const isLastItem = groupIdx === groupsArr.length - 1 && idx === items.length - 1;
+                        console.log(isLastItem);
+
+                        return (
+                          <button
+                            key={t._id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTx(t);
+                              setDetailsOpen(true);
+                            }}
+                            className="group w-full flex items-center hover:bg-[var(--color-background)]/40 transition-colors border-b border-[var(--border)]/50 last:border-b-0"
+                          >
+                            {/* Date column with timeline */}
+                            <div className="relative flex items-center shrink-0" style={{ width: "72px", minHeight: "92px" }}>
+                              {/* Vertical line */}
+                              <div className="absolute left-[67px] top-0 bottom-0 w-px bg-[var(--border)]" />
+                              {/* {!isLastItem && (
+                              )} */}
+                              {/* Date label */}
+                              <div className="pl-4 pr-2 text-left w-[80px]">
+                                {showMonthLabel ? (
+                                  <div className="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide">
+                                    {month}
+                                  </div>
+                                ) : null}
+                              </div>
+                              {/* Dot */}
+                              <div
+                                className="relative z-10 shrink-0 rounded-full"
+                                style={{ width: 8, height: 8, backgroundColor: dotColor }}
+                              />
+                            </div>
+
+                            {/* Row content */}
+                            <div
+                              className="flex items-center flex-1 gap-4 px-4 py-6"
+                              style={{ display: "grid", gridTemplateColumns: "1fr 140px 150px 130px" }}
+                            >
+                              {/* Transaction title + icon */}
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div
+                                  className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
+                                  style={
+                                    t.type === "income" || t.type === "expense"
+                                      ? {
+                                        backgroundColor: `${t.category_color}15`,
+                                        color: t.category_color,
+                                      }
+                                      : {
+                                        backgroundColor: "#0d948815",
+                                        color: "#0d9488",
+                                      }
+                                  }
+                                >
+                                  <Icon size={22} strokeWidth={2.5} />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="truncate text-[15px] font-bold text-[var(--color-text-primary)] text-left">{getTransactionTitle(t)}</p>
+                                  <p className="truncate text-[13px] font-semibold text-[var(--color-text-secondary)] mt-1 text-left">{getTransactionCategoryLabel(t)}</p>
+                                </div>
+                              </div>
+
+                              {/* Type badge */}
+                              <div>
+                                <span className={`inline-flex rounded-full px-3 py-0.5 text-[13px] font-medium ${typeBadgeClass(t.type)}`}>
+                                  {t.type.charAt(0).toUpperCase() + t.type.slice(1)}
+                                </span>
+                              </div>
+
+                              {/* Date */}
+                              <div className="text-[13px] text-[var(--color-text-secondary)]">
+                                {formatTransactionDisplayDate(t.date)}
+                              </div>
+
+                              {/* Amount */}
+                              <div className={`text-right text-base font-bold ${amountColor}`}>
+                                {isSignedType
+                                  ? amount < 0
+                                    ? "-"
+                                    : amount > 0
+                                      ? "+"
+                                      : ""
+                                  : ""}
+                                ₹{Math.abs(amount).toLocaleString()}
+                              </div>
+                            </div>
+                            <ChevronRight
+                              size={16}
+                              strokeWidth={2.5}
+                              className="
+                              ml-2 shrink-0
+                              text-[var(--color-text-secondary)]
+                              opacity-0 translate-x-[-6px]
+                              transition-all duration-200
+                              group-hover:opacity-100 group-hover:translate-x-0
+                            "
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center border-t border-[var(--border)] px-4 py-3 gap-12">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((prev) => prev - 1)}
+                      className="flex items-center gap-1 rounded-lg border border border-[var(--color-accent)]/20 px-3 py-1.5 text-sm text-[var(--color-primary)] disabled:text-[var(--color-text-secondary)] disabled:opacity-40 hover:bg-[var(--color-accent-soft)]/80"
+                    >
+                      <ChevronLeft
+                        size={16}
+                        strokeWidth={2.5}
+                        className="
+                              shrink-0
+                            "
+                      /> Previous
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      {getPaginationPages().map((page, i) =>
+                        page === "..." ? (
+                          <span key={`ellipsis-${i}`} className="px-2 text-sm text-[var(--color-text-secondary)]">...</span>
+                        ) : (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page as number)}
+                            className={`h-10 w-10 rounded-lg text-sm font-medium  ${currentPage === page
+                              ? "bg-[var(--color-accent-soft)] text-(--color-primary) border border-[var(--color-accent-soft)]"
+                              : "text-[var(--color-text-primary)] hover:bg-[var(--color-accent-soft)]/80 "
+                              }`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((prev) => prev + 1)}
+                      className="flex items-center gap-1 rounded-lg border border border-[var(--color-accent)]/20 px-3 py-1.5 text-sm text-[var(--color-primary)] disabled:text-[var(--color-text-secondary)] disabled:opacity-40 hover:bg-[var(--color-accent-soft)]/80"
+                    >
+                      Next
+                      <ChevronRight
+                        size={16}
+                        strokeWidth={2.5}
+                        className="
+                              shrink-0
+                            "
+                      />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="col-span-3 flex flex-col gap-4">
+
+            {/* Summary */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Summary</h3>
+                <div className="rounded-lg border border-[var(--border)] p-1.5">
+                  <ChartColumn size={15} className="text-[var(--color-text-secondary)]" />
+                </div>
+              </div>
+              <p className="text-xs text-[var(--color-text-secondary)] mb-4">{activeDateLabel}</p>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[var(--color-text-secondary)]">Total Spent</span>
+                  <span className="text-sm font-semibold text-red-500">₹4,853</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[var(--color-text-secondary)]">Total Received</span>
+                  <span className="text-sm font-semibold text-emerald-400">₹33,900</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[var(--color-text-secondary)]">Net Flow</span>
+                  <span className="text-sm font-semibold text-emerald-400">₹29,047</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
+              <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-3">Quick Actions</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors">
+                  <Wallet className="mx-auto text-emerald-400 mb-1.5" size={18} />
+                  <p className="text-[11px] text-[var(--color-text-secondary)] leading-tight">Export CSV</p>
+                </div>
+                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors">
+                  <SlidersHorizontal className="mx-auto text-emerald-400 mb-1.5" size={18} />
+                  <p className="text-[11px] text-[var(--color-text-secondary)] leading-tight">Filter rules</p>
+                </div>
+                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors">
+                  <CircleAlert className="mx-auto text-[var(--color-text-secondary)] mb-1.5" size={18} />
+                  <p className="text-[11px] text-[var(--color-text-secondary)] leading-tight">Report issue</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Spending by Type */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
+              <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">Spending by Type</h3>
+              <div className="space-y-3">
+                {desktopSpendingByType.map((item) => (
+                  <div key={item.label}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs text-[var(--color-text-secondary)]">{item.label}</span>
+                      <span className="text-xs text-[var(--color-text-secondary)]">{item.value}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-[var(--color-background)]">
+                      <div
+                        className="h-1.5 rounded-full"
+                        style={{ width: `${item.width}%`, backgroundColor: item.color }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <TransactionSheet
+        open={sheetOpen}
+        onClose={() => {
+          setSheetOpen(false);
+          setEditingTx(null);
+        }}
+        categories={categories}
+        accounts={mappedAccounts}
+        onSubmit={handleSubmitTransaction}
+        loading={createTransactionMutation.isPending || updateTransactionMutation.isPending}
+        initialData={editingTx}
+        defaultData={editingTx ? null : defaultTransactionDraft}
+      />
+
+      <TransactionDetails
+        transaction={selectedTx}
+        open={detailsOpen}
+        onClose={() => {
           setDetailsOpen(false);
           setSelectedTx(null);
+        }}
+        onEdit={(tx) => {
+          setEditingTx(mapToDraft(tx));
+          setEditingId(tx._id);
+          setSheetOpen(true);
+        }}
+        onDelete={async (tx) => {
+          const ok = await confirm({
+            title: "Delete Transaction?",
+            message: "This transaction will be permanently deleted from your history. This action is irreversible.",
+            confirmText: "Delete",
+            cancelText: "Cancel",
+            variant: "danger",
+          });
 
-          // 🔥 success toast
-          toast.success("Transaction deleted successfully");
-        } catch (err) {
-          console.error(err);
+          if (!ok) return;
 
-          // 🔥 error toast
-          toast.error("Failed to delete transaction");
-        }
-      }}
-    />
-    <style>{`
-      .transaction-section-animate {
-        opacity: 0;
-        animation: transactionSlideUp 0.45s ease-out forwards;
-      }
-
-      @keyframes transactionSlideUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .transaction-section-animate {
-          animation: none;
-          opacity: 1;
-          transform: none;
-        }
-      }
-    `}</style>
-  </div>
-
+          try {
+            await deleteTransactionMutation.mutateAsync(tx._id);
+            setDetailsOpen(false);
+            setSelectedTx(null);
+            toast.success("Transaction deleted successfully");
+          } catch (err) {
+            console.error(err);
+            toast.error("Failed to delete transaction");
+          }
+        }}
+      />
+    </>
   );
 }
