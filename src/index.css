@@ -1,80 +1,87 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap'); */
 
 /* Define theme colors for light mode */
 @layer theme {
   :root {
     /* Core Backgrounds */
-    --color-background:      #F6F1E8;
-    --color-surface:         #fffcf7;
-    
+    /* --color-background: #f6f6f4; 
+    --color-surface: #ffffff;  */
+    /* --color-background: #f7f7f5; */
+    --color-background: #f8f8f8;
+    --color-surface:    #ffffff;
+
     /* Typography */
-    --color-text-primary:    #1A120A;
-    --color-text-secondary:  #6E5F49;
-    
+    --color-text-primary:    #0b0b0b;   /* deeper contrast */
+    --color-text-secondary:  #6f6f6f;   /* softer neutral */
+
     /* Brand Colors */
-    --color-primary:         #2F5D1A;
-    --color-success:         #1bb554;
-    --color-warm:            #C26D3A;   /* fixed: real terracotta */
-    --color-accent-teal:     #8A4B1F;   /* richer earthy tone */
-    --color-danger:          #EF4444;
-    --color-accent:          #2F5D1A;
-    --color-accent-soft:     #EEF5E8;
-    
+    --color-primary:         #16a34a;   /* unchanged (good) */
+    --color-success:         #16a34a;
+    --color-warm:            #f97316;
+    --color-accent-teal:     #2563eb;   /* slightly richer blue for better contrast */
+    --color-danger:          #ef4444;
+    --color-accent:          #16a34a;
+    --color-accent-soft:     rgba(22, 163, 74, 0.06); /* softer tint (less loud) */
+
     /* UI Components */
-    --benefits-card-color:   #FFFCF6;
-    --pricing-card-color:    #FFFCF6;
-    --input-border:          rgba(28,16,8,0.12);
-    --border:                rgba(28,16,8,0.08);
-    --transaction-border:                rgba(0, 0, 0, 0.159);
-    
+    --benefits-card-color:   #ffffff;
+    --pricing-card-color:    #ffffff;
+
+    --input-border:          rgba(0, 0, 0, 0.08);
+    --border:                rgba(0, 0, 0, 0.06);
+    --transaction-border:    rgba(0, 0, 0, 0.05);
+
     /* Bottom Nav */
-    --color-nav-highlight:      #2F5D1A;
-    --color-bottom-nav-surface: color-mix(in oklab, var(--color-surface) 90%, white 10%);
-    --color-bottom-nav-border:  rgba(28,16,8,0.10);
-    --color-bottom-nav-shadow:  0 16px 40px rgba(28, 16, 8, 0.10);
-    
-    /* Pricing Glows (enhanced slightly) */
-    --pricing-card-glow-teal:   rgba(47, 93, 26, 0.12);
-    --pricing-card-glow-warm:   rgba(194, 109, 58, 0.14);
+    --color-nav-highlight:      #16a34a;
+    --color-bottom-nav-surface: #ffffff;
+    --color-bottom-nav-border:  rgba(0, 0, 0, 0.06);
+    --color-bottom-nav-shadow:  0 -6px 20px rgba(0, 0, 0, 0.05);
+
+    /* Pricing Glows */
+    --pricing-card-glow-teal:   rgba(22, 163, 74, 0.08);
+    --pricing-card-glow-warm:   rgba(249, 115, 22, 0.08);
   }
 }
 /* 🌙 Dark Mode - Adjusted for Depth & Separation */
 @layer base {
   html.dark {
-    /* Core Backgrounds - Created more distance between back and surface */
-    --color-background:      #080705;   /* Deepened for true contrast */
-    --color-surface:         #1C1812;   /* Elevated "lifted" surface */
-    
+    /* Core Backgrounds */
+    /* --color-background:      #050505;   */
+    /* --color-surface:         #121212;    */
+   --color-background: #121212;
+--color-surface:    #1a1a1a;
+
     /* Typography */
-    --color-text-primary:    #F2E8D8;
-    --color-text-secondary:  #A39580;   /* Slightly boosted for legibility */
-    
+    --color-text-primary:    #f5f5f5;
+    --color-text-secondary:  #8a8a8a;   /* improved readability vs your current #666 */
+
     /* Brand Colors */
-    --color-primary:         #5E9C3A;
-    --color-success:         #4ADE80;
-    --color-warm:            #E07A3F;
-    --color-accent-teal:     #C07040;
-    --color-danger:          #F87171;
-    --color-accent:          #7AB852;
-    --color-accent-soft:     rgba(94, 156, 58, 0.15);
-    
-    /* UI Components - Cards now pop against the background */
-    --benefits-card-color:   #241F19;   /* Clearly distinct from surface */
-    --pricing-card-color:    #241F19;
-    --input-border:          rgba(242, 232, 216, 0.12);
-    --border:                rgba(242, 232, 216, 0.08);
-    --transaction-border:                rgba(250, 240, 224, 0.159);
-    
+    --color-primary:         #22c55e;
+    --color-success:         #22c55e;
+    --color-warm:            #f97316;
+    --color-accent-teal:     #3b82f6;
+    --color-danger:          #ef4444;
+    --color-accent:          #22c55e;
+    --color-accent-soft:     rgba(34, 197, 94, 0.10); /* slightly more visible glow */
+
+    /* UI Components */
+    --benefits-card-color:   #121212;
+    --pricing-card-color:    #121212;
+
+    --input-border:          rgba(255, 255, 255, 0.06);
+    --border:                rgba(255, 255, 255, 0.05);
+    --transaction-border:    rgba(255, 255, 255, 0.04);
+
     /* Bottom Nav */
-    --color-nav-highlight:      #7AB852;
-    --color-bottom-nav-surface: #12100D; /* Darker than cards to anchor the UI */
-    --color-bottom-nav-border:  rgba(122, 184, 82, 0.3);
-    --color-bottom-nav-shadow:  0 -8px 30px rgba(0, 0, 0, 0.8);
-    
-    /* Pricing Glows - Increased opacity slightly for better "lift" */
-    --pricing-card-glow-teal:   rgba(122, 184, 82, 0.22);
-    --pricing-card-glow-warm:   rgba(224, 122, 63, 0.22);
+    --color-nav-highlight:      #22c55e;
+    --color-bottom-nav-surface: #0a0a0a;
+    --color-bottom-nav-border:  rgba(34, 197, 94, 0.12);
+    --color-bottom-nav-shadow:  0 -10px 40px rgba(0, 0, 0, 0.85);
+
+    /* Pricing Glows */
+    --pricing-card-glow-teal:   rgba(34, 197, 94, 0.14);
+    --pricing-card-glow-warm:   rgba(249, 115, 22, 0.14);
   }
 }
 @layer theme {
@@ -209,7 +216,7 @@ button {
 
 
 :root {
-  font-family: 'Geist', 'Space Grotesk', -apple-system, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 400;
 
   color-scheme: light dark;

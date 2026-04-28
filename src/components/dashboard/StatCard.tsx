@@ -15,8 +15,8 @@ export const StatCard = ({
   color,
   isLoading,
 }: StatCardProps) => (
-  <div className="group p-4 md:p-5 rounded-2xl bg-[var(--color-surface)] 
-    border border-[var(--border)] shadow-sm
+  <div className="group p-3 rounded-2xl bg-[var(--color-surface)] 
+    border border-[var(--border)]
     flex flex-col sm:flex-row items-center gap-3 md:gap-4
     transition-all duration-200"
   >
@@ -32,7 +32,7 @@ export const StatCard = ({
       }
     >
       {!isLoading && Icon && (
-        <Icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
+        <Icon width={24} strokeWidth={2.5} />
       )}
     </div>
 
@@ -43,7 +43,7 @@ export const StatCard = ({
       {isLoading ? (
         <div className="h-3 w-16 bg-[var(--color-text-secondary)]/10 rounded animate-pulse mb-1" />
       ) : (
-        <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)] truncate w-full text-center sm:text-left">
+        <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)] truncate w-full text-center sm:text-left mb-1">
           {label}
         </span>
       )}
@@ -52,7 +52,7 @@ export const StatCard = ({
       {isLoading ? (
         <div className="h-5 w-24 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
       ) : (
-        <span className="text-base md:text-xl font-black text-[var(--color-text-primary)] truncate w-full text-center sm:text-left">
+        <span className="text-base md:text-l font-black text-[var(--color-text-primary)] truncate w-full text-center sm:text-left">
           {amount}
         </span>
       )}

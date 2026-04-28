@@ -59,13 +59,13 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
   return (
     <aside
       className={`hidden lg:block relative z-[20] h-screen transition-all duration-300 ease-in-out sticky top-0 overflow-visible
-      bg-[var(--color-surface)] border-r border-[var(--input-border)]
+      bg-[var(--color-background)] border-r border-[var(--input-border)]/60
       ${collapsed ? "w-[80px]" : "w-[260px]"}`}
     >
       <div className="flex h-full flex-col">
         {/* Logo Section */}
         <div
-          className="flex items-center justify-center px-4 h-[var(--header-h)] cursor-pointer mb-2"
+          className="flex items-center justify-center px-4 h-[var(--header-h)] cursor-pointer mb-2 mt-[0.6rem]"
           onClick={() => navigate("/dashboard")}
         >
           <div className="relative flex items-center justify-center transition-transform duration-300 hover:scale-105">

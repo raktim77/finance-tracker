@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState, type UIEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
-import Topbar from "../components/layout/Topbar";
+// import Topbar from "../components/layout/Topbar";
 import BottomNav from "../components/layout/BottomNav";
 import { AppHeader } from "../components/app-header/AppHeader";
 import { ThemeContext } from "../context/ThemeContext";
@@ -17,7 +17,7 @@ import { useToast } from "../components/ui/confirm-modal/useToast";
 import { isNativeCapacitorApp } from "../lib/capacitor/platform";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const { sidebarLayout, toggleSidebarLayout } = useContext(ThemeContext);
+  const { sidebarLayout } = useContext(ThemeContext);
   const collapsed = sidebarLayout === "icons";
   const navigate = useNavigate();
   const location = useLocation();

@@ -51,14 +51,14 @@ export default function TransactionListItem({
             ? transaction.category_color
             : "#0d9488",
       }}
-      className={`relative flex items-center justify-between pl-3 py-3 md:mb-0 mb-2
+      className={`relative flex items-center justify-between md:pl-0 pl-3 py-3 md:mb-0 mb-2
 border-l-[3px]  md:border-l-0 rounded-r-xl md:rounded-none 
 md:hover:bg-[var(--color-background)] transition-all group min-w-0 cursor-pointer
 active:scale-[0.97] active:brightness-[0.98] active:bg-[var(--color-accent-soft)]
-${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}
+${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
     >
       {showDivider && (
-        <div className="absolute -bottom-1 md:bottom-0 left-18 right-3 h-px bg-[var(--border)] md:left-4 md:right-4" />
+        <div className="absolute -bottom-1 md:bottom-0 left-18 right-3 h-px bg-[var(--border)] md:left-15 md:right-2" />
       )}
 
       <div className={`flex items-center min-w-0 flex-1 ${isCompact ? "gap-4" : "gap-4 md:gap-4"}`}>
@@ -87,7 +87,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}
 
             <span
               className={`${isCompact ? "inline-block" : "md:hidden"
-                } font-black text-sm shrink-0 whitespace-nowrap ${amountClassName}`}
+                } font-black text-base shrink-0 whitespace-nowrap ${amountClassName}`}
             >
               {isSignedType
                 ? displayAmount < 0
@@ -105,7 +105,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}
               }`}
           >
             <span
-              className={`text-[10px] font-black text-[var(--color-text-secondary)] uppercase truncate opacity-80 ${isCompact
+              className={`text-[11px] font-black text-[var(--color-text-secondary)] uppercase truncate opacity-80 ${isCompact
                   ? "flex-1 max-w-[120px]"
                   : "flex-1 md:flex-none max-w-[120px] md:max-w-96"
                 }`}
@@ -119,7 +119,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4"}`}
             />
 
             <span
-              className={`shrink-0 text-[10px] font-black text-[var(--color-text-secondary)] uppercase opacity-80 tracking-wider ${isCompact ? "ml-4" : "ml-4 md:ml-0"
+              className={`shrink-0 text-[11px] font-black text-[var(--color-text-secondary)] uppercase opacity-80 tracking-wider ${isCompact ? "ml-4" : "ml-4 md:ml-0"
                 }`}
             >
               {displayDate}

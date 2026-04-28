@@ -97,25 +97,27 @@ export const RecentTransactions = () => {
       console.error("Transaction failed", err);
     }
   };
-
+// px-2 py-3 md:px-4 md:py-4
   return (
-    <div className="w-full rounded-[2rem] md:pl-0 pl-3 pr-2 md:pr-3 md:pb-4 md:bg-[var(--color-surface)] md:border border-[var(--border)] md:shadow-sm md:hover:shadow-md transition-all h-full flex flex-col mt-2 md:mt-0 mb-2 md:mb-0 ">
+    <div className="p-4 md:p-6 w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)]  shadow-sm transition-all h-full flex flex-col">
       {currentItems.length > 0 ? (
-        <div className="flex items-center justify-between mb-6 md:px-3 md:pt-6">
-          <h2 className="font-bold text-lg text-[var(--color-text-primary)]">
-            Recent History
+        <div className="flex items-center justify-between mb-4 md:mb-5">
+          <h2 className="text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
+            <span className="hidden md:inline">Recent Transactions</span>
+            <span className="md:hidden">Recent History</span>
           </h2>
           <button
             onClick={() => navigate("/transactions")}
-            className="px-3 py-1.5 rounded-lg bg-[var(--color-accent-soft)] text-[var(--color-accent)] text-[10px] font-black uppercase tracking-widest hover:brightness-95 transition-all"
+            className="flex items-center px-3 py-1.5 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] text-[var(--color-accent)] text-xs font-semibold transition-all"
           >
-            See All
+            View all
+            {/* <ArrowRight size={10} strokeWidth={3} className="ml-1"/> */}
           </button>
         </div>
       ) : ''}
 
 
-      <div className="md:rounded-xl overflow-hidden w-full flex-1">
+      <div className="rounded-xl overflow-hidden w-full flex-1">
         <div className="flex flex-col h-full">
           {isLoading ? (
             <div className="flex flex-col gap-1 p-1">
