@@ -15,9 +15,10 @@ import TransactionSheet from "../components/transactions/TransactionSheet";
 import { useAuth } from "../lib/context/useAuth";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import { isNativeCapacitorApp } from "../lib/capacitor/platform";
+import Topbar from "../components/layout/Topbar";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const { sidebarLayout } = useContext(ThemeContext);
+  const { sidebarLayout,toggleSidebarLayout } = useContext(ThemeContext);
   const collapsed = sidebarLayout === "icons";
   const navigate = useNavigate();
   const location = useLocation();
@@ -117,7 +118,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex flex-col flex-1">
 
         {/* Topbar */}
-        {/* <Topbar toggleSidebar={toggleSidebarLayout} /> */}
+        <Topbar toggleSidebar={toggleSidebarLayout} />
 
         {/* Page Content */}
         <main

@@ -5,12 +5,13 @@ import {
   PlusCircle,
   ArrowUpRight,
   ChevronRight,
-  LayoutGrid,
-  List,
   Wallet,
   FileText,
   FileSpreadsheet,
   type LucideIcon,
+  ArrowUp,
+  FileDown,
+  CircleAlert,
 } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +42,6 @@ type UiAccount = {
 };
 
 type AccountFilter = "all" | "cash" | "savings" | "investments" | "cards" | "loans";
-type DesktopViewMode = "grid" | "list";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -85,7 +85,6 @@ export default function Accounts() {
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
   const [desktopFilter, setDesktopFilter] = useState<AccountFilter>("all");
-  const [desktopViewMode, setDesktopViewMode] = useState<DesktopViewMode>("grid");
   const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const confirm = useConfirm();
@@ -468,13 +467,13 @@ export default function Accounts() {
 
   // ─── DESKTOP ─────────────────────────────────────────────────────────────────
   const DesktopView = () => (
-    <div className="hidden lg:block w-full">
+    <div className="hidden lg:block w-full md:pb-10">
       <div className="mx-auto w-full max-w-[1580px]">
         {/* Header row */}
         <div className="flex items-start justify-between gap-6 mb-7">
           <div>
-            <h2 className="text-[2rem] leading-[1.1] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]"
-              >
+            <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]"
+            >
               Accounts
             </h2>
             {/* <div className="mt-3 flex items-center gap-3">
@@ -487,25 +486,27 @@ export default function Accounts() {
           </div>
           <button
             onClick={() => setShowAddAccountModal(true)}
-            className="flex items-center gap-2.5 h-12 rounded-[1.1rem] border border-[#22c55e]/70 px-6 text-[1rem] font-semibold text-[#22c55e] hover:bg-[#22c55e]/6 transition"
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors
+            text-[var(--color-primary)] hover:bg-[var(--color-accent-soft)]
+            border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)]"
           >
             <PlusCircle size={20} />
             Add New Account
           </button>
         </div>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_420px] gap-8">
+        <div className="grid grid-cols-[minmax(0,1fr)_420px] gap-4">
           {/* LEFT COLUMN */}
           <div>
             {/* Hero Card */}
             <div
-              className="mb-7 overflow-hidden rounded-[2rem] border shadow-sm"
+              className="mb-7 overflow-hidden rounded-2xl border shadow-sm"
               style={{
                 position: "relative",
                 border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.05)",
                 background: isDark
                   ? "linear-gradient(155deg, #060e08 0%, #071209 35%, #0b1e0e 65%, #0d2812 100%)"
-                  : "#ffffff",
+                  : "var(--color-surface)",
                 minHeight: "180px",
               }}
             >
@@ -518,76 +519,144 @@ export default function Accounts() {
                   opacity: 0.6,
                 }} />
               )}
+              {!isDark && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    pointerEvents: "none",
+                    backgroundImage: `radial-gradient(circle, var(--color-primary) 1px, transparent 1px)`,
+                    backgroundSize: "22px 22px",
+                    opacity: isDark ? 0.3 : 0.3,
+                    filter: isDark ? "none" : "blur(0.8px)",
+                  }}
+                />
+              )}
               {/* Dark: green radial glow top-right */}
               {isDark && (
-                <div style={{
-                  position: "absolute", top: "-40px", right: "-40px",
-                  width: "340px", height: "260px",
-                  background: "radial-gradient(ellipse at center, rgba(34,197,94,0.32) 0%, transparent 65%)",
-                  pointerEvents: "none",
-                }} />
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    pointerEvents: "none",
+                    background: `
+        radial-gradient(
+          60% 60% at 100% 0%,
+          rgba(34,197,94,0.18) 0%,
+          rgba(34,197,94,0.10) 25%,
+          rgba(34,197,94,0.05) 40%,
+          transparent 55%
+        )
+      `,
+                  }}
+                />
               )}
               {/* Light: subtle green radial bottom */}
-              {!isDark && (
+              {/* {!isDark && (
                 <div style={{
                   position: "absolute", bottom: 0, left: 0, right: 0, height: "80px",
                   background: "radial-gradient(120% 100% at 50% 100%, rgba(34,197,94,0.08) 0%, transparent 70%)",
                   pointerEvents: "none",
                 }} />
-              )}
+              )} */}
 
               <div className="relative px-10 pt-10 pb-0">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[0.8rem] uppercase tracking-[0.26em] font-semibold mb-4"
-                      style={{ color: isDark ? "rgba(255,255,255,0.55)" : "rgba(35,38,45,0.7)" }}>
+                    <p className="text-[0.8rem] uppercase tracking-[0.13em] font-semibold mb-4 text-(--color-text-primary)"
+                    >
                       Total Balance
                     </p>
-                    <h2 className="text-[3.55rem] leading-none font-semibold tracking-[-0.03em]"
-                      style={{ color: isDark ? "#ffffff" : "#111318" }}>
+                    <h2 className="text-[2.7rem] leading-none font-bold tracking-[-0.03em] text-(--color-text-primary)"
+                    >
                       {formatCurrency(totalBalance)}
                     </h2>
-                    <p className="mt-5 text-[1rem]" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "#4f5562" }}>
+                    <p className="mt-5 text-[1rem] text-(--color-text-primary)">
                       across all accounts
                     </p>
                   </div>
-                  <div className="flex items-center gap-5 pr-2">
-                    <div className="text-right">
-                      <p className="text-[0.8rem] uppercase tracking-[0.22em] font-semibold mb-4"
-                        style={{ color: isDark ? "rgba(255,255,255,0.55)" : "rgba(35,38,45,0.7)" }}>
+                  <div className="flex flex-col items-start gap-1">
+                    <div>
+                      <p className="text-[0.8rem] uppercase tracking-[0.13em] font-semibold mb-2 text-(--color-text-primary)"
+                      >
                         Accounts
                       </p>
+
+                    </div>
+                    <div className="text-right flex gap-6 items-center">
                       <p className="text-[3rem] leading-none font-semibold"
-                        style={{ color: isDark ? "#ffffff" : "#16a34a" }}>
+                        style={{ color: isDark ? "var(--color-text-primary)" : "var(--color-primary)" }}>
                         {accounts.length}
                       </p>
+                      <span className={`flex h-14 w-14 items-center justify-center rounded-full ${isDark ? "bg-(--color-text-primary)/10" : "bg-(--color-primary)/10"}`}>
+                        <Wallet size={28} className={isDark ? "text-(--color-text-primary)" : "text-(--color-primary)"} />
+                      </span>
                     </div>
-                    <span className={`flex h-16 w-16 items-center justify-center rounded-full ${isDark ? "bg-white/10" : "bg-[#eaf8ef]"}`}>
-                      <ArrowUpRight size={28} className={isDark ? "text-white" : "text-[#16a34a]"} />
-                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Wave at bottom */}
-              <div style={{ height: "72px", marginTop: "16px", position: "relative" }}>
-                <svg viewBox="0 0 900 72" preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
+              <div style={{ height: "70px", position: "relative", marginTop: "2px", transform: "translateY(-10px)" }}>
+                <svg
+                  viewBox="0 0 900 120"
+                  preserveAspectRatio="none"
+                  style={{ width: "100%", height: "100%", display: "block" }}
+                >
+
                   <defs>
                     <linearGradient id="deskWaveGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity={isDark ? "0.28" : "0.12"} />
+                      <stop offset="0%" stopColor="#22c55e" stopOpacity="0.20" />
+                      <stop offset="18%" stopColor="#22c55e" stopOpacity="0.17" />
+                      <stop offset="32%" stopColor="#22c55e" stopOpacity="0.13" />
+                      <stop offset="48%" stopColor="#22c55e" stopOpacity="0.09" />
+                      <stop offset="62%" stopColor="#22c55e" stopOpacity="0.06" />
+                      <stop offset="74%" stopColor="#22c55e" stopOpacity="0.045" />
+                      <stop offset="84%" stopColor="#22c55e" stopOpacity="0.03" />
+                      <stop offset="90%" stopColor="#22c55e" stopOpacity="0.02" />
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity="0.012" />
                       <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
                     </linearGradient>
+                    {/* <linearGradient id="deskWaveGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#22c55e" stopOpacity={isDark ? "0.28" : "0.16"} />
+                      <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                    </linearGradient> */}
                   </defs>
+
                   <path
-                    d="M0,42 C80,28 160,52 250,36 C330,22 420,46 510,30 C590,16 680,44 770,28 C830,18 870,38 900,24 L900,72 L0,72 Z"
+                    d="
+        M0,120
+        L0,74
+        C70,70 120,50 170,38
+        C220,28 260,34 300,42
+        C350,52 390,70 440,68
+        C490,66 520,40 570,32
+        C620,28 660,40 700,52
+        C750,65 800,58 840,42
+        C870,28 890,18 900,16
+        L900,120
+        Z
+      "
                     fill="url(#deskWaveGrad)"
                   />
+
                   <path
-                    d="M0,42 C80,28 160,52 250,36 C330,22 420,46 510,30 C590,16 680,44 770,28 C830,18 870,38 900,24"
+                    d="
+        M0,74
+        C70,70 120,50 170,38
+        C220,28 260,34 300,42
+        C350,52 390,70 440,68
+        C490,66 520,40 570,32
+        C620,28 660,40 700,52
+        C750,65 800,58 840,42
+        C870,28 890,18 900,16
+      "
                     fill="none"
-                    stroke={isDark ? "#22c55e" : "#22c55e"}
-                    strokeWidth="2.5"
-                    strokeOpacity={isDark ? "0.65" : "0.35"}
+                    stroke={isDark ? "#4ade80" : "#86efac"}
+                    strokeWidth="1.8"
+                    strokeOpacity={isDark ? "0.35" : "0.45"}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 </svg>
               </div>
@@ -595,11 +664,8 @@ export default function Accounts() {
 
             {/* Filter + View Toggle Bar */}
             <div
-              className="mb-5 rounded-[1.5rem] border p-4"
-              style={{
-                background: isDark ? "#0d1117" : "#ffffff",
-                border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.05)",
-              }}
+              className="mb-5"
+
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-wrap">
@@ -607,48 +673,18 @@ export default function Accounts() {
                     <button
                       key={item.key}
                       onClick={() => setDesktopFilter(item.key)}
-                      className="rounded-[1rem] px-5 py-3 text-[1rem] font-medium transition"
+                      className="rounded-xl px-5 py-3 text-sm font-bold transition bg-(--color-surface) border border-(--border) text-(--color-text-secondary)"
                       style={
                         desktopFilter === item.key
-                          ? isDark
-                            ? { background: "#112b1a", color: "#2ee66d", boxShadow: "0 0 0 1px rgba(46,230,109,0.3)" }
-                            : { background: "#effaf2", color: "#16a34a", boxShadow: "0 0 0 1px #d9f3df" }
-                          : isDark
-                            ? { background: "transparent", color: "#b7bcc6", border: "1px solid rgba(255,255,255,0.1)" }
-                            : { background: "#ffffff", color: "#5f6775", border: "1px solid rgba(0,0,0,0.05)" }
+                          ? { background: "var(--color-accent-soft)", color: "var(--color-primary)" }
+                          : {}
                       }
                     >
                       {item.label}
                     </button>
                   ))}
                 </div>
-                <div
-                  className="flex items-center overflow-hidden rounded-[1rem]"
-                  style={{ border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.05)" }}
-                >
-                  <button
-                    onClick={() => setDesktopViewMode("grid")}
-                    className="flex h-12 w-14 items-center justify-center"
-                    style={
-                      desktopViewMode === "grid"
-                        ? { background: isDark ? "#102416" : "#effaf2", color: isDark ? "#2ee66d" : "#16a34a" }
-                        : { background: "transparent", color: isDark ? "#c6c9ce" : "#667085" }
-                    }
-                  >
-                    <LayoutGrid size={20} />
-                  </button>
-                  <button
-                    onClick={() => setDesktopViewMode("list")}
-                    className="flex h-12 w-14 items-center justify-center"
-                    style={
-                      desktopViewMode === "list"
-                        ? { background: isDark ? "#102416" : "#effaf2", color: isDark ? "#2ee66d" : "#16a34a" }
-                        : { background: "transparent", color: isDark ? "#c6c9ce" : "#667085" }
-                    }
-                  >
-                    <List size={20} />
-                  </button>
-                </div>
+
               </div>
             </div>
 
@@ -671,71 +707,63 @@ export default function Accounts() {
                     <div
                       key={acc._id}
                       onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
-                      className="cursor-pointer rounded-[1.6rem] px-7 py-5 shadow-sm transition grid items-center gap-5"
+                      className="group cursor-pointer rounded-2xl pl-7 py-5 pr-3 transition grid items-center gap-5 bg-(--color-surface) border border-(--border) hover:border-(--color-accent)/40"
                       style={{
-                        background: isDark ? "#0d1117" : "#ffffff",
-                        border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.04)",
                         gridTemplateColumns: "52px minmax(0,1.4fr) 220px 160px 120px",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.border = isDark ? "1px solid rgba(46,230,109,0.22)" : "1px solid rgba(22,163,74,0.2)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.border = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.04)";
                       }}
                     >
                       {/* Icon */}
                       <div
-                        className="flex h-12 w-12 items-center justify-center rounded-[1rem]"
+                        className="flex h-12 w-12 items-center justify-center rounded-xl"
                         style={{ background: `${acc.color}1f`, color: acc.color }}
                       >
-                        <Icon size={22} strokeWidth={2.1} />
+                        <Icon size={24} strokeWidth={2.3} />
                       </div>
 
                       {/* Name + Type */}
                       <div className="min-w-0">
-                        <h3 className="truncate text-[1.1rem] leading-none font-semibold"
-                          style={{ color: isDark ? "#f4f5f7" : "#16181d" }}>
+                        <h3 className="truncate text-[1.1rem] font-semibold text-(--color-text-primary)"
+                        >
                           {acc.name}
                         </h3>
-                        <p className="mt-1.5 text-[0.9rem] leading-none"
-                          style={{ color: isDark ? "#8c939e" : "#8a93a1" }}>
+                        <p className="mt-2 text-[0.85rem] leading-none text-(--color-text-secondary)"
+                        >
                           {acc.type}
                         </p>
                       </div>
 
                       {/* Balance */}
-                      <div className="text-[1.1rem] font-semibold tracking-[-0.02em]"
-                        style={{ color: isDark ? "#f5f5f5" : "#171a20" }}>
+                      <div className="text-[1.1rem] font-semibold tracking-[-0.02em] text-(--color-text-primary)"
+                      >
                         {acc.balance}
                       </div>
 
                       {/* Updated */}
                       <div>
-                        <p className="text-[0.85rem]" style={{ color: isDark ? "#767c86" : "#8a93a1" }}>Updated</p>
-                        <p className="mt-1 text-[0.9rem]" style={{ color: isDark ? "#a0a5af" : "#67707c" }}>{acc.lastUpdated}</p>
+                        <p className="text-[0.85rem] text-(--color-text-secondary)">Updated</p>
+                        <p className="mt-1 text-[0.9rem] text-(--color-text-secondary)">{acc.lastUpdated}</p>
                       </div>
 
                       {/* Actions */}
                       <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => setEditingAccountId(acc._id)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl transition hover:bg-black/5 dark:hover:bg-white/6"
-                          style={{ color: isDark ? "#a6acb6" : "#6b7280" }}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl transition text-(--color-text-secondary) hover:bg-(--color-accent-soft)"
+
                           aria-label={`Edit ${acc.name}`}
                         >
                           <Pencil size={16} />
                         </button>
                         <button
                           onClick={() => void handleArchiveAccount(acc)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl text-[#ef4444] hover:bg-[#ef4444]/10 transition"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl text-(--color-danger) hover:bg-(--color-danger)/10 transition"
                           aria-label={`Delete ${acc.name}`}
                         >
                           <Trash2 size={16} />
                         </button>
                         <button
-                          className="flex h-9 w-9 items-center justify-center rounded-xl transition"
-                          style={{ color: isDark ? "#a6acb6" : "#6b7280" }}
+                          onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
+                          className="text-[var(--color-text-secondary)] opacity-30 translate-x-[-6px] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0 flex h-9 w-9 items-center justify-center rounded-xl transition"
                           aria-label={`View ${acc.name}`}
                         >
                           <ChevronRight size={18} />
@@ -749,16 +777,12 @@ export default function Accounts() {
           </div>
 
           {/* RIGHT SIDEBAR */}
-          <div className="space-y-5">
+          <div className="space-y-4">
             {/* Account Insights */}
             <div
-              className="rounded-[1.9rem] p-7 shadow-sm"
-              style={{
-                background: isDark ? "#0d1117" : "#ffffff",
-                border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.04)",
-              }}
+              className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]"
             >
-              <h3 className="text-[2rem] leading-none font-semibold" style={{ color: isDark ? "#f5f5f5" : "#16181d" }}>
+              <h3 className="text-base leading-none font-semibold text-(--color-text-primary)">
                 Account Insights
               </h3>
               <svg viewBox="0 0 360 120" className="mt-6 w-full">
@@ -775,54 +799,38 @@ export default function Accounts() {
                 {/* endpoint dot */}
                 <circle cx="350" cy="14" r="4" fill="#22c55e" />
               </svg>
-              <p className="mt-5 text-[1rem]" style={{ color: isDark ? "#9ca3af" : "#6b7280" }}>This month's net flow</p>
-              <p className="mt-2 text-[2.5rem] leading-none text-[#22c55e] font-semibold">+₹28,740.20</p>
-              <p className="mt-2 text-[1rem]" style={{ color: isDark ? "#9ca3af" : "#6b7280" }}>
-                <span className="text-[#22c55e] font-semibold">↑ 18.4%</span> vs last month
+              <p className="text-sm font-semibold text-(--color-text-secondary)">This month's net flow</p>
+              <p className="mt-2 text-[24px] text-(--color-primary) font-bold">+₹28,740.20</p>
+              <p className="mt-2 text-sm text-(--color-text-secondary) flex">
+                <span className="text-(--color-primary) font-semibold mr-2 flex items-center"><ArrowUp size={18}  className="mr-1"/> 18.4%</span> vs last month
               </p>
             </div>
 
             {/* Quick Actions */}
             <div
-              className="rounded-[1.9rem] p-7 shadow-sm"
-              style={{
-                background: isDark ? "#0d1117" : "#ffffff",
-                border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.04)",
-              }}
+              className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]"
+              
             >
-              <h3 className="text-[2rem] leading-none font-semibold mb-7" style={{ color: isDark ? "#f5f5f5" : "#16181d" }}>
+              <h3 className="font-semibold mb-5 text-base leading-none text-(--color-text-primary)">
                 Quick Actions
               </h3>
-              <div className="grid grid-cols-4 gap-4 text-center">
-                {[
-                  { icon: Wallet, label: "Add Account", bg: isDark ? "#10301d" : "#effaf2", color: isDark ? "#2ee66d" : "#16a34a" },
-                  { icon: ArrowUpRight, label: "Transfer Money", bg: isDark ? "rgba(255,255,255,0.06)" : "#f4f7fb", color: isDark ? "#7aa2ff" : "#3b82f6" },
-                  { icon: FileText, label: "Account Statement", bg: isDark ? "rgba(255,255,255,0.06)" : "#f7f2ff", color: isDark ? "#8b5cf6" : "#7c3aed" },
-                  { icon: FileSpreadsheet, label: "Export Summary", bg: isDark ? "rgba(255,255,255,0.06)" : "#fff6eb", color: "#f59e0b" },
-                ].map((item) => (
-                  <div key={item.label}>
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
-                      style={{ background: item.bg, color: item.color }}>
-                      <item.icon size={22} />
-                    </div>
-                    <p className="mt-3 text-[0.9rem] leading-snug"
-                      style={{ color: isDark ? "#c5cad3" : "#667085" }}>
-                      {item.label}
-                    </p>
-                  </div>
-                ))}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-3">
+                  <FileText className="mx-auto text-[var(--color-success)] mb-1.5" size={22} />
+                  <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">Account Statement</p>
+                </div>
+                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-3">
+                  <FileSpreadsheet className="mx-auto text-[var(--color-warm)] mb-1.5" size={22} />
+                  <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">Export Summary</p>
+                </div>
               </div>
             </div>
 
             {/* Account Distribution */}
             <div
-              className="rounded-[1.9rem] p-7 shadow-sm"
-              style={{
-                background: isDark ? "#0d1117" : "#ffffff",
-                border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.04)",
-              }}
+              className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]"
             >
-              <h3 className="text-[2rem] leading-none font-semibold mb-7" style={{ color: isDark ? "#f5f5f5" : "#16181d" }}>
+              <h3 className="font-semibold mb-5 text-base leading-none text-(--color-text-primary)">
                 Account Distribution
               </h3>
               <div className="flex items-center gap-6">
@@ -847,7 +855,7 @@ export default function Accounts() {
                     <p className="text-[0.9rem]" style={{ color: isDark ? "#9ca3af" : "#667085" }}>Accounts</p>
                   </div>
                 </div>
-                <div className="flex-1 space-y-3 text-[0.95rem]" style={{ color: isDark ? "#d0d5dd" : "#4b5563" }}>
+                <div className="flex-1 space-y-3 text-sm" style={{ color: isDark ? "#d0d5dd" : "#4b5563" }}>
                   {[
                     { color: "#3b82f6", label: "Savings", pct: "37.1%" },
                     { color: "#7c3aed", label: "Investments", pct: "44.4%" },
@@ -895,11 +903,11 @@ export default function Accounts() {
         initialValues={
           editingAccount
             ? {
-                name: editingAccount.name,
-                opening_balance: editingAccount.opening_balance,
-                account_category_id: editingAccount.account_category_id,
-                note: editingAccount.note ?? "",
-              }
+              name: editingAccount.name,
+              opening_balance: editingAccount.opening_balance,
+              account_category_id: editingAccount.account_category_id,
+              note: editingAccount.note ?? "",
+            }
             : undefined
         }
         onSubmit={handleEditAccount}
