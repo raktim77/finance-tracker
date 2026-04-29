@@ -361,12 +361,15 @@ export default function Transactions() {
         {/* Header */}
         <div className="flex items-start justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)]">{displayTitle}</h1>
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{totalRecords} transactions found</p>
+            <h2 className="text-[2rem] leading-[1.1] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "Transactions"}</h2>
+            <p className="mt-3 text-[0.95rem] font-semibold text-(--color-text-secondary)">{totalRecords} transactions found</p>
           </div>
           <button
             onClick={handleOpenTransactionSheet}
-            className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/60 px-4 py-2.5 text-sm font-semibold text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors
+            text-[var(--color-primary)] hover:bg-[var(--color-accent-soft)]
+            border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)]
+            "
           >
             <PlusCircle size={16} />
             {hasAccounts ? "Record transaction" : "Add Account"}
@@ -486,7 +489,7 @@ export default function Transactions() {
         <div className="grid grid-cols-12 gap-4">
 
           {/* Transaction List */}
-          <div className="col-span-9 rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 overflow-hidden">
+          <div className="col-span-9 rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 overflow-hidden shadow-xs">
 
             {/* Table header */}
             {/* <div className="grid items-center px-4 py-3 border-b border-[var(--border)] bg-[var(--color-surface)]/40"
@@ -710,7 +713,7 @@ export default function Transactions() {
           <div className="col-span-3 flex flex-col gap-4">
 
             {/* Summary */}
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4 shadow-xs">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Summary</h3>
                 <div className="rounded-lg border border-[var(--border)] p-1.5">
@@ -735,7 +738,7 @@ export default function Transactions() {
             </div>
 
             {/* Quick Actions */}
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4 shadow-xs">
               <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">Quick Actions</h3>
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-2">
@@ -750,7 +753,7 @@ export default function Transactions() {
             </div>
 
             {/* Spending by Type */}
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-4 shadow-xs">
               <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">Spending by Type</h3>
               <div className="space-y-5">
                 {desktopSpendingByType.map((item) => (

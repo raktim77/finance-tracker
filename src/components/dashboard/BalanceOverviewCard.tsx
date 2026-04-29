@@ -89,7 +89,7 @@ export function BalanceOverviewCard({ data, isLoading }: Props) {
           {/* Wallet Image */}
           <div className="mt-3 w-full flex items-center justify-center">
             <img
-              src="../../../public/assets/dashboard_wallet.png"
+              src="/assets/dashboard_wallet.webp"
               alt="wallet"
               className="w-[80%] object-contain"
             />
