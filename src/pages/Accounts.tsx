@@ -3,15 +3,12 @@ import {
   Pencil,
   Trash2,
   PlusCircle,
-  ArrowUpRight,
   ChevronRight,
   Wallet,
   FileText,
   FileSpreadsheet,
   type LucideIcon,
   ArrowUp,
-  FileDown,
-  CircleAlert,
 } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -709,7 +706,13 @@ export default function Accounts() {
                       onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
                       className="group cursor-pointer rounded-2xl pl-7 py-5 pr-3 transition grid items-center gap-5 bg-(--color-surface) border border-(--border) hover:border-(--color-accent)/40"
                       style={{
-                        gridTemplateColumns: "52px minmax(0,1.4fr) 220px 160px 120px",
+                        gridTemplateColumns: `
+                        52px 
+                        minmax(0, 1fr) 
+                        minmax(140px, 0.9fr) 
+                        minmax(80px, 0.6fr) 
+                        120px
+                      `,
                       }}
                     >
                       {/* Icon */}
@@ -733,7 +736,17 @@ export default function Accounts() {
                       </div>
 
                       {/* Balance */}
-                      <div className="text-[1.1rem] font-semibold tracking-[-0.02em] text-(--color-text-primary)"
+                      <div
+                        title={acc.balance}
+                        className="
+                        min-w-0
+                        truncate
+                        
+                        text-[1.1rem]
+                        font-semibold
+                        tracking-[-0.02em]
+                        text-(--color-text-primary)
+                      "
                       >
                         {acc.balance}
                       </div>
@@ -748,7 +761,7 @@ export default function Accounts() {
                       <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => setEditingAccountId(acc._id)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl transition text-(--color-text-secondary) hover:bg-(--color-accent-soft)"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl transition text-(--color-text-secondary) hover:bg-(--color-accent-soft) p-2"
 
                           aria-label={`Edit ${acc.name}`}
                         >
@@ -756,7 +769,7 @@ export default function Accounts() {
                         </button>
                         <button
                           onClick={() => void handleArchiveAccount(acc)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl text-(--color-danger) hover:bg-(--color-danger)/10 transition"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl text-(--color-danger) hover:bg-(--color-danger)/10 transition p-2"
                           aria-label={`Delete ${acc.name}`}
                         >
                           <Trash2 size={16} />
@@ -802,14 +815,14 @@ export default function Accounts() {
               <p className="text-sm font-semibold text-(--color-text-secondary)">This month's net flow</p>
               <p className="mt-2 text-[24px] text-(--color-primary) font-bold">+₹28,740.20</p>
               <p className="mt-2 text-sm text-(--color-text-secondary) flex">
-                <span className="text-(--color-primary) font-semibold mr-2 flex items-center"><ArrowUp size={18}  className="mr-1"/> 18.4%</span> vs last month
+                <span className="text-(--color-primary) font-semibold mr-2 flex items-center"><ArrowUp size={18} className="mr-1" /> 18.4%</span> vs last month
               </p>
             </div>
 
             {/* Quick Actions */}
             <div
               className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]"
-              
+
             >
               <h3 className="font-semibold mb-5 text-base leading-none text-(--color-text-primary)">
                 Quick Actions
