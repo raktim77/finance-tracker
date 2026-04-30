@@ -9,9 +9,11 @@ import {
   Sparkles,
   Trash2,
   Wallet,
-  SlidersHorizontal,
-  MoreHorizontal,
-  Calendar,
+  CircleGauge,
+  ShieldAlert,
+  TriangleAlert,
+  CircleCheckBig,
+  // ShieldCheck,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
@@ -25,6 +27,7 @@ import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 import { ThemeContext } from "../context/ThemeContext";
+import PaceVsIdealChart from "../components/budgets/PaceVsIdealChart";
 
 export default function Budgets() {
   const { theme } = useContext(ThemeContext);
@@ -107,16 +110,19 @@ export default function Budgets() {
     }
   }, [budget, isEditingBudget]);
 
-  useEffect(() => { if (!canCreateBudget && !budget?.exists) { setIsSelectorOpen(false); setSearchQuery(""); } }, [budget, canCreateBudget]);
-  useEffect(() => { setIsEditingBudget(false); }, [monthString]);
+    const getFontSize = (val: string) => {
+    const len = val.length;
+    if (len < 7) return "text-6xl";
+    if (len < 10) return "text-4xl";
+    return "text-3xl";
+  };
 
-  // const getFontSize = (val: string) => {
-  //   const len = val.length;
-  //   if (len < 7) return "text-6xl";
-  //   if (len < 10) return "text-4xl";
-  //   return "text-3xl";
-  // };
-  // const fontSizeClass = getFontSize(draftTotalInput);
+  const fontSizeClass = getFontSize(draftTotalInput);
+
+  useEffect(() => {
+    if (!canCreateBudget && !budget?.exists) { setIsSelectorOpen(false); setSearchQuery(""); }
+  }, [budget, canCreateBudget]);
+  useEffect(() => { setIsEditingBudget(false); }, [monthString]);
 
   const availableToAdd = useMemo(() => {
     if (!suggestions) return [];
@@ -139,15 +145,15 @@ export default function Budgets() {
 
   const getProgressColor = (spent: number, allocated: number) => {
     const p = (spent / allocated) * 100;
-    if (p <= 70) return "#22c55e";
+    if (p <= 70) return "var(--color-success)";
     if (p <= 90) return "#f59e0b";
-    return "#ef4444";
+    return "var(--color-danger)";
   };
   const getStatusLabel = (spent: number, allocated: number) => {
     const p = (spent / allocated) * 100;
-    if (p > 90) return { label: "Critical", color: "#ef4444" };
-    if (p > 70) return { label: "Nearing limit", color: "#f59e0b" };
-    return { label: "Healthy", color: "#22c55e" };
+    if (p > 90) return { label: "Critical", cls: "text-[var(--color-danger)]" };
+    if (p > 70) return { label: "Nearing limit", cls: "text-amber-500" };
+    return { label: "Healthy", cls: "text-[var(--color-success)]" };
   };
 
   const riskyBudgets = groups.filter(b => b.allocated > 0 && (b.spent / b.allocated) * 100 > 90);
@@ -185,112 +191,61 @@ export default function Budgets() {
 
   const monthLabelLong = month.toLocaleString("default", { month: "long" });
   const monthLabelFull = month.toLocaleString("default", { month: "long", year: "numeric" });
+  const monthLabelShortUpper = month.toLocaleString("default", { month: "short", year: "numeric" }).toUpperCase();
 
-  // ─── SHARED COMPONENTS ────────────────────────────────────────────────────
+  // ─── SHARED SUB-COMPONENTS ────────────────────────────────────────────────
 
-  // Semicircle gauge for mobile
   const SemiGauge: React.FC<{ percent: number }> = ({ percent }) => {
-    const r = 90;
-    const cx = 110;
-    const cy = 110;
-    const circumference = Math.PI * r; // half circle
+    const r = 90, cx = 110, cy = 110;
+    const circumference = Math.PI * r;
     const progress = Math.min(percent / 100, 1) * circumference;
-    const trackColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)";
     return (
       <svg viewBox="0 0 220 120" style={{ width: "220px", height: "120px", display: "block" }}>
-        {/* Track */}
-        <path
-          d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
-          fill="none"
-          stroke={trackColor}
-          strokeWidth="18"
-          strokeLinecap="round"
-        />
-        {/* Progress */}
-        <path
-          d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
-          fill="none"
-          stroke="#22c55e"
-          strokeWidth="18"
-          strokeLinecap="round"
-          strokeDasharray={`${progress} ${circumference}`}
-        />
+        <path d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
+          fill="none" stroke="var(--border)" strokeWidth="18" strokeLinecap="round" />
+        <path d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
+          fill="none" stroke="var(--color-success)" strokeWidth="18" strokeLinecap="round"
+          strokeDasharray={`${progress} ${circumference}`} />
       </svg>
     );
   };
 
-  // Donut gauge for desktop (full circle, flat/compact)
   const DesktopDonut: React.FC<{ percent: number }> = ({ percent }) => {
     const donutData = [
-      { value: percent, color: "#22c55e" },
+      { value: percent, color: "var(--color-success)" },
       { value: 100 - percent, color: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)" },
     ];
     return (
-      <div style={{ position: "relative", width: "130px", height: "130px" }}>
+      <div className="relative flex-shrink-0" style={{ width: "250px", height: "250px" }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={donutData} innerRadius={46} outerRadius={62} dataKey="value" stroke="none" startAngle={90} endAngle={450}>
+            <Pie data={donutData} innerRadius={72} outerRadius={95} dataKey="value" stroke="none" startAngle={90} endAngle={450}>
               {donutData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
             </Pie>
           </PieChart>
         </ResponsiveContainer>
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: "1.45rem", fontWeight: 800, color: isDark ? "#fff" : "#111318", lineHeight: 1 }}>{percent}%</span>
-          <span style={{ fontSize: "0.6rem", color: isDark ? "rgba(255,255,255,0.5)" : "#9ca3af", marginTop: "3px", textAlign: "center", lineHeight: 1.2 }}>of budget<br />used</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-[1.45rem] font-black text-[var(--color-text-primary)] leading-none">{percent}%</span>
+          <span className="text-[0.9rem] text-[var(--color-text-secondary)] mt-3 text-center leading-tight">of budget used</span>
         </div>
       </div>
     );
   };
 
-  // Sparkline for desktop right panel
-  const SparkLine: React.FC = () => (
-    <svg viewBox="0 0 280 140" style={{ width: "100%", height: "100%" }}>
-      <defs>
-        <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0,130 C20,125 40,120 60,115 C80,110 90,108 110,100 C130,90 140,85 160,75 C175,65 185,55 200,45 C215,32 230,28 250,18 C260,12 270,8 280,4"
-        fill="none"
-        stroke="#22c55e"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M0,130 C20,125 40,120 60,115 C80,110 90,108 110,100 C130,90 140,85 160,75 C175,65 185,55 200,45 C215,32 230,28 250,18 C260,12 270,8 280,4 L280,140 L0,140 Z"
-        fill="url(#sparkGrad)"
-      />
-    </svg>
-  );
 
-  const MonthPicker: React.FC<{ center?: boolean }> = ({ center }) => (
-    <div
-      style={{
-        display: "inline-flex", alignItems: "center", gap: "4px",
-        background: isDark ? "rgba(255,255,255,0.06)" : "#f3f4f6",
-        borderRadius: "999px",
-        padding: center ? "6px 14px" : "6px 10px",
-        cursor: "pointer",
-      }}
-    >
-      <Calendar size={13} style={{ color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280" }} />
-      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: isDark ? "rgba(255,255,255,0.8)" : "#374151" }}>
-        {monthLabelFull}
-      </span>
-      <button
-        onClick={() => shiftMonth(-1)}
-        style={{ background: "none", border: "none", padding: "0 2px", cursor: "pointer", color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280" }}
-      >
-        <ChevronLeft size={14} />
+  // Month nav pill — rounded for mobile, rectangular for desktop create header
+  const MonthNavPill: React.FC<{ rounded?: boolean }> = ({ rounded }) => (
+    <div className={`inline-flex items-center gap-3 border border-[var(--border)] bg-[var(--color-surface)] px-4 py-2.5 ${rounded ? "rounded-full" : "rounded-xl"}`}>
+      <button onClick={() => shiftMonth(-1)}
+        className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)]">
+        <ChevronLeft size={15} />
       </button>
-      <button
-        onClick={() => shiftMonth(1)}
-        disabled={!canGoToNextMonth}
-        style={{ background: "none", border: "none", padding: "0 2px", cursor: canGoToNextMonth ? "pointer" : "not-allowed", color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280", opacity: canGoToNextMonth ? 1 : 0.3 }}
-      >
-        <ChevronRight size={14} />
+      <span className="text-[0.78rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-primary)]">
+        {monthLabelShortUpper}
+      </span>
+      <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+        className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed">
+        <ChevronRight size={15} />
       </button>
     </div>
   );
@@ -300,10 +255,10 @@ export default function Budgets() {
     return (
       <div className="p-4 flex flex-col gap-6 pb-24 w-full animate-pulse">
         <div className="h-8 w-48 rounded-lg bg-[var(--color-text-secondary)]/10" />
-        <div className="h-[220px] rounded-[1.5rem] bg-[var(--color-text-secondary)]/8" />
+        <div className="h-[220px] rounded-[1.5rem] bg-[var(--color-text-secondary)]/10" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl bg-[var(--color-text-secondary)]/8" />
+            <div key={i} className="h-24 rounded-2xl bg-[var(--color-text-secondary)]/10" />
           ))}
         </div>
       </div>
@@ -314,21 +269,22 @@ export default function Budgets() {
   if (!budget?.exists && !canCreateBudget) {
     return (
       <div className="p-4 flex flex-col gap-6 pb-24 w-full">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 style={{ fontSize: "1.9rem", fontWeight: 800, color: isDark ? "#fff" : "#111318", letterSpacing: "-0.03em" }}>
+            <h1 className="text-[1.9rem] font-black tracking-tight text-[var(--color-text-primary)]">
               {monthLabelLong} Budget
             </h1>
-            <div style={{ marginTop: "6px" }}><MonthPicker /></div>
+            <div className="mt-1.5"><MonthNavPill rounded /></div>
           </div>
         </div>
-        <div className="rounded-[1.5rem] p-10 text-center" style={{ background: isDark ? "#141414" : "#ffffff", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}` }}>
-          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(34,197,94,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-            <Sparkles size={26} color="#22c55e" />
+        <div className="rounded-[1.5rem] p-10 text-center bg-[var(--color-surface)] border border-[var(--border)]">
+          <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-4">
+            <Sparkles size={26} className="text-[var(--color-accent)]" />
           </div>
-          <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: isDark ? "#fff" : "#111318" }}>No Budget Found</h3>
-          <p style={{ marginTop: 8, fontSize: "0.9rem", color: isDark ? "#6b7280" : "#9ca3af" }}>Budget creation is only available for the current and next month.</p>
+          <h3 className="text-xl font-black text-[var(--color-text-primary)]">No Budget Found</h3>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            Budget creation is only available for the current and next month.
+          </p>
         </div>
       </div>
     );
@@ -339,10 +295,12 @@ export default function Budgets() {
     if (!isEditingBudget && suggestionsLoading) {
       return (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-pulse">
-          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(34,197,94,0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-            <Sparkles color="#22c55e" size={28} />
+          <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mb-4">
+            <Sparkles className="text-[var(--color-accent)]" size={28} />
           </div>
-          <p style={{ fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.2em", color: isDark ? "#6b7280" : "#9ca3af" }}>Analyzing your spending...</p>
+          <p className="text-[0.75rem] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+            Analyzing your spending...
+          </p>
         </div>
       );
     }
@@ -350,44 +308,47 @@ export default function Budgets() {
     const allocated = draftCategories.reduce((s, c) => s + c.limit, 0);
     const allocationPercent = draftTotal > 0 ? (allocated / draftTotal) * 100 : 0;
     const isInvalid = allocated > draftTotal;
-    const hasInvalidCategoryInputs = draftCategories.some(c => !isPositiveCommittedValue(draftCategoryInputs[c.category_id] ?? String(c.limit)));
+    const hasInvalidCategoryInputs = draftCategories.some(c =>
+      !isPositiveCommittedValue(draftCategoryInputs[c.category_id] ?? String(c.limit))
+    );
     const isDraftTotalInputInvalid = !isPositiveCommittedValue(draftTotalInput);
+    const isFullyAllocated = draftTotal > 0 && allocated >= draftTotal && !isInvalid;
 
-    // shared add-categories dropdown
+    // Shared add-categories dropdown
     const AddCategoryDropdown = (
       <div className="relative">
         <button
           onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-          style={{
-            width: "100%", padding: "16px", display: "flex", alignItems: "center",
-            justifyContent: "center", gap: "8px",
-            border: `1.5px dashed #22c55e`,
-            borderRadius: "12px", background: "transparent",
-            color: "#22c55e", fontSize: "0.75rem", fontWeight: 800,
-            textTransform: "uppercase", letterSpacing: "0.18em", cursor: "pointer",
-          }}
+          className="w-full py-4 flex items-center justify-center gap-2 font-black text-[0.72rem] uppercase tracking-[0.18em] rounded-xl cursor-pointer bg-transparent text-[var(--color-accent)]"
+          style={{ border: "1.5px dashed var(--color-accent)" }}
         >
-          <PlusCircle size={16} color="#22c55e" /> Add More Categories
+          <PlusCircle size={16} /> Add More Categories
         </button>
         {isSelectorOpen && (
           <>
             <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setIsSelectorOpen(false)} />
-            <div className="absolute bottom-full mb-3 left-0 right-0 z-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[320px]"
-              style={{ background: isDark ? "#1e1e1e" : "#ffffff", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.07)"}` }}>
+            <div className="absolute bottom-full mb-3 left-0 right-0 z-50 rounded-2xl shadow-2xl overflow-hidden max-h-[320px] flex flex-col bg-[var(--color-surface)] border border-[var(--border)] lg:fixed lg:bottom-auto lg:top-1/2 lg:left-[58%] lg:right-auto lg:mb-0 lg:w-[min(860px,calc(100vw-10rem))] lg:max-h-[420px] lg:-translate-x-1/2 lg:-translate-y-1/2">
               <div className="overflow-y-auto p-2 no-scrollbar">
                 {availableToAdd.length === 0 ? (
-                  <div className="py-8 text-center text-xs font-black uppercase opacity-40" style={{ color: isDark ? "#9ca3af" : "#6b7280" }}>No categories found</div>
+                  <div className="py-8 text-center text-xs font-black uppercase text-[var(--color-text-secondary)] opacity-40">
+                    No categories found
+                  </div>
                 ) : availableToAdd.map(cat => {
                   const Icon = resolveLucideIcon(cat.icon || "help");
                   return (
                     <button key={cat.category_id}
-                      onClick={() => { setDraftCategories(p => [...p, { category_id: cat.category_id, name: cat.name, limit: isEditingBudget ? 0 : (cat.suggested_limit || 0), icon: cat.icon, color: cat.color }]); setDraftCategoryInputs(p => ({ ...p, [cat.category_id]: String(isEditingBudget ? 0 : (cat.suggested_limit || 0)) })); setSearchQuery(""); setIsSelectorOpen(false); }}
-                      className="w-full p-3 flex items-center gap-3 rounded-xl transition"
-                      style={{ color: isDark ? "#f0f0f0" : "#111318", background: "transparent" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "#f9fafb")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${cat.color}20`, color: cat.color }}><Icon size={15} /></div>
-                      <span style={{ fontSize: "0.88rem", fontWeight: 600 }}>{cat.name}</span>
+                      onClick={() => {
+                        setDraftCategories(p => [...p, { category_id: cat.category_id, name: cat.name, limit: isEditingBudget ? 0 : (cat.suggested_limit || 0), icon: cat.icon, color: cat.color }]);
+                        setDraftCategoryInputs(p => ({ ...p, [cat.category_id]: String(isEditingBudget ? 0 : (cat.suggested_limit || 0)) }));
+                        setSearchQuery(""); setIsSelectorOpen(false);
+                      }}
+                      className="w-full p-3 flex items-center gap-3 rounded-xl transition-colors hover:bg-[var(--color-background)] text-[var(--color-text-primary)]"
+                      style={{ background: "transparent", border: "none", cursor: "pointer" }}>
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: `${cat.color}20`, color: cat.color }}>
+                        <Icon size={15} />
+                      </div>
+                      <span className="text-sm font-semibold">{cat.name}</span>
                       <PlusCircle size={13} className="ml-auto opacity-30" />
                     </button>
                   );
@@ -399,111 +360,78 @@ export default function Budgets() {
       </div>
     );
 
-    const panelBg = isDark ? "#1a1a1a" : "#ffffff";
-    const panelBorder = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)";
-    const labelColor = isDark ? "rgba(255,255,255,0.35)" : "#9ca3af";
-    const textPrimary = isDark ? "#ffffff" : "#111318";
-    const inputBg = isDark ? "#111111" : "#f9fafb";
-    const inputBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
-
-    const isFullyAllocated = draftTotal > 0 && allocated >= draftTotal && !isInvalid;
-
-    // ── Left panel content (shared between desktop and mobile) ──
-    const StepOnePanel = (
-      <div style={{ background: panelBg, border: `1px solid ${panelBorder}`, borderRadius: "16px", padding: "24px" }}>
-        {/* "TOTAL MONTHLY LIMIT" label */}
-        <p style={{ fontSize: "0.62rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.22em", color: labelColor, marginBottom: "14px" }}>
-          Total Monthly Limit
-        </p>
-        {/* Big ₹ + number + pencil */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, cursor: "text" }}>
-            <span style={{ fontSize: "2.6rem", fontWeight: 300, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.3)", lineHeight: 1, flexShrink: 0 }}>₹</span>
-            <input
-              type="text" inputMode="decimal" value={draftTotalInput}
-              onChange={e => validateNumericInput(e.target.value, setDraftTotal, setDraftTotalInput)}
-              onBlur={() => setDraftTotalInput(String(draftTotal))}
-              style={{ fontSize: "2.6rem", fontWeight: 800, color: textPrimary, background: "transparent", border: "none", outline: "none", width: "100%", letterSpacing: "-0.03em", lineHeight: 1 }}
-              placeholder="0"
-            />
-          </label>
-          <button style={{ background: "none", border: "none", cursor: "pointer", color: labelColor, padding: "4px", flexShrink: 0 }}>
-            <Pencil size={17} />
-          </button>
-        </div>
-
+    // Allocation status block — shared between mobile and desktop
+    const AllocationStatus = (
+      <>
         {/* Dashed divider */}
-        <div style={{ height: "1px", background: `repeating-linear-gradient(90deg, ${panelBorder} 0, ${panelBorder} 6px, transparent 6px, transparent 12px)`, margin: "20px 0" }} />
-
-        {/* Allocation status */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-          <span style={{ fontSize: "0.62rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.22em", color: labelColor }}>Allocation Status</span>
-          <span style={{ fontSize: "0.78rem", fontWeight: 700, color: isInvalid ? "#ef4444" : textPrimary }}>
+        <div className="my-5 h-px"
+          style={{ background: "repeating-linear-gradient(90deg, var(--border) 0, var(--border) 6px, transparent 6px, transparent 12px)" }} />
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[0.6rem] font-black uppercase tracking-[0.15em] text-[var(--color-text-secondary)]">
+            Allocation Status
+          </span>
+          <span className={`text-[0.75rem] font-bold tracking-[0.05em] ${isInvalid ? "text-[var(--color-danger)]" : "text-[var(--color-text-primary)]"}`}>
             ₹{allocated.toLocaleString()} / ₹{draftTotal.toLocaleString()}
           </span>
         </div>
-        {/* Progress bar */}
-        <div style={{ height: "6px", background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)", borderRadius: 999, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${Math.min(allocationPercent, 100)}%`, background: isInvalid ? "#ef4444" : "#22c55e", borderRadius: 999, transition: "width 0.3s ease" }} />
+        <div className="h-1.5 rounded-full bg-[var(--color-background)] overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-300"
+            style={{ width: `${Math.min(allocationPercent, 100)}%`, background: isInvalid ? "var(--color-danger)" : "var(--color-success)" }} />
         </div>
-        {/* Status text */}
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "12px" }}>
+        <div className="flex items-center gap-1.5 mt-4">
           {isFullyAllocated ? (
             <>
-              <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid #22c55e", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </div>
-              <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#22c55e" }}>Fully allocated</span>
+                <CircleCheckBig width={18} strokeWidth={2} className="text-(--color-primary)"/>
+              <span className="text-[0.8rem] font-semibold text-[var(--color-success)]">Fully allocated</span>
             </>
           ) : isInvalid ? (
-            <span style={{ fontSize: "0.78rem", color: "#ef4444" }}>⚠️ Allocation exceeds monthly limit.</span>
+            <span className="text-[0.8rem] text-[var(--color-danger)] flex items-center gap-1.5 font-semibold"><TriangleAlert width={18} strokeWidth={2} className="text-(--color-warm)"/> Allocation exceeds monthly limit.</span>
           ) : (
-            <span style={{ fontSize: "0.78rem", color: labelColor }}>₹{(draftTotal - allocated).toLocaleString()} left to allocate.</span>
+            <span className="text-[0.8rem] text-[var(--color-text-primary)]">
+              ₹{(draftTotal - allocated).toLocaleString()} left to allocate.
+            </span>
           )}
         </div>
-      </div>
+      </>
     );
 
-  
-
-    // ── Mobile category cards ──
+    // Mobile category cards
     const MobileCategoryCards = (
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div className="flex flex-col gap-2.5">
         {draftCategories.map((c, i) => {
           const CatIcon = resolveLucideIcon(c.icon || "help");
           const isFirst = i === 0;
           return (
-            <div key={c.category_id} style={{
-              background: panelBg,
-              border: `1px solid ${panelBorder}`,
-              borderRadius: "14px",
-              overflow: "hidden",
-            }}>
-              {/* Top row: icon + name + trash */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{ width: 38, height: 38, borderRadius: "10px", background: `${c.color}20`, color: c.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div key={c.category_id}
+              className="rounded-[14px] overflow-hidden bg-[var(--color-surface)] border border-[var(--border)]">
+              {/* Top: icon + name + trash */}
+              <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${c.color}20`, color: c.color }}>
                     <CatIcon size={19} />
                   </div>
-                  <span style={{ fontSize: "0.95rem", fontWeight: 700, color: textPrimary }}>{c.name}</span>
+                  <span className="text-[0.95rem] font-bold text-[var(--color-text-primary)]">{c.name}</span>
                 </div>
                 <button
-                  onClick={() => { setDraftCategories(p => p.filter(dc => dc.category_id !== c.category_id)); setDraftCategoryInputs(p => { const n = { ...p }; delete n[c.category_id]; return n; }); }}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", padding: "4px" }}>
+                  onClick={() => {
+                    setDraftCategories(p => p.filter(dc => dc.category_id !== c.category_id));
+                    setDraftCategoryInputs(p => { const n = { ...p }; delete n[c.category_id]; return n; });
+                  }}
+                  className="text-[var(--color-danger)] bg-transparent border-none cursor-pointer p-1">
                   <Trash2 size={17} />
                 </button>
               </div>
-
-              {/* Bottom row: ₹ amount input + pencil — first card has green left accent */}
-              <label style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "12px 16px 14px",
-                background: isFirst ? (isDark ? "rgba(34,197,94,0.08)" : "rgba(34,197,94,0.06)") : "transparent",
-                borderLeft: isFirst ? "3px solid #22c55e" : "3px solid transparent",
-                cursor: "text",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "1.4rem", fontWeight: 300, color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)" }}>₹</span>
+              {/* Bottom: ₹ input + pencil */}
+              <label
+                className="flex items-center justify-between px-4 pb-3.5 cursor-text"
+                style={{
+                  background: isFirst ? "var(--color-accent-soft)" : "transparent",
+                  borderLeft: `3px solid ${isFirst ? "var(--color-accent)" : "transparent"}`,
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-[1.4rem] font-light text-[var(--color-text-secondary)] leading-none">₹</span>
                   <input
                     type="text" inputMode="decimal"
                     value={draftCategoryInputs[c.category_id] ?? String(c.limit)}
@@ -512,188 +440,191 @@ export default function Budgets() {
                       v => setDraftCategoryInputs(p => ({ ...p, [c.category_id]: v }))
                     )}
                     onBlur={() => setDraftCategoryInputs(p => ({ ...p, [c.category_id]: String(c.limit) }))}
-                    style={{ fontSize: "1.4rem", fontWeight: 800, background: "transparent", border: "none", outline: "none", color: textPrimary, letterSpacing: "-0.02em", width: "100%" }}
+                    className="text-[1.4rem] font-black bg-transparent border-none outline-none text-[var(--color-text-primary)] tracking-tight w-full"
                     placeholder="0"
                   />
                 </div>
-                <Pencil size={16} style={{ color: isFirst ? "#22c55e" : labelColor, flexShrink: 0 }} />
+                <Pencil size={16} className={isFirst ? "text-[var(--color-accent)]" : "text-[var(--color-text-secondary)]"} />
               </label>
             </div>
           );
         })}
-        <div style={{ marginTop: "6px" }}>{AddCategoryDropdown}</div>
+        <div className="mt-1.5">{AddCategoryDropdown}</div>
       </div>
     );
 
     return (
       <>
         {/* ═══ MOBILE ══════════════════════════════════════════════════════════ */}
-        <div className="lg:hidden flex flex-col pb-28 px-4 pt-4 gap-5" style={{ background: isDark ? "#0a0a0a" : "#f5f5f5", minHeight: "100vh" }}>
-          {/* Header */}
+        <div className="lg:hidden flex flex-col pb-28 px-4 pt-4 gap-5 bg-[var(--color-background)] min-h-screen">
           <div>
-            <h1 style={{ fontSize: "1.7rem", fontWeight: 800, color: textPrimary, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+            <h1 className="text-[1.7rem] font-black tracking-tight leading-tight text-[var(--color-text-primary)]">
               {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
             </h1>
-            <p style={{ marginTop: "6px", fontSize: "0.82rem", color: labelColor }}>
+            <p className="mt-1.5 text-[0.82rem] text-[var(--color-text-secondary)]">
               {isEditingBudget ? "Update your monthly budget and category limits below." : "We've suggested limits based on your history. Fine-tune them below."}
             </p>
           </div>
 
-          {/* Month nav pill */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", background: panelBg, border: `1px solid ${panelBorder}`, borderRadius: "999px", padding: "8px 16px", alignSelf: "flex-start" }}>
-            <button onClick={() => shiftMonth(-1)} style={{ background: "none", border: "none", cursor: "pointer", color: labelColor, display: "flex", alignItems: "center" }}><ChevronLeft size={15} /></button>
-            <span style={{ fontSize: "0.82rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: textPrimary }}>
-              {month.toLocaleString("default", { month: "short", year: "numeric" }).toUpperCase()}
-            </span>
-            <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth} style={{ background: "none", border: "none", cursor: canGoToNextMonth ? "pointer" : "not-allowed", color: labelColor, opacity: canGoToNextMonth ? 1 : 0.3, display: "flex", alignItems: "center" }}><ChevronRight size={15} /></button>
-          </div>
+          <MonthNavPill rounded />
 
           {/* Step 1 panel */}
-          {StepOnePanel}
+          <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-6">
+            <p className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-[var(--color-text-secondary)] mb-3.5">
+              Target Monthly Limit
+            </p>
+            <div className="flex items-center justify-between gap-3">
+              <label className="flex items-center gap-2.5 flex-1 cursor-text">
+                <span className="text-[2.4rem] font-light text-[var(--color-text-secondary)] leading-none flex-shrink-0">₹</span>
+                <input
+                  type="text" inputMode="decimal" value={draftTotalInput}
+                  onChange={e => validateNumericInput(e.target.value, setDraftTotal, setDraftTotalInput)}
+                  onBlur={() => setDraftTotalInput(String(draftTotal))}
+                  className="text-[2.4rem] font-black bg-transparent border-none outline-none w-full tracking-tight leading-none text-[var(--color-text-primary)]"
+                  placeholder="0"
+                />
+              </label>
+              <button className="bg-transparent border-none cursor-pointer text-[var(--color-text-secondary)] p-1 flex-shrink-0">
+                <Pencil size={17} />
+              </button>
+            </div>
+            {AllocationStatus}
+          </div>
 
-          {/* Cancel + Save buttons */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          {/* Cancel + Save */}
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => isEditingBudget ? setIsEditingBudget(false) : undefined}
-              style={{ padding: "16px", borderRadius: "12px", fontSize: "0.72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", background: panelBg, color: textPrimary, border: `1px solid ${panelBorder}`, cursor: "pointer" }}>
+              className="py-4 rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors">
               Cancel
             </button>
             <button
               disabled={isInvalid || isSavingBudget || draftTotal <= 0 || isDraftTotalInputInvalid || hasInvalidCategoryInputs}
-              onClick={async () => { await mutateAsync({ month: monthString, total_limit: draftTotal, categories: draftCategories.map(c => ({ category_id: c.category_id, limit: c.limit })) }); setIsEditingBudget(false); }}
-              style={{ padding: "16px", borderRadius: "12px", fontSize: "0.72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", background: panelBg, color: textPrimary, border: `1px solid ${panelBorder}`, cursor: "pointer", opacity: (isInvalid || isSavingBudget || draftTotal <= 0) ? 0.4 : 1 }}>
+              onClick={async () => {
+                await mutateAsync({ month: monthString, total_limit: draftTotal, categories: draftCategories.map(c => ({ category_id: c.category_id, limit: c.limit })) });
+                setIsEditingBudget(false);
+              }}
+              className="py-4 rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors disabled:opacity-30">
               {isSavingBudget ? "Saving..." : "Save Budget"}
             </button>
           </div>
 
           {/* Active distribution heading */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "0.62rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.2em", color: labelColor }}>Active Distribution</span>
-            <span style={{ fontSize: "0.62rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.2em", color: labelColor }}>{draftCategories.length} Categories</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+              Active Distribution
+            </span>
+            <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+              {draftCategories.length} Categories
+            </span>
           </div>
 
-          {/* Mobile category cards */}
           {MobileCategoryCards}
         </div>
 
         {/* ═══ DESKTOP ═════════════════════════════════════════════════════════ */}
         <div className="hidden lg:flex flex-col gap-6 pb-10 w-full">
-          {/* Header row */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
+          {/* Header */}
+          <div className="flex flex-col gap-5">
             <div>
-              <h1 style={{ fontSize: "2.4rem", fontWeight: 800, color: textPrimary, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+              <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
                 {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
-              </h1>
-              <p style={{ marginTop: "8px", fontSize: "0.88rem", color: labelColor }}>
+              </h2>
+              <p className="mt-2 text-[1rem] font-semibold text-[var(--color-text-secondary)]">
                 {isEditingBudget ? "Update your monthly budget and category limits below." : "We've suggested limits based on your history. Fine-tune them below."}
               </p>
             </div>
-
-            {/* Month nav pill — top right */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "12px", background: "transparent", border: `1px solid ${panelBorder}`, borderRadius: "10px", padding: "10px 16px", flexShrink: 0 }}>
-              <button onClick={() => shiftMonth(-1)} style={{ background: "none", border: "none", cursor: "pointer", color: labelColor, display: "flex", alignItems: "center" }}><ChevronLeft size={16} /></button>
-              <span style={{ fontSize: "0.82rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", color: textPrimary, whiteSpace: "nowrap" }}>
-                {month.toLocaleString("default", { month: "short", year: "numeric" }).toUpperCase()}
-              </span>
-              <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth} style={{ background: "none", border: "none", cursor: canGoToNextMonth ? "pointer" : "not-allowed", color: labelColor, opacity: canGoToNextMonth ? 1 : 0.3, display: "flex", alignItems: "center" }}><ChevronRight size={16} /></button>
+            <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
+              <button onClick={() => shiftMonth(-1)}
+                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-[0.9rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+              <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
 
-          {/* Two-panel grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", alignItems: "start" }}>
-            {/* Left: Step 1 panel with numbered badge */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {/* Panel with badge */}
-              <div style={{ background: panelBg, border: `1px solid ${panelBorder}`, borderRadius: "16px", padding: "24px" }}>
-                {/* Badge row */}
-                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#000" }}>1</span>
-                  </div>
-                  <span style={{ fontSize: "1rem", fontWeight: 700, color: textPrimary }}>Set your monthly limit</span>
-                </div>
+          {/* 2/3 grid */}
+          <div className="grid grid-cols-5 gap-4 items-start">
 
-                {/* "TOTAL MONTHLY LIMIT" label */}
-                <p style={{ fontSize: "0.62rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.22em", color: labelColor, marginBottom: "14px" }}>
+            {/* LEFT: Step 1 */}
+            <div className="flex flex-col gap-4 lg:col-span-2 ">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-6 shadow-xs">
+                {/* Badge */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-accent)]/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-[0.85rem] font-black text-(--color-primary) pt-[2px]">1</span>
+                  </div>
+                  <span className="text-base font-bold text-[var(--color-text-primary)]">Set your monthly limit</span>
+                </div>
+{/* 
+                <p className="text-[0.6rem] font-black uppercase tracking-[0.1rem] text-[var(--color-text-secondary)] mb-3.5">
                   Total Monthly Limit
-                </p>
-                {/* Big ₹ + number + pencil */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, cursor: "text" }}>
-                    <span style={{ fontSize: "2.6rem", fontWeight: 300, color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.25)", lineHeight: 1, flexShrink: 0 }}>₹</span>
+                </p> */}
+                <div className={`flex items-center justify-between gap-3 ${fontSizeClass}`}>
+                  <label className="flex items-center gap-2.5 flex-1 cursor-text relative">
+                    <span className="text-[2.6rem] font-light text-[var(--color-text-secondary)] leading-none flex-shrink-0">₹</span>
                     <input
                       type="text" inputMode="decimal" value={draftTotalInput}
                       onChange={e => validateNumericInput(e.target.value, setDraftTotal, setDraftTotalInput)}
                       onBlur={() => setDraftTotalInput(String(draftTotal))}
-                      style={{ fontSize: "2.6rem", fontWeight: 800, color: textPrimary, background: "transparent", border: "none", outline: "none", width: "100%", letterSpacing: "-0.03em", lineHeight: 1 }}
+                      className="text-[2.6rem] font-black bg-transparent border-none outline-none w-full tracking-tight leading-none text-[var(--color-text-primary)]"
                       placeholder="0"
                     />
+                    <Pencil size={18} className="cursor-pointer absolute right-0 text-[var(--color-text-secondary)] "/>
                   </label>
-                  <button style={{ background: "none", border: "none", cursor: "pointer", color: labelColor, padding: "4px", flexShrink: 0 }}>
-                    <Pencil size={18} />
-                  </button>
                 </div>
 
-                {/* Dashed divider */}
-                <div style={{ height: "1px", background: `repeating-linear-gradient(90deg, ${panelBorder} 0, ${panelBorder} 6px, transparent 6px, transparent 12px)`, margin: "24px 0" }} />
-
-                {/* Allocation status */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                  <span style={{ fontSize: "0.62rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.22em", color: labelColor }}>Allocation Status</span>
-                  <span style={{ fontSize: "0.78rem", fontWeight: 700, color: isInvalid ? "#ef4444" : textPrimary }}>
-                    ₹{allocated.toLocaleString()} / ₹{draftTotal.toLocaleString()}
-                  </span>
-                </div>
-                <div style={{ height: "6px", background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)", borderRadius: 999, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${Math.min(allocationPercent, 100)}%`, background: isInvalid ? "#ef4444" : "#22c55e", borderRadius: 999, transition: "width 0.3s ease" }} />
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "12px" }}>
-                  {isFullyAllocated ? (
-                    <>
-                      <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid #22c55e", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </div>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#22c55e" }}>Fully allocated</span>
-                    </>
-                  ) : isInvalid ? (
-                    <span style={{ fontSize: "0.8rem", color: "#ef4444" }}>⚠️ Allocation exceeds monthly limit.</span>
-                  ) : (
-                    <span style={{ fontSize: "0.8rem", color: labelColor }}>₹{(draftTotal - allocated).toLocaleString()} left to allocate.</span>
-                  )}
-                </div>
+                {AllocationStatus}
               </div>
 
-              {/* CANCEL + SAVE BUDGET buttons below left panel */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {/* CANCEL + SAVE */}
+              <div className={`grid gap-3 ${isEditingBudget ? "grid-cols-2" : "grid-cols-1"}`}>
+                {isEditingBudget && (
                 <button
                   onClick={() => isEditingBudget ? setIsEditingBudget(false) : undefined}
-                  style={{ padding: "18px", borderRadius: "12px", fontSize: "0.72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", background: panelBg, color: textPrimary, border: `1px solid ${panelBorder}`, cursor: "pointer" }}>
+                  className="py-[18px] rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-text-secondary)]/50 cursor-pointer hover:bg-[var(--color-background)] transition-colors">
                   Cancel
                 </button>
+              )}
                 <button
                   disabled={isInvalid || isSavingBudget || draftTotal <= 0 || isDraftTotalInputInvalid || hasInvalidCategoryInputs}
-                  onClick={async () => { await mutateAsync({ month: monthString, total_limit: draftTotal, categories: draftCategories.map(c => ({ category_id: c.category_id, limit: c.limit })) }); setIsEditingBudget(false); }}
-                  style={{ padding: "18px", borderRadius: "12px", fontSize: "0.72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", background: panelBg, color: textPrimary, border: `1px solid ${panelBorder}`, cursor: "pointer", opacity: (isInvalid || isSavingBudget || draftTotal <= 0) ? 0.4 : 1 }}>
-                  {isSavingBudget ? "Saving..." : "Save Budget"}
+                  onClick={async () => {
+                    await mutateAsync({ month: monthString, total_limit: draftTotal, categories: draftCategories.map(c => ({ category_id: c.category_id, limit: c.limit })) });
+                    setIsEditingBudget(false);
+                  }}
+                  className="py-[18px] rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-accent)] text-white border border-[var(--border)] cursor-pointer transition-colors disabled:opacity-30">
+                  {isSavingBudget
+                    ? "Saving..."
+                    : isEditingBudget
+                      ? "Save Budget"
+                      : "Initialize Budget"}
                 </button>
               </div>
             </div>
 
-            {/* Right: Step 2 panel with badge + table */}
-            <div style={{ background: panelBg, border: `1px solid ${panelBorder}`, borderRadius: "16px", padding: "24px", display: "flex", flexDirection: "column", gap: "0" }}>
-              {/* Badge row */}
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#000" }}>2</span>
+            {/* RIGHT: Step 2 */}
+            <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-6 flex flex-col lg:col-span-3 shadow-xs">
+              {/* Badge */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-accent)]/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[0.85rem] font-black text-(--color-primary) pt-[2px]">2</span>
                 </div>
-                <span style={{ fontSize: "1rem", fontWeight: 700, color: textPrimary }}>Allocate to categories</span>
+                <span className="text-base font-bold text-[var(--color-text-primary)]">Allocate to categories</span>
               </div>
 
               {/* Table header */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 200px 80px", gap: "12px", paddingBottom: "12px", borderBottom: `1px solid ${panelBorder}`, marginBottom: "4px" }}>
-                <span style={{ fontSize: "0.6rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.2em", color: labelColor }}>Category</span>
-                <span style={{ fontSize: "0.6rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.2em", color: labelColor }}>Allocation</span>
-                <span style={{ fontSize: "0.6rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.2em", color: labelColor, textAlign: "right" }}>Action</span>
+              <div className="grid gap-3 pb-3 border-b border-[var(--border)] mb-1"
+                style={{ gridTemplateColumns: "1fr 200px 80px" }}>
+                {(["Category", "Allocation", "Action"] as const).map((h, i) => (
+                  <span key={h}
+                    className={`text-[0.58rem] font-black uppercase tracking-[0.15em] text-[var(--color-text-secondary)] ${i === 2 ? "text-right" : ""}`}>
+                    {h}
+                  </span>
+                ))}
               </div>
 
               {/* Rows */}
@@ -701,19 +632,22 @@ export default function Budgets() {
                 const CatIcon = resolveLucideIcon(c.icon || "help");
                 return (
                   <div key={c.category_id}
-                    style={{ display: "grid", gridTemplateColumns: "1fr 200px 80px", gap: "12px", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${panelBorder}` }}>
+                    className="grid gap-3 items-center py-3 border-b border-[var(--border)]"
+                    style={{ gridTemplateColumns: "1fr 200px 80px" }}>
+
                     {/* Category */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <div style={{ width: 36, height: 36, borderRadius: "10px", background: `${c.color}20`, color: c.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                        style={{ background: `${c.color}20`, color: c.color }}>
                         <CatIcon size={18} />
                       </div>
-                      <span style={{ fontSize: "0.92rem", fontWeight: 600, color: textPrimary }}>{c.name}</span>
+                      <span className="text-[0.92rem] font-semibold text-[var(--color-text-primary)]">{c.name}</span>
                     </div>
 
                     {/* Input */}
-                    <div style={{ position: "relative" }}>
-                      <label style={{ display: "flex", alignItems: "center", gap: "6px", background: inputBg, border: `1px solid ${inputBorder}`, borderRadius: "10px", padding: "10px 36px 10px 12px", cursor: "text" }}>
-                        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: labelColor, flexShrink: 0 }}>₹</span>
+                    <div className="relative">
+                      <label className="flex items-center gap-1.5 bg-[var(--color-background)] border border-[var(--border)] rounded-[10px] px-3 py-2.5 pr-8 cursor-text">
+                        <span className="text-[0.82rem] font-semibold text-[var(--color-text-secondary)] flex-shrink-0">₹</span>
                         <input
                           type="text" inputMode="decimal"
                           value={draftCategoryInputs[c.category_id] ?? String(c.limit)}
@@ -722,21 +656,21 @@ export default function Budgets() {
                             v => setDraftCategoryInputs(p => ({ ...p, [c.category_id]: v }))
                           )}
                           onBlur={() => setDraftCategoryInputs(p => ({ ...p, [c.category_id]: String(c.limit) }))}
-                          style={{ fontSize: "0.92rem", fontWeight: 700, background: "transparent", border: "none", outline: "none", width: "100%", color: textPrimary }}
+                          className="text-[1rem] font-bold bg-transparent border-none outline-none w-full text-[var(--color-text-primary)]"
                           placeholder="0"
                         />
-                        <Pencil size={13} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "#22c55e", flexShrink: 0 }} />
+                        <Pencil size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-accent)]" />
                       </label>
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
-                      <button style={{ background: "none", border: "none", cursor: "pointer", color: labelColor, padding: "4px" }}>
-                        <Pencil size={15} />
-                      </button>
+                    <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => { setDraftCategories(p => p.filter(dc => dc.category_id !== c.category_id)); setDraftCategoryInputs(p => { const n = { ...p }; delete n[c.category_id]; return n; }); }}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", padding: "4px" }}>
+                        onClick={() => {
+                          setDraftCategories(p => p.filter(dc => dc.category_id !== c.category_id));
+                          setDraftCategoryInputs(p => { const n = { ...p }; delete n[c.category_id]; return n; });
+                        }}
+                        className="p-1 bg-transparent border-none cursor-pointer text-[var(--color-danger)]">
                         <Trash2 size={15} />
                       </button>
                     </div>
@@ -744,10 +678,7 @@ export default function Budgets() {
                 );
               })}
 
-              {/* Add more */}
-              <div style={{ marginTop: "16px" }}>
-                {AddCategoryDropdown}
-              </div>
+              <div className="mt-4">{AddCategoryDropdown}</div>
             </div>
           </div>
         </div>
@@ -757,98 +688,99 @@ export default function Budgets() {
 
   // ─── VIEW MODE ────────────────────────────────────────────────────────────
 
-  const cardBg = isDark ? "#141414" : "#ffffff";
-  const cardBorder = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-
   return (
     <>
       {/* ═══ MOBILE VIEW ══════════════════════════════════════════════════════ */}
-      <div className="lg:hidden flex flex-col pb-28" style={{ background: isDark ? "#0a0a0a" : "#f5f5f5", minHeight: "100vh" }}>
-        {/* Mobile Header */}
+      <div className="lg:hidden flex flex-col pb-28 bg-[var(--color-background)] min-h-screen">
+        {/* Header */}
         <div className="px-4 pt-5 pb-4 text-center">
-          <h1 style={{ fontSize: "1.35rem", fontWeight: 800, color: isDark ? "#fff" : "#111318", letterSpacing: "-0.02em" }}>
+          <h1 className="text-[1.35rem] font-black tracking-tight text-[var(--color-text-primary)]">
             {monthLabelLong} Budget
           </h1>
-          <button
-            style={{ display: "inline-flex", alignItems: "center", gap: "4px", marginTop: "6px", background: "transparent", border: "none", cursor: "pointer", color: isDark ? "rgba(255,255,255,0.6)" : "#374151", fontSize: "0.85rem", fontWeight: 600 }}
-          >
+          <button className="inline-flex items-center gap-1 mt-1.5 bg-transparent border-none cursor-pointer text-[var(--color-text-secondary)] text-[0.85rem] font-semibold">
             {monthLabelFull} <ChevronDown size={14} />
           </button>
         </div>
 
         {/* Semicircle gauge */}
         <div className="flex flex-col items-center pb-2">
-          <div style={{ position: "relative", width: "220px" }}>
+          <div className="relative" style={{ width: "220px" }}>
             <SemiGauge percent={spentPercent} />
-            <div style={{ position: "absolute", bottom: "6px", left: "50%", transform: "translateX(-50%)", textAlign: "center" }}>
-              <p style={{ fontSize: "2.6rem", fontWeight: 800, color: isDark ? "#fff" : "#111318", letterSpacing: "-0.04em", lineHeight: 1 }}>{spentPercent}%</p>
-              <p style={{ fontSize: "0.78rem", color: isDark ? "rgba(255,255,255,0.5)" : "#9ca3af", marginTop: "2px" }}>of budget used</p>
+            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-center">
+              <p className="text-[2.6rem] font-black tracking-tighter leading-none text-[var(--color-text-primary)]">
+                {spentPercent}%
+              </p>
+              <p className="text-[0.78rem] text-[var(--color-text-secondary)] mt-0.5">of budget used</p>
             </div>
           </div>
         </div>
 
         {/* Stats row */}
-        <div className="mx-4 mt-2 rounded-[1.2rem] overflow-hidden" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
+        <div className="mx-4 mt-2 rounded-[1.2rem] overflow-hidden bg-[var(--color-surface)] border border-[var(--border)]">
           {[
-            { label: "Limit Set", value: `₹${totalBudget.toLocaleString()}`, color: isDark ? "#f0f0f0" : "#111318" },
-            { label: "Spent", value: `₹${spentTotal.toLocaleString()}`, color: "#f97316" },
-            { label: "Available", value: `₹${availableAmount.toLocaleString()}`, color: "#22c55e" },
+            { label: "Limit Set", value: `₹${totalBudget.toLocaleString()}`, cls: "text-[var(--color-text-primary)]" },
+            { label: "Spent", value: `₹${spentTotal.toLocaleString()}`, cls: "text-[var(--color-warm)]" },
+            { label: "Available", value: `₹${availableAmount.toLocaleString()}`, cls: "text-[var(--color-success)]" },
           ].map((item, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", padding: "12px 16px", borderBottom: i < 2 ? `1px solid ${cardBorder}` : "none" }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", fontWeight: 600, marginBottom: 4 }}>{item.label}</p>
-                <p style={{ fontSize: "1.1rem", fontWeight: 800, color: item.color, letterSpacing: "-0.02em" }}>{item.value}</p>
-              </div>
+            <div key={i} className="px-4 py-3" style={{ borderBottom: i < 2 ? "1px solid var(--border)" : "none" }}>
+              <p className="text-[0.65rem] text-[var(--color-text-secondary)] font-semibold mb-1">{item.label}</p>
+              <p className={`text-[1.1rem] font-black tracking-tight ${item.cls}`}>{item.value}</p>
             </div>
           ))}
         </div>
 
         {/* Unallocated */}
-        <div className="mx-4 mt-3 rounded-[1.2rem] flex items-center justify-between px-4 py-4" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
+        <div className="mx-4 mt-3 rounded-[1.2rem] flex items-center justify-between px-4 py-4 bg-[var(--color-surface)] border border-[var(--border)]">
           <div className="flex items-center gap-3">
-            <div style={{ width: 38, height: 38, borderRadius: "10px", background: "rgba(34,197,94,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Wallet size={18} color="#22c55e" />
+            <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--color-accent-soft)] flex items-center justify-center">
+              <Wallet size={18} className="text-[var(--color-accent)]" />
             </div>
             <div>
-              <p style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", fontWeight: 600 }}>Unallocated Funds</p>
-              <p style={{ fontSize: "1.05rem", fontWeight: 800, color: isDark ? "#f0f0f0" : "#111318", letterSpacing: "-0.01em" }}>₹{remainingToAllocate.toLocaleString()}</p>
+              <p className="text-[0.72rem] text-[var(--color-text-secondary)] font-semibold">Unallocated Funds</p>
+              <p className="text-[1.05rem] font-black tracking-tight text-[var(--color-text-primary)]">
+                ₹{remainingToAllocate.toLocaleString()}
+              </p>
             </div>
           </div>
-          <ChevronRight size={18} style={{ color: isDark ? "rgba(255,255,255,0.3)" : "#d1d5db" }} />
+          <ChevronRight size={18} className="text-[var(--color-text-secondary)] opacity-40" />
         </div>
 
         {/* Category Overview */}
         <div className="mx-4 mt-5 mb-2 flex items-center justify-between">
-          <h2 style={{ fontSize: "1.05rem", fontWeight: 800, color: isDark ? "#fff" : "#111318" }}>Category Overview</h2>
-          <span style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af" }}>{groups.length} Categories</span>
+          <h2 className="text-[1.05rem] font-black text-[var(--color-text-primary)]">Category Overview</h2>
+          <span className="text-[0.72rem] text-[var(--color-text-secondary)]">{groups.length} Categories</span>
         </div>
 
-        {/* Category list rows */}
-        <div className="mx-4 rounded-[1.2rem] overflow-hidden" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
+        {/* Category list */}
+        <div className="mx-4 rounded-[1.2rem] overflow-hidden bg-[var(--color-surface)] border border-[var(--border)]">
           {groups.map((b, i) => {
             const Icon = resolveLucideIcon(b.icon || "help");
             const percent = Math.min((b.spent / b.allocated) * 100, 100);
             const progressColor = getProgressColor(b.spent, b.allocated);
             const status = getStatusLabel(b.spent, b.allocated);
             return (
-              <div key={i} style={{ padding: "14px 16px", borderBottom: i < groups.length - 1 ? `1px solid ${cardBorder}` : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "12px", background: `${b.color}18`, color: b.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div key={i} className="px-4 py-3.5"
+                style={{ borderBottom: i < groups.length - 1 ? "1px solid var(--border)" : "none" }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${b.color}18`, color: b.color }}>
                     <Icon size={20} />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2px" }}>
-                      <p style={{ fontSize: "0.9rem", fontWeight: 700, color: isDark ? "#f0f0f0" : "#111318" }}>{b.category}</p>
-                      <span style={{ fontSize: "0.7rem", fontWeight: 700, color: status.color }}>{status.label}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <p className="text-[0.9rem] font-bold text-[var(--color-text-primary)]">{b.category}</p>
+                      <span className={`text-[0.7rem] font-bold ${status.cls}`}>{status.label}</span>
                     </div>
-                    <p style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", marginBottom: "8px" }}>
+                    <p className="text-[0.72rem] text-[var(--color-text-secondary)] mb-2">
                       ₹{b.spent.toLocaleString()} / ₹{b.allocated.toLocaleString()}
                     </p>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ flex: 1, height: "5px", background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)", borderRadius: 999, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${percent}%`, background: progressColor, borderRadius: 999 }} />
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex-1 h-[5px] rounded-full overflow-hidden bg-[var(--color-background)]">
+                        <div className="h-full rounded-full" style={{ width: `${percent}%`, background: progressColor }} />
                       </div>
-                      <span style={{ fontSize: "0.82rem", fontWeight: 800, color: isDark ? "#f0f0f0" : "#111318", minWidth: "32px", textAlign: "right" }}>{Math.round(percent)}%</span>
+                      <span className="text-[0.82rem] font-black text-[var(--color-text-primary)] min-w-[32px] text-right">
+                        {Math.round(percent)}%
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -857,17 +789,15 @@ export default function Budgets() {
           })}
         </div>
 
-        {/* Edit/Delete buttons (mobile) */}
+        {/* Edit/Delete */}
         {canCreateBudget && (
           <div className="mx-4 mt-4 flex gap-3">
             <button onClick={() => setIsEditingBudget(true)}
-              className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition"
-              style={{ background: isDark ? "#1a1a1a" : "#f3f4f6", color: isDark ? "#d1d5db" : "#374151", border: `1px solid ${cardBorder}` }}>
+              className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors">
               <Pencil size={15} /> Edit Budget
             </button>
             <button onClick={handleDeleteBudget} disabled={isDeletingBudget}
-              className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition"
-              style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
+              className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 text-[var(--color-danger)] border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/8 cursor-pointer disabled:opacity-50 hover:bg-[var(--color-danger)]/10 transition-colors">
               <Trash2 size={15} /> Delete
             </button>
           </div>
@@ -875,161 +805,316 @@ export default function Budgets() {
       </div>
 
       {/* ═══ DESKTOP VIEW ═════════════════════════════════════════════════════ */}
-      <div className="hidden lg:flex flex-col gap-7 pb-10 w-full">
-        {/* Desktop Header */}
+      <div className="hidden lg:flex flex-col gap-4 pb-10 w-full">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-3">
-            <h1 style={{ fontSize: "2.4rem", fontWeight: 800, color: isDark ? "#fff" : "#111318", letterSpacing: "-0.03em", lineHeight: 1 }}>
+          <div className="flex flex-col gap-5">
+            <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
               {monthLabelLong} Budget
-            </h1>
+            </h2>
             {/* Month picker pill */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: isDark ? "rgba(255,255,255,0.06)" : "#f3f4f6", borderRadius: "999px", padding: "7px 14px", alignSelf: "flex-start", cursor: "pointer" }}>
-              <Calendar size={13} style={{ color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280" }} />
-              <span style={{ fontSize: "0.82rem", fontWeight: 600, color: isDark ? "rgba(255,255,255,0.8)" : "#374151" }}>{monthLabelFull}</span>
-              <ChevronDown size={13} style={{ color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280" }} />
-              <button onClick={() => shiftMonth(-1)} style={{ background: "none", border: "none", padding: "0 1px", cursor: "pointer", color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280", display: "flex", alignItems: "center" }}><ChevronLeft size={14} /></button>
-              <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth} style={{ background: "none", border: "none", padding: "0 1px", cursor: canGoToNextMonth ? "pointer" : "not-allowed", opacity: canGoToNextMonth ? 1 : 0.3, color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280", display: "flex", alignItems: "center" }}><ChevronRight size={14} /></button>
+            <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
+              <button onClick={() => shiftMonth(-1)}
+                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-[0.9rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+              <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="flex items-center gap-2.5">
             {canCreateBudget && (
               <>
                 <button onClick={() => setIsEditingBudget(true)}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 600, background: isDark ? "rgba(255,255,255,0.06)" : "#f3f4f6", color: isDark ? "#d1d5db" : "#374151", border: `1px solid ${cardBorder}`, cursor: "pointer" }}>
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[0.85rem] font-semibold bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors">
                   <Pencil size={14} /> Edit
                 </button>
                 <button onClick={handleDeleteBudget} disabled={isDeletingBudget}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 600, background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)", cursor: "pointer" }}>
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[0.85rem] font-semibold text-[var(--color-danger)] border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/8 cursor-pointer disabled:opacity-50">
                   <Trash2 size={14} /> Delete
                 </button>
               </>
             )}
-            <button style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 600, background: isDark ? "rgba(255,255,255,0.06)" : "#f3f4f6", color: isDark ? "#d1d5db" : "#374151", border: `1px solid ${cardBorder}`, cursor: "pointer" }}>
+            {/* <button className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[0.85rem] font-semibold bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors">
               <SlidersHorizontal size={14} /> Filters
             </button>
-            <button style={{ padding: "8px 10px", borderRadius: "10px", background: isDark ? "rgba(255,255,255,0.06)" : "#f3f4f6", border: `1px solid ${cardBorder}`, cursor: "pointer", color: isDark ? "#d1d5db" : "#374151", display: "flex" }}>
+            <button className="flex p-2 rounded-[10px] bg-[var(--color-surface)] border border-[var(--border)] cursor-pointer text-[var(--color-text-primary)] hover:bg-[var(--color-background)] transition-colors">
               <MoreHorizontal size={16} />
-            </button>
+            </button> */}
           </div>
         </div>
 
-        {/* Desktop Hero 2-col */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "16px" }}>
-          {/* Left hero panel */}
-          <div style={{ background: isDark ? "#111a12" : "#ffffff", border: `1px solid ${cardBorder}`, borderRadius: "1.5rem", overflow: "hidden" }}>
-            {/* Donut + stats row */}
-            <div style={{ padding: "28px 28px 24px", display: "flex", alignItems: "center", gap: "32px" }}>
-              <DesktopDonut percent={spentPercent} />
-              <div style={{ display: "flex", alignItems: "center", gap: "0" }}>
+        {/* Hero 2-col */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-11 items-stretch auto-rows-fr">
+          {/* Left panel */}
+          <div className="lg:col-span-5 h-full flex flex-col gap-4">
+            {/* Donut + stats */}
+            <div className="p-6 grid grid-cols-1 gap-4 lg:grid-cols-12 bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl shadow-xs overflow-hidden flex-1">
+
+              {/* LEFT: BIG DONUT */}
+              <div className="flex flex-col justify-center items-center lg:col-span-6 h-full">
+                <DesktopDonut percent={spentPercent} />
+              </div>
+
+              {/* RIGHT: STACKED STATS */}
+              <div className="flex flex-col justify-center items-center gap-7 flex-1 min-w-0 lg:col-span-6 h-full text-center">
                 {[
-                  { label: "Limit Set", value: `₹${totalBudget.toLocaleString()}`, color: isDark ? "#f0f0f0" : "#111318" },
-                  { label: "Spent", value: `₹${spentTotal.toLocaleString()}`, color: "#f97316" },
-                  { label: "Available", value: `₹${availableAmount.toLocaleString()}`, color: "#22c55e" },
+                  {
+                    label: "Limit Set",
+                    value: `₹${totalBudget.toLocaleString()}`,
+                    cls: "text-[var(--color-text-primary)]",
+                  },
+                  {
+                    label: "Spent",
+                    value: `₹${spentTotal.toLocaleString()}`,
+                    cls: "text-[var(--color-warm)]",
+                  },
+                  {
+                    label: "Available",
+                    value: `₹${availableAmount.toLocaleString()}`,
+                    cls: "text-[var(--color-success)]",
+                  },
                 ].map((item, i) => (
-                  <div key={i} style={{ paddingLeft: i > 0 ? "28px" : "0", marginLeft: i > 0 ? "28px" : "0", borderLeft: i > 0 ? `1px solid ${cardBorder}` : "none" }}>
-                    <p style={{ fontSize: "0.7rem", fontWeight: 600, color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", marginBottom: "6px", textTransform: "none" }}>{item.label}</p>
-                    <p style={{ fontSize: "1.35rem", fontWeight: 800, color: item.color, letterSpacing: "-0.02em" }}>{item.value}</p>
+                  <div key={i} className="flex flex-col">
+                    <p className="text-[0.7rem] font-bold text-(--color-text-secondary) mb-2 uppercase">
+                      {item.label}
+                    </p>
+                    <p className={`text-[1.4rem] font-black tracking-tight ${item.cls}`}>
+                      {item.value}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Divider */}
-            <div style={{ height: "1px", background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", margin: "0 28px" }} />
-
-            {/* Unallocated row */}
-            <div style={{ padding: "16px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(34,197,94,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Wallet size={17} color="#22c55e" />
+            {/* Unallocated */}
+            <div className="px-7 py-4 flex items-center justify-between bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl shadow-xs overflow-hidden">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-[10px] bg-[var(--color-accent-soft)] flex items-center justify-center">
+                  <Wallet size={17} className="text-[var(--color-accent)]" />
                 </div>
-                <span style={{ fontSize: "0.9rem", fontWeight: 600, color: isDark ? "rgba(255,255,255,0.6)" : "#6b7280" }}>Unallocated Funds</span>
-                <span style={{ fontSize: "1rem", fontWeight: 800, color: isDark ? "#f0f0f0" : "#111318" }}>₹{remainingToAllocate.toLocaleString()}</span>
-              </div>
-              <ChevronRight size={16} style={{ color: isDark ? "rgba(255,255,255,0.25)" : "#d1d5db" }} />
-            </div>
 
-            {/* Divider */}
-            <div style={{ height: "1px", background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", margin: "0 28px" }} />
+                <span className="text-[0.9rem] font-semibold text-[var(--color-text-secondary)]">
+                  Unallocated Funds
+                </span>
 
-            {/* Status banner */}
-            <div style={{ padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", background: isDark ? "rgba(34,197,94,0.04)" : "rgba(34,197,94,0.04)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                {riskyBudgets.length === 0 ? (
-                  <>
-                    <div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(34,197,94,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Sparkles size={14} color="#22c55e" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#22c55e" }}>You're doing great!</span>
-                      <span style={{ fontSize: "0.78rem", color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", marginLeft: "8px" }}>All categories are within healthy limits.</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Flame size={14} color="#ef4444" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ef4444" }}>Budget Warnings</span>
-                      <span style={{ fontSize: "0.78rem", color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", marginLeft: "8px" }}>{riskyBudgets.length} categories exceeding limit.</span>
-                    </div>
-                  </>
-                )}
+                <span className="text-[1rem] font-black text-[var(--color-text-primary)]">
+                  ₹{remainingToAllocate.toLocaleString()}
+                </span>
               </div>
-              <ChevronRight size={16} style={{ color: isDark ? "rgba(255,255,255,0.25)" : "#d1d5db" }} />
             </div>
           </div>
 
-          {/* Right: sparkline panel */}
-          <div style={{ background: isDark ? "#111a12" : "#ffffff", border: `1px solid ${cardBorder}`, borderRadius: "1.5rem", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-            <div style={{ padding: "28px 28px 0" }}>
-              <p style={{ fontSize: "0.72rem", fontWeight: 600, color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", marginBottom: "8px" }}>Spent</p>
-              <p style={{ fontSize: "3.2rem", fontWeight: 800, color: isDark ? "#fff" : "#111318", letterSpacing: "-0.04em", lineHeight: 1 }}>{spentPercent}%</p>
-              <p style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af", marginTop: "6px" }}>of budget</p>
+          {/* Right panel */}
+          <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl lg:col-span-6 h-full">
+
+            <div className="p-7 flex flex-col gap-6">
+
+              {/* HEADER */}
+              <div>
+                <p className="text-base font-semibold text-[var(--color-text-primary)]">
+                  Spending Pace
+                </p>
+                <p className="text-[0.8rem] text-[var(--color-text-secondary)] mt-1">
+                  How you're tracking against your ideal pace
+                </p>
+              </div>
+
+              {/* TOP: VALUE + LEGEND + CHART */}
+              <div className="flex items-center gap-10">
+
+                {/* LEFT */}
+                <div className="flex-1 min-w-0 flex justify-between items-start">
+                  <div>
+                    <p className="text-[2.6rem] font-black tracking-tight leading-none text-[var(--color-danger)]">
+                      +12%
+                    </p>
+
+                    <p className="text-[0.85rem] text-[var(--color-text-secondary)] mt-3">
+                      over ideal pace
+                    </p>
+
+                  </div>
+
+
+                </div>
+
+                {/* CHART */}
+                <div className="w-[280px] h-[130px] flex-shrink-0 flex items-center justify-center">
+                  <PaceVsIdealChart />
+                </div>
+
+              </div>
+
+              {/* DIVIDER */}
+              {/* <div className="h-px bg-[var(--border)]" /> */}
+
+              {/* SHOULD / ACTUAL / DIFFERENCE */}
+              <div className="grid grid-cols-3 gap-6 py-6 border-b border-t border-(--border)">
+
+                <div>
+                  <p className="text-[0.7rem] font-semibold text-[var(--color-text-secondary)] mb-2">
+                    SHOULD BE
+                  </p>
+                  <p className="text-[1rem] font-bold text-[var(--color-text-primary)]">
+                    ₹6,700.00
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[0.7rem] font-semibold text-[var(--color-text-secondary)] mb-2">
+                    ACTUAL
+                  </p>
+                  <p className="text-[1rem] font-bold text-[var(--color-text-primary)]">
+                    ₹7,520.00
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[0.7rem] font-semibold text-[var(--color-text-secondary)] mb-2">
+                    DIFFERENCE
+                  </p>
+                  <p className="text-[1rem] font-bold text-[var(--color-danger)]">
+                    +₹820.00
+                  </p>
+                </div>
+
+              </div>
+
+              {/* DIVIDER */}
+              {/* <div className="h-px bg-[var(--border)]" /> */}
+
+              {/* BOTTOM METRICS */}
+              <div className="grid grid-cols-3 divide-x divide-[var(--border)]">
+
+                {/* PACE */}
+                <div className="flex items-center gap-3 pr-4">
+                  <CircleGauge size={34} strokeWidth={2} className="text-(--color-primary)" />
+                  <div>
+                    <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">PACE</p>
+                    <p className="text-[1rem] font-bold text-[var(--color-text-primary)] mb-1">₹268 / ₹224</p>
+                    <p className="text-[0.7rem] text-[var(--color-text-secondary)]">per day</p>
+                  </div>
+                </div>
+
+                {/* BURN */}
+                <div className="flex items-center gap-3 px-4">
+                  <Flame size={34} strokeWidth={2} className="text-(--color-warm)" />
+
+                  <div>
+                    <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">BURN RATE</p>
+                    <p className="text-[1rem] font-bold text-(--color-warm) mb-1" >1.2×</p>
+                    <p className="text-[0.7rem] text-[var(--color-text-secondary)]">vs ideal</p>
+                  </div>
+                </div>
+
+                {/* RISK */}
+                <div className="flex items-center gap-3 pl-4">
+                  {/* <ShieldCheck size={34} strokeWidth={2} className="text-(--color-primary)" /> */}
+                  <ShieldAlert size={34} strokeWidth={2} className="text-(--color-danger)" />
+
+                  <div>
+                    <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">RISK</p>
+                    <p className="text-[1rem] font-bold text-[var(--color-danger)] mb-1">+₹2,300</p>
+                    <p className="text-[0.7rem] text-[var(--color-text-secondary)]">over budget</p>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
-            <div style={{ height: "140px", marginTop: "8px" }}>
-              <SparkLine />
-            </div>
+
           </div>
         </div>
+        <div>
+          {riskyBudgets.length === 0 ? (
+            <>
+              <div className="px-7 py-3.5 flex items-center justify-between bg-[var(--color-accent-soft)] rounded-2xl shadow-xs border border-(--color-accent-soft)">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-[10px] bg-[var(--color-accent-soft)] flex items-center justify-center">
+                    <Sparkles size={17} className="text-[var(--color-accent)]" />
+                  </div>
+                  <div>
+                    <span className="text-[0.9rem] font-bold text-[var(--color-success)]">You're doing great!</span>
+                    <span className="text-[0.8rem] text-[var(--color-text-secondary)] ml-2">
+                      All categories are within healthy limits.
+                    </span>
+                  </div>
 
-        {/* Budget Breakdown heading */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
-          <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: isDark ? "#fff" : "#111318", letterSpacing: "-0.02em" }}>Budget Breakdown</h2>
-          <span style={{ fontSize: "0.8rem", fontWeight: 600, color: isDark ? "rgba(255,255,255,0.4)" : "#9ca3af" }}>{groups.length} Categories</span>
+                </div>
+                {/* <ChevronRight size={16} className="text-[var(--color-text-secondary)] opacity-40" /> */}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="px-7 py-3.5 flex items-center justify-between bg-[var(--color-danger)]/10 rounded-2xl shadow-xs border border-(--color-danger)/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-[10px] bg-[var(--color-danger)]/10 flex items-center justify-center">
+                    <Flame size={17} className="text-[var(--color-danger)]" />
+                  </div>
+                  <div>
+                    <span className="text-[0.9rem] font-bold text-[var(--color-danger)]">Budget Warnings</span>
+                    <span className="text-[0.8rem] text-[var(--color-text-secondary)] ml-2">
+                      {riskyBudgets.length} categories exceeding limit.
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-[var(--color-text-secondary)] opacity-40" />
+              </div>
+            </>
+          )}
+
+        </div>
+
+        {/* Budget Breakdown */}
+        <div className="flex items-center justify-between mt-4">
+          <h2 className="text-[1.35rem] font-black tracking-tight text-[var(--color-text-primary)]">Budget Breakdown</h2>
+          <span className="text-[0.8rem] font-semibold text-[var(--color-text-secondary)]">{groups.length} Categories</span>
         </div>
 
         {/* Horizontal scrolling category cards */}
-        <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }} className="no-scrollbar">
+        <div className="grid grid-cols-3 gap-4">
           {groups.map((b, i) => {
             const Icon = resolveLucideIcon(b.icon || "help");
             const percent = Math.min((b.spent / b.allocated) * 100, 100);
             const progressColor = getProgressColor(b.spent, b.allocated);
+
             return (
-              <div key={i} style={{
-                minWidth: "200px", maxWidth: "220px", flexShrink: 0,
-                background: cardBg,
-                border: `1px solid ${cardBorder}`,
-                borderRadius: "1.2rem",
-                padding: "16px",
-              }}>
-                {/* Icon + name */}
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: "10px", background: `${b.color}18`, color: b.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div
+                key={i}
+                className="bg-[var(--color-surface)] border border-[var(--border)] shadow-xs rounded-2xl p-5 w-full"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div
+                    className="w-11 h-11 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${b.color}18`, color: b.color }}
+                  >
                     <Icon size={18} />
                   </div>
-                  <div>
-                    <p style={{ fontSize: "0.88rem", fontWeight: 700, color: isDark ? "#f0f0f0" : "#111318", lineHeight: 1.2 }}>{b.category}</p>
-                    <p style={{ fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.35)" : "#9ca3af", marginTop: "2px" }}>₹{b.spent.toLocaleString()} / ₹{b.allocated.toLocaleString()}</p>
+
+                  <div className="min-w-0">
+                    <p className="text-[1rem] font-bold text-[var(--color-text-primary)] leading-tight truncate">
+                      {b.category}
+                    </p>
+                    <p className="text-[0.9rem] text-[var(--color-text-primary)]/70 mt-2 truncate">
+                      <span className="text-[var(--color-text-primary)]">₹{b.spent.toLocaleString()}</span>  / ₹{b.allocated.toLocaleString()}
+                    </p>
                   </div>
                 </div>
-                {/* Progress bar */}
-                <div style={{ height: "5px", background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)", borderRadius: 999, overflow: "hidden", marginBottom: "10px" }}>
-                  <div style={{ height: "100%", width: `${percent}%`, background: progressColor, borderRadius: 999 }} />
+
+                <div className="h-[5px] rounded-full overflow-hidden bg-[var(--color-background)] mb-2.5">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${percent}%`, background: progressColor }}
+                  />
                 </div>
-                {/* Percent */}
-                <p style={{ fontSize: "1rem", fontWeight: 800, color: isDark ? "#f0f0f0" : "#111318", letterSpacing: "-0.01em" }}>{Math.round(percent)}%</p>
+
+                <p className="text-[1rem] font-black text-[var(--color-text-primary)] tracking-tight">
+                  {Math.round(percent)}%
+                </p>
               </div>
             );
           })}

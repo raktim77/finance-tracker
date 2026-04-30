@@ -433,7 +433,7 @@ export default function PendingReview() {
                               : "var(--color-danger)",
                         }}
                         className={`text left relative flex w-full items-center justify-between 
-    pl-3 py-3 border-l-[3px]
+    pl-3 py-3 border-l-[1px]
     hover:bg-[var(--color-surface)] transition-all group cursor-pointer
     active:scale-[0.97] active:bg-[var(--color-accent-soft)] gap-3
     ${isHighlighted ? "pending-highlight" : ""}`}

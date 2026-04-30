@@ -362,7 +362,7 @@ export default function Transactions() {
         <div className="flex items-start justify-between gap-6">
           <div>
             <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "Transactions"}</h2>
-            <p className="mt-3 text-[0.95rem] font-semibold text-(--color-text-secondary)/80">{totalRecords} transactions found</p>
+            <p className="mt-2 text-[1rem] font-semibold text-(--color-text-secondary)">{totalRecords} transactions found</p>
           </div>
           <button
             onClick={handleOpenTransactionSheet}
