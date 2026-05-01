@@ -644,7 +644,7 @@ export default function Settings() {
   return (
 
 
-    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-2 md:p-1">
+    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-2 md:p-0">
       <input
         ref={avatarInputRef}
         type="file"
@@ -659,11 +659,11 @@ export default function Settings() {
         }}
       />
       {/* 1. HEADER - Static and Pinned */}
-      <div className="flex flex-col gap-2 shrink-0  bg-[var(--color-background)] z-20">
-        <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
+      <div className="flex flex-col shrink-0  bg-[var(--color-background)] z-20">
+        <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
           Settings
         </h2>
-        <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em] opacity-60">
+        <p className="mt-2 text-[1rem] font-semibold text-(--color-text-secondary)">
           Personalize your financial experience
         </p>
       </div>
@@ -729,7 +729,7 @@ export default function Settings() {
         </div>
 
         {/* 3. RIGHT CONTENT - Independent Scroll */}
-        <div className="flex-1 w-full h-full overflow-y-auto no-scrollbar pb-24">
+        <div className="flex-1 w-full h-full overflow-y-auto no-scrollbar pb-10">
 
           {/* PROFILE */}
           {activeTab === "profile" && (

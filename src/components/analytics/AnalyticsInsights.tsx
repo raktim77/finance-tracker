@@ -5,20 +5,20 @@ import { Zap, Sparkles } from "lucide-react";
  */
 export function AnalyticsInsights() {
   return (
-    <div className="lg:col-span-6 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm relative overflow-hidden min-h-[200px] md:min-h-[240px] flex flex-col justify-center transition-all">
+    <div className="lg:col-span-6 rounded-2xl  p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs relative overflow-hidden min-h-[200px] md:min-h-[240px] flex flex-col justify-center transition-all">
       
       {/* Background Accents - Scaled down for mobile */}
       <div className="absolute -bottom-12 -right-12 w-48 h-48 md:w-64 md:h-64 bg-[var(--color-accent)] opacity-[0.08] blur-3xl rounded-full" />
       <div className="absolute -top-12 -left-12 w-32 h-32 md:w-48 md:h-48 bg-[var(--color-primary)] opacity-[0.05] blur-3xl rounded-full" />
 
       {/* Header */}
-      <div className="relative z-10 mb-6  opacity-80 grayscale flex items-center justify-between">
+      <div className="relative z-10 opacity-80 grayscale flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-3">
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)]">
               <Zap size={16} className="md:w-5 md:h-5" strokeWidth={2.5} />
             </div>
-            <div className="flex flex-col">
-              <h3 className="font-black text-sm md:text-lg text-[var(--color-text-primary)] tracking-tight leading-none mb-1">
+            <div className="flex flex-col gap-1">
+              <h3 className="font-bold text-lg text-[var(--color-text-primary)] tracking-tight text-left">
                   AI Insights
               </h3>
               <p className="text-[8px] md:text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em]">
@@ -35,7 +35,7 @@ export function AnalyticsInsights() {
       </div>
 
       {/* Roadmap Content */}
-      <div className="relative z-20 flex flex-col items-center justify-center py-2 md:py-4">
+      <div className="relative z-20 flex flex-col items-center justify-center">
         <div className="group relative w-full flex flex-col items-center">
             {/* Shimmer Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--color-accent)] to-transparent opacity-10 blur-2xl animate-[shimmer_3s_infinite] pointer-events-none" />

@@ -77,7 +77,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
       </div>
 
       {/* Body — always side by side, donut smaller on mobile */}
-      <div className="flex items-center gap-3 md:gap-6 flex-1">
+      <div className="flex items-center gap-3 flex-1">
 
         {/* Donut — 110px mobile, 180px desktop */}
         <div
@@ -153,7 +153,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
               </Pie>
 
               {/* GLASS INNER RING (kept subtle) */}
-              <circle
+              {/* <circle
                 cx="50%"
                 cy="50%"
                 r="55%"
@@ -161,7 +161,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
                 stroke="rgba(255,255,255,0.18)"
                 strokeWidth="2"
                 style={{ pointerEvents: "none" }}
-              />
+              /> */}
 
             </PieChart>
           </ResponsiveContainer>
@@ -188,24 +188,24 @@ export function SpendingDonut({ data, isLoading }: Props) {
             return (
               <div
                 key={i}
-                className="cursor-pointer flex flex-col gap-1 py-2 md:py-3 border-b border-[var(--border)] last:border-b-0 cursor-default transition-all duration-200"
+                className="cursor-pointer flex flex-col gap-1 py-2 md:py-3 transition-all duration-200"
                 style={{ opacity: activeIndex === null || isActive ? 1 : 0.4 }}
                 onMouseEnter={() => setActiveIndex(i)}
                 onMouseLeave={() => setActiveIndex(null)}
               >
                 {/* Name + amount row */}
                 <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span className="text-[11px] md:text-[12px] font-semibold text-[var(--color-text-primary)] truncate">
+                    <span className="text-[11px] md:text-[14px] text-[var(--color-text-primary)] truncate">
                       {item.name}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] md:text-xs font-bold text-[var(--color-text-primary)]">
+                    <span className="text-[11px] md:text-[14px] font-bold text-[var(--color-text-primary)]">
                       {formatCompactCurrency(item.value)}
                     </span>
                     <span className="text-[10px] md:text-xs text-[var(--color-text-secondary)] w-6 md:w-7 text-right">

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnalyticsHeader } from "../components/analytics/AnalyticsHeader";
 import { AnalyticsHero } from "../components/analytics/AnalyticsHero";
-import { AnalyticsMetrics } from "../components/analytics/AnalyticsMetrics";
+// import { AnalyticsMetrics } from "../components/analytics/AnalyticsMetrics";
 import { AnalyticsMainGrid } from "../components/analytics/AnalyticsMainGrid";
 import { AnalyticsInsights } from "../components/analytics/AnalyticsInsights";
 import { formatOverviewText, getPresetRange } from "../components/analytics/data/dateRange";
@@ -97,7 +97,7 @@ export default function Analytics() {
 
   const mode = getAnalyticsMode(activeRange.from, activeRange.to);
   
-  return (<div className="flex flex-col gap-8 pb-24 mx-auto w-full p-2 md:p-1 md:pb-24">
+  return (<div className="flex flex-col gap-4 pb-10 mx-auto w-full">
     <AnalyticsHeader
       selectedPreset={selectedPreset}
       overviewText={overviewText}
@@ -118,7 +118,7 @@ export default function Analytics() {
     />
 
     <AnalyticsHero data={data?.metrics} isLoading={isLoading} />
-    <AnalyticsMetrics data={data?.metrics} isLoading={isLoading} />
+    {/* <AnalyticsMetrics data={data?.metrics} isLoading={isLoading} /> */}
 
     <AnalyticsMainGrid
       trendData={trendData}

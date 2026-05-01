@@ -80,8 +80,8 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
         </div>
 
         <div className="flex flex-col min-w-0 flex-1 justify-center">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 mb-2 min-w-0">
-            <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] tracking-tight leading-tight">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 md:gap-12 mb-2 min-w-0">
+            <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] ">
               {title}
             </span>
 
@@ -101,12 +101,12 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
           </div>
 
           <div
-            className={`flex items-center justify-between min-w-0 ${isCompact ? "" : "md:justify-start md:gap-2"
+            className={`flex items-center justify-between min-w-0 gap-6 md:gap-12 ${isCompact ? "" : "md:justify-start md:gap-2"
               }`}
           >
             <span
-              className={`text-[11px] font-black text-[var(--color-text-secondary)] uppercase truncate opacity-80 ${isCompact
-                  ? "flex-1 max-w-[120px]"
+              className={`text-[13px] font-semibold text-[var(--color-text-secondary)] truncate ${isCompact
+                  ? "flex-1 max-w-[120px] md:max-w-full"
                   : "flex-1 md:flex-none max-w-[120px] md:max-w-96"
                 }`}
             >
@@ -119,7 +119,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
             />
 
             <span
-              className={`shrink-0 text-[11px] font-black text-[var(--color-text-secondary)] uppercase opacity-80 tracking-wider ${isCompact ? "ml-4" : "ml-4 md:ml-0"
+              className={`shrink-0 text-[13px] font-semibold text-[var(--color-text-secondary)]
                 }`}
             >
               {displayDate}

@@ -1,4 +1,10 @@
-import { TrendingUp } from "lucide-react";
+import {
+  TrendingDown,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDown,
+  ArrowUp,
+} from "lucide-react";
 import formatCompactCurrency from "../../utils/getCompactAmount";
 
 type AnalyticsHeroProps = {
@@ -7,8 +13,17 @@ type AnalyticsHeroProps = {
     spendingChangePercent: number;
     efficiency: "High" | "Moderate" | "Low";
     budgetUsedPercent: number;
+    totalIncome?: number;
+    totalSavings?: number;
+    avgDailySpending?: number;
   };
   isLoading: boolean;
+};
+
+const efficiencyColor = {
+  High: "text-[var(--color-success)]",
+  Moderate: "text-[var(--color-warm)]",
+  Low: "text-[var(--color-danger)]",
 };
 
 export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
@@ -17,39 +32,51 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
   const efficiency = data?.efficiency ?? "High";
   const budgetUsed = data?.budgetUsedPercent ?? 0;
   const safeBudget = Math.min(budgetUsed, 100);
+  const totalIncome = data?.totalIncome ?? 0;
+  const totalSavings = data?.totalSavings ?? 0;
+  const avgDaily = data?.avgDailySpending ?? 0;
 
-  return (<div className="relative w-full max-w-full"> <div className="relative z-0 group overflow-hidden rounded-[2.5rem] p-6 md:p-12 bg-gradient-to-br from-[#2f8c3d] via-[#257d35] to-[#17430f] shadow-2xl/50 transition-all duration-500"> <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] pointer-events-none"> <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-white/10 rounded-full blur-[60px] md:blur-[80px] -mr-16 -mt-16 md:-mr-32 md:-mt-32 animate-pulse" /> </div>
 
-    <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8 md:gap-12 text-white">
 
-      {/* LEFT */}
-      <div className="flex flex-col gap-2">
-        <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/60">
-          Total Cumulative Spending
-        </span>
+  const isNegativeChange = change < 0;
 
-        <div className="flex items-baseline gap-2">
+  const SkeletonVal = ({ wide }: { wide?: boolean }) => (
+    <div
+      className={`h-7 ${wide ? "w-40" : "w-24"} bg-[var(--color-text-secondary)]/10 rounded-md animate-pulse mt-1`}
+    />
+  );
 
+
+  // ─── MOBILE layout: 2×2 metric cards + efficiency/budget row ───
+  const MobileHero = (
+    <div className="flex flex-col gap-3 md:hidden">
+      {/* Row 1 */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Cumulative Spending */}
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+            Cumulative Spending
+          </span>
           {isLoading ? (
-            <>
-              {/* Amount skeleton */}
-              <div className="h-9 md:h-14 w-40 md:w-64 bg-white/30 rounded-lg animate-pulse" />
-
-              {/* Change badge skeleton */}
-              <div className="h-6 w-16 bg-white/30 rounded-lg animate-pulse" />
-            </>
+            <SkeletonVal wide />
           ) : (
             <>
-              <span className="text-3xl md:text-5xl font-black tracking-tighter md:block hidden">
-                ₹{totalSpending.toLocaleString()}
-              </span>
-              <span className="text-3xl md:text-5xl font-black tracking-tighter md:hidden block">
+              <span className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight leading-none">
                 ₹{formatCompactCurrency(totalSpending)}
               </span>
-
-              <div className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-lg backdrop-blur-md">
-                <TrendingUp size={14} />
-                <span className="text-xs font-bold">
+              <div
+                className={`mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-black w-fit ${
+                  isNegativeChange
+                    ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
+                    : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
+                }`}
+              >
+                {isNegativeChange ? (
+                  <TrendingDown size={11} strokeWidth={2.5} />
+                ) : (
+                  <TrendingUp size={11} strokeWidth={2.5} />
+                )}
+                <span>
                   {change >= 0 ? "+" : ""}
                   {change.toFixed(1)}%
                 </span>
@@ -57,47 +84,247 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
             </>
           )}
         </div>
+
+        {/* Total Income */}
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+            Total Income
+          </span>
+          {isLoading ? (
+            <SkeletonVal />
+          ) : (
+            <span className="text-2xl font-black text-[var(--color-success)] tracking-tight leading-none">
+              ₹{formatCompactCurrency(totalIncome)}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* RIGHT */}
-      <div className="flex items-center gap-6 bg-black/10 backdrop-blur-2xl border border-white/10 p-5 rounded-[2rem] shadow-inner shrink-0 w-full md:w-auto justify-between md:justify-start">
-
-        {/* Efficiency */}
-        <div className="flex flex-col gap-1">
-          <span className="text-[9px] font-black uppercase text-white/50 tracking-widest text-left">
-            Efficiency
+      {/* Row 2 */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Total Savings */}
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+            Total Savings
           </span>
-
           {isLoading ? (
-            <div className="h-7 w-16 bg-white/30 rounded-md animate-pulse" />
+            <SkeletonVal />
           ) : (
-            <span className="text-xl font-bold">{efficiency}</span>
+            <span className="text-2xl font-black text-[var(--color-success)] tracking-tight leading-none">
+              ₹{formatCompactCurrency(totalSavings)}
+            </span>
           )}
         </div>
 
-        <div className="w-px h-10 bg-white/10" />
+        {/* Avg Daily Spend */}
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+            Avg Daily Spend
+          </span>
+          {isLoading ? (
+            <SkeletonVal />
+          ) : (
+            <span className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight leading-none">
+              ₹{formatCompactCurrency(avgDaily)}
+            </span>
+          )}
+        </div>
+      </div>
 
-        {/* Budget */}
-        <div className="flex flex-col gap-2">
-          <span className="text-[9px] font-black uppercase text-white/50 tracking-widest text-left">
-            Budget Remaining
+      {/* Efficiency + Budget row */}
+      <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex items-center gap-0">
+        {/* Efficiency */}
+        <div className="flex flex-col gap-0.5 flex-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+            Efficiency
+          </span>
+          {isLoading ? (
+            <div className="h-6 w-16 bg-[var(--color-text-secondary)]/10 rounded animate-pulse mt-1" />
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`text-xl font-black ${efficiencyColor[efficiency]}`}
+              >
+                {efficiency}
+              </span>
+              <ArrowUpRight
+                size={16}
+                className={`${efficiencyColor[efficiency]}`}
+                strokeWidth={2.5}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="w-px h-10 bg-[var(--border)] mx-4" />
+
+        {/* Budget Left */}
+        <div className="flex flex-col gap-1.5 flex-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+            Budget Left
+          </span>
+          {isLoading ? (
+            <div className="h-2 w-full bg-[var(--color-text-secondary)]/10 rounded-full animate-pulse" />
+          ) : (
+            <>
+              <div className="w-full h-2 bg-[var(--color-text-secondary)]/15 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[var(--color-success)] rounded-full transition-all duration-1000"
+                  style={{ width: `${safeBudget}%` }}
+                />
+              </div>
+              <span className="text-xs font-black text-[var(--color-text-primary)]">
+                {safeBudget}%
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ---------------- DESKTOP FIXED ----------------
+
+  const DesktopHero = (
+    <div className="relative hidden md:block bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-6 shadow-xs overflow-hidden">
+      {/* GRID INSTEAD OF RIGID FLEX */}
+      <div className="grid grid-cols-[1.6fr_1fr_1fr_1fr_1.4fr] min-w-0">
+
+        {/* 1. TOTAL SPENDING */}
+        <div className="flex flex-col gap-3 pr-6 border-r border-[var(--border)] min-w-0">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+            Total Cumulative Spending
           </span>
 
-          <div className="w-24 md:w-32 h-2 bg-white/30 rounded-full overflow-hidden">
-            {isLoading ? (
-              <div className="h-full w-full bg-white/30 animate-pulse" />
-            ) : (
+          {isLoading ? (
+            <SkeletonVal wide />
+          ) : (
+            <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+              <span className="text-[clamp(1.2rem,1.6vw,1.9rem)] font-bold text-[var(--color-text-primary)] tracking-tight leading-none break-all">
+                ₹{totalSpending.toLocaleString()}
+              </span>
+
               <div
-                className="h-full bg-white transition-all duration-1000"
-                style={{ width: `${safeBudget}%` }}
-              />
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-black shrink-0 ${
+                  isNegativeChange
+                    ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
+                    : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
+                }`}
+              >
+                {isNegativeChange ? (
+                  <ArrowDown size={12} strokeWidth={2.5} />
+                ) : (
+                  <ArrowUp size={12} strokeWidth={2.5} />
+                )}
+                {change >= 0 ? "+" : ""}
+                {change.toFixed(1)}%
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 2. INCOME */}
+        <div className="flex flex-col gap-3 px-6 border-r border-[var(--border)] min-w-0">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+            Total Income
+          </span>
+
+          {isLoading ? (
+            <SkeletonVal />
+          ) : (
+            <span className="text-[clamp(0.8rem,1.2vw,1.4rem)] font-semibold text-[var(--color-success)] tracking-tight leading-none break-all">
+              ₹{totalIncome.toLocaleString()}
+            </span>
+          )}
+        </div>
+
+        {/* 3. SAVINGS */}
+        <div className="flex flex-col gap-3 px-6 border-r border-[var(--border)] min-w-0">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+            Total Savings
+          </span>
+
+          {isLoading ? (
+            <SkeletonVal />
+          ) : (
+            <span className="text-[clamp(0.8rem,1.2vw,1.4rem)] font-semibold text-[var(--color-success)] tracking-tight leading-none break-all">
+              ₹{totalSavings.toLocaleString()}
+            </span>
+          )}
+        </div>
+
+        {/* 4. AVG DAILY */}
+        <div className="flex flex-col gap-3 px-6 border-r border-[var(--border)] min-w-0">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+            Avg Daily Spend
+          </span>
+
+          {isLoading ? (
+            <SkeletonVal />
+          ) : (
+            <span className="text-[clamp(0.8rem,1.2vw,1.4rem)] font-semibold text-[var(--color-text-primary)] tracking-tight leading-none break-all">
+              ₹{avgDaily.toLocaleString()}
+            </span>
+          )}
+        </div>
+
+        {/* 5. RIGHT BLOCK */}
+        <div className="flex items-stretch gap-0 pl-6 min-w-0">
+
+          {/* Efficiency */}
+          <div className="flex flex-col gap-3 pr-6 border-r border-[var(--border)] min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-success)]">
+              Efficiency
+            </span>
+
+            {isLoading ? (
+              <div className="h-7 w-16 bg-[var(--color-text-secondary)]/10 rounded animate-pulse mt-1" />
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[clamp(1rem,1.4vw,1.6rem)] font-semibold text-[var(--color-text-primary)] leading-none">
+                  {efficiency}
+                </span>
+                <ArrowUpRight
+                  size={16}
+                  className="text-[var(--color-success)]"
+                  strokeWidth={2.5}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Budget */}
+          <div className="flex flex-col gap-2 pl-6 justify-center min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+              Budget Remaining
+            </span>
+
+            {isLoading ? (
+              <div className="h-2 w-full bg-[var(--color-text-secondary)]/10 rounded-full animate-pulse" />
+            ) : (
+              <>
+                <div className="w-full h-2 bg-[var(--color-text-secondary)]/15 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[var(--color-success)] rounded-full transition-all duration-1000"
+                    style={{ width: `${safeBudget}%` }}
+                  />
+                </div>
+
+                <span className="text-[clamp(0.8rem,1vw,1rem)] font-black text-[var(--color-text-primary)] break-all">
+                  {safeBudget}%
+                </span>
+              </>
             )}
           </div>
         </div>
       </div>
     </div>
-  </div>
-  </div>
+  );
 
+    return (
+    <>
+      {DesktopHero}
+      {MobileHero}
+    </>
   );
 }

@@ -116,7 +116,7 @@ export function QuarterlyBarChart({ barData, isLoading }: QuarterlyBarChartProps
 
     if (isLoading) {
         return (
-            <div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-8">
+            <div className="lg:col-span-3 h-full rounded-2xl p-4 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col gap-8">
 
                 {/* Header Skeleton */}
                 <div className="flex flex-col gap-3">
@@ -162,7 +162,7 @@ export function QuarterlyBarChart({ barData, isLoading }: QuarterlyBarChartProps
 
     if (!hasData) {
         return (
-            <div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col items-center justify-center text-center min-h-[300px]">
+            <div className="lg:col-span-3 h-full rounded-2xl p-4 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col items-center justify-center text-center min-h-[300px]">
 
                 <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center mb-3">
                     <span className="text-lg">📊</span>
@@ -181,7 +181,7 @@ export function QuarterlyBarChart({ barData, isLoading }: QuarterlyBarChartProps
     }
 
     return (
-        <div className="lg:col-span-3 h-full rounded-[2rem] p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm overflow-hidden flex flex-col">
+        <div className="lg:col-span-3 h-full rounded-2xl p-4 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs overflow-hidden flex flex-col">
             <style>
                 {`
                     @keyframes scroll-hint {
@@ -196,11 +196,11 @@ export function QuarterlyBarChart({ barData, isLoading }: QuarterlyBarChartProps
 
             <div className="flex flex-col mb-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                    <div>
-                        <h3 className="font-black text-lg text-[var(--color-text-primary)] tracking-tight text-left">
+                    <div className="flex flex-col gap-1">
+                        <h3 className="font-bold text-lg text-[var(--color-text-primary)] tracking-tight text-left">
                             Transactional Velocity
                         </h3>
-                        <p className="text-xs text-[var(--color-text-secondary)] text-left">
+                        <p className="text-xs text-[var(--color-text-secondary)]">
                             Income vs Expense comparison
                         </p>
                     </div>

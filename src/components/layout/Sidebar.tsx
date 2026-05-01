@@ -65,7 +65,7 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
       <div className="flex h-full flex-col">
         {/* Logo Section */}
         <div
-          className="flex items-center justify-center px-4 h-[var(--header-h)] cursor-pointer mb-2 mt-[0.6rem]"
+          className="flex items-center justify-center px-4 h-[var(--header-h)] cursor-pointer mb-2 mt-[0.9rem]"
           onClick={() => navigate("/dashboard")}
         >
           <div className="relative flex items-center justify-center transition-transform duration-300 hover:scale-105">

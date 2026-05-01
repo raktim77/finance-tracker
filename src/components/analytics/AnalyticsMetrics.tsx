@@ -1,92 +1,96 @@
-import { Zap, Target, PiggyBank, BanknoteArrowUp } from "lucide-react";
+import { CalendarDays, Percent, Power, Wallet } from "lucide-react";
 
 type AnalyticsMetricsProps = {
-data?: {
-thisMonthSpending: number;
-totalSavings: number;
-avgDailySpending: number;
-budgetUsedPercent: number;
-totalIncome: number;
+  data?: {
+    thisMonthSpending: number;
+    totalSavings: number;
+    avgDailySpending: number;
+    budgetUsedPercent: number;
+    totalIncome: number;
+    efficiency: "High" | "Moderate" | "Low";
+    spendingChangePercent: number;
+  };
+  isLoading: boolean;
 };
-isLoading: boolean;
-};
+
+const fmt = (value: number) => `₹${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(value)}`;
 
 export function AnalyticsMetrics({ data, isLoading }: AnalyticsMetricsProps) {
-const thisMonth = data?.thisMonthSpending ?? 0;
-const savings = data?.totalSavings ?? 0;
-const avgDaily = data?.avgDailySpending ?? 0;
-const totalIncome = data?.totalIncome ?? 0;
+  const totalSpending = data?.thisMonthSpending ?? 0;
+  const totalIncome = data?.totalIncome ?? 0;
+  const totalSavings = data?.totalSavings ?? 0;
+  const avgDaily = data?.avgDailySpending ?? 0;
+  const efficiency = data?.efficiency ?? "High";
+  const budgetUsedPercent = Math.max(0, Math.min(data?.budgetUsedPercent ?? 0, 100));
+  const budgetLeft = Math.round(100 - budgetUsedPercent);
 
-const Value = ({ children }: { children: React.ReactNode }) =>
-isLoading ? ( <div className="h-4 md:h-6 w-20 md:w-28 bg-[var(--color-text-secondary)]/10 rounded-md animate-pulse mt-1" />
-) : (
-<>{children}</>
-);
+  return (
+    <div className="lg:hidden flex flex-col gap-3.5">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4">
+          <p className="text-[0.68rem] uppercase tracking-[0.08em] font-black text-[var(--color-text-secondary)]/80">Cumulative Spending</p>
+          <p className="mt-2 text-[2.95rem] leading-[0.95] font-black text-[var(--color-text-primary)]">{isLoading ? "..." : fmt(totalSpending)}</p>
+          <span className="mt-3 inline-flex rounded-xl bg-[#3A1010] px-2 py-1 text-[0.62rem] font-black text-[#FF4D4D]">↘ -66.8%</span>
+        </div>
 
-return ( <div className="relative z-10 -mt-11 md:px-8"> <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4">
+          <p className="text-[0.68rem] uppercase tracking-[0.08em] font-black text-[var(--color-text-secondary)]/80">Total Income</p>
+          <p className="mt-2 text-[2.95rem] leading-[0.95] font-black text-[var(--color-success)]">{isLoading ? "..." : fmt(totalIncome)}</p>
+        </div>
 
-    {/* Total Income */}
-    <div className="bg-[var(--color-surface)] border border-[var(--border)] p-4 md:p-5 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 hover:scale-[1.02] transition-all">
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] shadow-inner shrink-0">
-        <BanknoteArrowUp size={18} strokeWidth={2.5} />
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4">
+          <p className="text-[0.68rem] uppercase tracking-[0.08em] font-black text-[var(--color-text-secondary)]/80">Total Savings</p>
+          <p className="mt-2 text-[2.95rem] leading-[0.95] font-black text-[var(--color-success)]">{isLoading ? "..." : fmt(totalSavings)}</p>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4">
+          <p className="text-[0.68rem] uppercase tracking-[0.08em] font-black text-[var(--color-text-secondary)]/80">Avg Daily Spend</p>
+          <p className="mt-2 text-[2.95rem] leading-[0.95] font-black text-[var(--color-text-primary)]">{isLoading ? "..." : fmt(avgDaily)}</p>
+        </div>
       </div>
-      <div className="flex flex-col min-w-0 gap-1">
-        <span className="text-[8px] md:text-[10px] font-black text-[var(--color-text-secondary)] uppercase tracking-widest truncate">
-          Total income
-        </span>
-        <span className="text-sm md:text-xl font-black text-[var(--color-text-primary)] truncate">
-          <Value>₹{totalIncome.toLocaleString()}</Value>
-        </span>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4">
+        <div className="grid grid-cols-2 gap-4 items-center">
+          <div className="pr-3 border-r border-[var(--border)]">
+            <p className="text-[0.68rem] uppercase tracking-[0.08em] font-black text-[#8CDF72]">Efficiency</p>
+            <p className="mt-1 text-[2.7rem] font-black text-[#3AE374]">{isLoading ? "--" : efficiency}</p>
+          </div>
+          <div>
+            <p className="text-[0.68rem] uppercase tracking-[0.08em] font-black text-[var(--color-text-secondary)]/80">Budget Left</p>
+            <div className="mt-3 h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div className="h-full bg-[var(--color-accent)] rounded-full" style={{ width: `${budgetLeft}%` }} />
+            </div>
+            <p className="mt-1 text-[2rem] font-black text-[var(--color-success)]">{isLoading ? "--" : `${budgetLeft}%`}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4">
+        <h3 className="text-[2rem] font-black text-[var(--color-text-primary)]">This Month</h3>
+        <p className="mt-2 text-center text-[4.2rem] leading-none font-black text-[var(--color-text-primary)]">₹0</p>
+        <p className="text-center text-[1.2rem] text-[var(--color-text-secondary)]">Spend so far</p>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {[
+            { label: "Income", value: "₹0", icon: Wallet, tone: "text-[#33E06A]", bg: "bg-[#12301b]" },
+            { label: "Expenses", value: "₹0", icon: Power, tone: "text-[#FF4D4D]", bg: "bg-[#341418]" },
+            { label: "Savings Rate", value: "0%", icon: Percent, tone: "text-[#33E06A]", bg: "bg-[#12301b]" },
+            { label: "Days Left", value: "15", icon: CalendarDays, tone: "text-[#FF9F40]", bg: "bg-[#322316]" },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl border border-[var(--border)] bg-[var(--color-background)]/35 p-3.5">
+              <div className="flex items-center gap-3">
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${item.bg}`}>
+                  <item.icon size={16} className={item.tone} />
+                </div>
+                <div>
+                  <p className="text-[0.62rem] font-black uppercase tracking-[0.08em] text-[var(--color-text-secondary)]">{item.label}</p>
+                  <p className="text-[1.15rem] font-black text-[var(--color-text-primary)]">{item.value}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-
-    {/* Total Savings */}
-    <div className="bg-[var(--color-surface)] border border-[var(--border)] p-4 md:p-5 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 hover:scale-[1.02] transition-all">
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-[var(--color-success)]/10 flex items-center justify-center text-[var(--color-success)] shadow-inner shrink-0">
-        <PiggyBank size={18} strokeWidth={2.5} />
-      </div>
-      <div className="flex flex-col min-w-0 gap-1">
-        <span className="text-[8px] md:text-[10px] font-black text-[var(--color-text-secondary)] uppercase tracking-widest truncate">
-          Total Savings
-        </span>
-        <span className="text-sm md:text-xl font-black text-[var(--color-success)] truncate">
-          <Value>₹{savings.toLocaleString()}</Value>
-        </span>
-      </div>
-    </div>
-
-    {/* This Month */}
-    <div className="bg-[var(--color-surface)] border border-[var(--border)] p-4 md:p-5 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 hover:scale-[1.02] transition-all">
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)] shadow-inner shrink-0">
-        <Zap size={18} strokeWidth={2.5} />
-      </div>
-      <div className="flex flex-col min-w-0 gap-1">
-        <span className="text-[8px] md:text-[10px] font-black text-[var(--color-text-secondary)] uppercase tracking-widest truncate">
-          This Month spend
-        </span>
-        <span className="text-sm md:text-xl font-black text-[var(--color-text-primary)] truncate">
-          <Value>₹{thisMonth.toLocaleString()}</Value>
-        </span>
-      </div>
-    </div>
-
-    {/* Avg Daily */}
-    <div className="bg-[var(--color-surface)] border border-[var(--border)] p-4 md:p-5 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 hover:scale-[1.02] transition-all">
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-[var(--color-warm)]/10 flex items-center justify-center text-[var(--color-warm)] shadow-inner shrink-0">
-        <Target size={18} strokeWidth={2.5} />
-      </div>
-      <div className="flex flex-col min-w-0 gap-1">
-        <span className="text-[8px] md:text-[10px] font-black text-[var(--color-text-secondary)] uppercase tracking-widest truncate">
-          Avg Daily spend
-        </span>
-        <span className="text-sm md:text-xl font-black text-[var(--color-text-primary)] truncate">
-          <Value>₹{avgDaily.toLocaleString()}</Value>
-        </span>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-);
+  );
 }

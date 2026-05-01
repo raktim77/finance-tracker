@@ -20,7 +20,6 @@ type AnalyticsHeaderProps = {
   isCustomModalOpen: boolean;
   pendingRange: AnalyticsDateRange;
   customError: string | null;
-
   onPendingFromChange: (date?: string) => void;
   onPendingToChange: (date?: string) => void;
   onCustomCancel: () => void;
@@ -37,7 +36,7 @@ export function AnalyticsHeader({
   onPendingFromChange,
   onPendingToChange,
   onCustomCancel,
-  onCustomApply
+  onCustomApply,
 }: AnalyticsHeaderProps) {
   useDismissibleLayer({
     open: isCustomModalOpen,
@@ -47,50 +46,48 @@ export function AnalyticsHeader({
 
   return (
     <>
-      <div className="flex flex-col md:flex-row items-start justify-between gap-6 md:gap-4">
-        <div className="flex flex-col gap-4 w-full md:w-auto">
-          <h2 className="text-3xl md:text-5xl font-black text-[var(--color-text-primary)] tracking-tighter">
+      <div className="flex items-start justify-between gap-4 md:gap-6 mb-4">
+        <div className="flex flex-col gap-2 md:gap-4 min-w-0">
+          <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)] hidden lg:block">
             Analytics
           </h2>
-          <div className="flex items-center gap-2">
-            <Calendar size={12} className="text-[var(--color-accent)]" />
-            <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em] opacity-60">
+          <h2 className="text-[2.75rem] leading-[0.95] font-black tracking-[-0.02em] text-[var(--color-text-primary)] lg:hidden">
+            Analytics
+          </h2>
+
+          <div className="flex items-center gap-2 opacity-80">
+            <Calendar size={15} className="text-[var(--color-accent)]" />
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.15em] text-[var(--color-text-primary)]/80">
               {overviewText}
             </p>
           </div>
         </div>
 
-        <div className="w-full md:w-auto min-w-[220px]">
+        <div className="w-[170px] lg:w-[210px] shrink-0">
           <Dropdown
             value={selectedPreset}
             onChange={(value) => onPresetChange(value as AnalyticsDatePreset)}
             options={analyticsDatePresetOptions}
             className="w-full"
-            buttonClassName="rounded-2xl h-[46px] text-[10px] uppercase tracking-widest font-black"
+            buttonClassName="rounded-xl h-[42px] text-[1rem] lg:text-[1rem] font-semibold"
           />
         </div>
       </div>
 
       {isCustomModalOpen && (
         <>
-          <div className="fixed inset-0 z-[180] bg-black/30 backdrop-blur-sm" onClick={onCustomCancel} />
+          <div className="fixed inset-0 z-[180] bg-black/40 backdrop-blur-sm" onClick={onCustomCancel} />
           <div className="fixed inset-0 z-[190] flex items-center justify-center p-4">
-            <div className="w-full max-w-md rounded-[2rem] border border-[var(--border)] bg-[var(--color-surface)] p-6 shadow-[0_25px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-full max-w-md rounded-[1.6rem] border border-[var(--border)] bg-[var(--color-surface)] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
               <div className="flex flex-col gap-1 mb-5">
-                <h3 className="text-lg font-black text-[var(--color-text-primary)] tracking-tight">
-                  Custom Range
-                </h3>
-                <p className="text-xs font-semibold text-[var(--color-text-secondary)]">
-                  Select a From and To date.
-                </p>
+                <h3 className="text-xl font-black text-[var(--color-text-primary)] tracking-tight">Custom Range</h3>
+                <p className="text-sm font-semibold text-[var(--color-text-secondary)]">Select a From and To date.</p>
               </div>
 
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-70">
-                    From
-                  </span>
-                  <div className="w-full px-4 h-11 bg-[var(--color-background)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30 flex items-center">
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-70">From</span>
+                  <div className="w-full px-4 h-11 bg-[var(--color-background)] border border-[var(--input-border)] rounded-xl text-sm font-bold flex items-center">
                     <DatePicker
                       value={toPickerDate(pendingRange.from)}
                       onChange={(date) => onPendingFromChange(toDateString(date))}
@@ -99,10 +96,8 @@ export function AnalyticsHeader({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-70">
-                    To
-                  </span>
-                  <div className="w-full px-4 h-11 bg-[var(--color-background)] border border-[var(--input-border)] rounded-xl text-[12px] font-bold transition-all hover:border-[var(--color-accent)]/30 flex items-center">
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-70">To</span>
+                  <div className="w-full px-4 h-11 bg-[var(--color-background)] border border-[var(--input-border)] rounded-xl text-sm font-bold flex items-center">
                     <DatePicker
                       value={toPickerDate(pendingRange.to)}
                       onChange={(date) => onPendingToChange(toDateString(date))}
@@ -111,9 +106,7 @@ export function AnalyticsHeader({
                 </div>
               </div>
 
-              {customError && (
-                <p className="mt-3 text-xs font-bold text-[var(--color-danger)]">{customError}</p>
-              )}
+              {customError && <p className="mt-3 text-xs font-bold text-[var(--color-danger)]">{customError}</p>}
 
               <div className="mt-6 flex items-center justify-end gap-3">
                 <button
