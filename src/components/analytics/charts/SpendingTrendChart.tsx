@@ -138,7 +138,7 @@ export function SpendingTrendChart({
               tickLine={false}
               tick={{ fill: "var(--color-text-secondary)", fontSize: 10 }}
               tickFormatter={(v) =>
-                v === 0 ? "₹0" : `₹${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
+                v === 0 ? "₹0" : `₹${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}K` : v}`
               }
             />
             <Tooltip

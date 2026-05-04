@@ -50,7 +50,7 @@ export function AIInsights({ insights = [] }: Props) {
 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
+        <h2 className="text-[14px] md:text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
           Insights for You
         </h2>
 

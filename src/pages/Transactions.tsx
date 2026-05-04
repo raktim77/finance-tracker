@@ -1,6 +1,6 @@
 import { useCreateTransaction, useDeleteTransaction, useTransactions, useUpdateTransaction } from "../features/transactions/hooks/useTransactions";
 import type { Transaction as ApiTransaction, Transaction } from "../features/transactions/types/transaction.types";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   X,
@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronLeft,
   FileDown,
+  ArrowRight,
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
@@ -34,6 +35,7 @@ import {
 } from "../features/transactions/utils/transactionDisplay";
 import { useHeaderConfig } from "../hooks/useHeaderConfig";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
+import useInfiniteScroll from "react-infinite-scroll-hook";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -166,8 +168,20 @@ export default function Transactions() {
   const formattedEndDate = endDate ? formatApiDate(endDate) : undefined;
   const canFetchTransactions = !loading && !!accessToken && !!formattedStartDate && !!formattedEndDate;
 
+  const mobileCriteriaKey = [
+    debouncedSearch || "",
+    filter,
+    sort,
+    formattedStartDate || "",
+    formattedEndDate || "",
+    account_id || "",
+  ].join("|");
+  const previousMobileCriteriaRef = useRef(mobileCriteriaKey);
+  const mobileCriteriaChanged = previousMobileCriteriaRef.current !== mobileCriteriaKey;
+  const pageForQuery = mobileCriteriaChanged ? 1 : currentPage;
+
   const queryParams = {
-    page: currentPage,
+    page: pageForQuery,
     limit: itemsPerPage,
     search: debouncedSearch || undefined,
     type: filter === "all" ? undefined : filter,
@@ -186,14 +200,6 @@ export default function Transactions() {
   const totalPages = Math.max(data?.pages ?? 1, 1);
   const totalRecords = data?.total ?? 0;
 
-  // Group by "Month Year" — same logic for both mobile and desktop
-  const groupedTransactions = currentItems.reduce((acc, tx) => {
-    const date = new Date(tx.date);
-    const key = date.toLocaleString("default", { month: "short", year: "numeric" });
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(tx);
-    return acc;
-  }, {} as Record<string, typeof currentItems>);
 
   const handleOpenTransactionSheet = useCallback(() => {
     if (!hasAccounts) {
@@ -244,112 +250,216 @@ export default function Transactions() {
 
   const isCustomRange = dateRange === "custom";
 
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const mobileItems = allTransactions.length ? allTransactions : (data?.transactions ?? []);
+
+  useEffect(() => {
+    if (!mobileCriteriaChanged) return;
+    setAllTransactions([]);
+    setCurrentPage(1);
+    setHasMore(true);
+    setLoadingMore(false);
+    previousMobileCriteriaRef.current = mobileCriteriaKey;
+  }, [mobileCriteriaChanged, mobileCriteriaKey]);
+
+  useEffect(() => {
+    if (!data) return;
+
+    if (pageForQuery === 1) {
+      setAllTransactions(data.transactions ?? []);
+    } else {
+      setAllTransactions((prev) => [...prev, ...(data.transactions ?? [])]);
+    }
+
+    setHasMore(pageForQuery < (data.pages ?? 1));
+    setLoadingMore(false);
+  }, [data, pageForQuery]);
+
+  const [sentryRef] = useInfiniteScroll({
+    loading: loadingMore || isLoading,
+    hasNextPage: hasMore,
+    onLoadMore: () => {
+      setLoadingMore(true);
+      setCurrentPage((prev) => prev + 1);
+    },
+    disabled: isError,
+    rootMargin: "0px 0px 200px 0px",
+  });
+  // Group by "Month Year" — same logic for both mobile and desktop
+  const groupedTransactions = mobileItems.reduce((acc, tx) => {
+    const date = new Date(tx.date);
+    const key = date.toLocaleString("default", { month: "short", year: "numeric" });
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(tx);
+    return acc;
+  }, {} as Record<string, typeof mobileItems>);
+
   return (
     <>
       {/* MOBILE VIEW */}
       <div className="p-2 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden md:hidden">
         <div className="flex w-full items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h2 className="text-3xl font-black text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "History"}</h2>
-            <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest opacity-70 truncate">
+            <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "History"}</h2>
+            <p className="mt-2 text-[0.8rem] font-semibold text-(--color-text-secondary)">
               {totalRecords} records found
             </p>
           </div>
           <button
             onClick={handleOpenTransactionSheet}
-            className="flex shrink-0 group items-center justify-center gap-2 rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] px-4 py-2 text-xs font-black text-[var(--color-accent)]"
+            className="text-[var(--color-primary)] flex shrink-0 group items-center justify-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-4 py-2 text-xs font-semibold"
+          // inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors
+          // text-[var(--color-primary)] hover:bg-[var(--color-accent-soft)]
+          // border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)]
           >
-            <PlusCircle size={16} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+            <PlusCircle size={16} className="group-hover:rotate-90 transition-transform" />
             {hasAccounts ? "Record" : "Add"}
           </button>
         </div>
 
-        <div className="flex gap-2 w-full">
-          <div className="relative w-[60%] group">
-            <Search size={14} className="absolute text-[var(--color-text-secondary)] left-3 top-1/2 -translate-y-1/2" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search transactions"
-              className="w-full pl-9 pr-8 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm"
-            />
-            {search && (
-              <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X size={14} />
-              </button>
-            )}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2 w-full">
+            <div className="relative w-[60%] group">
+              <Search size={14} className="absolute text-[var(--color-text-secondary)] left-3 top-1/2 -translate-y-1/2" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search transactions"
+                className="w-full pl-9 pr-8 h-11 rounded-xl bg-[var(--color-surface)] border border-[var(--input-border)] text-sm"
+              />
+              {search && (
+                <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <div className="w-[40%]">
+              <Dropdown
+                icon={Calendar}
+                value={dateRange}
+                onChange={(v) => setDateRange(v as DateRangeType)}
+                options={[
+                  { label: "30 Days", value: "30" },
+                  { label: "60 Days", value: "60" },
+                  { label: "90 Days", value: "90" },
+                  { label: "Custom", value: "custom" },
+                ]}
+              />
+            </div>
           </div>
-          <div className="w-[40%]">
+
+          {isCustomRange && (
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1">
+              <div className="min-w-0 h-11 rounded-xl border border-[var(--input-border)] px-3 flex items-center gap-2 bg-[var(--color-surface)] text-sm">
+                <DatePicker value={startDate} onChange={(d) => setStartDate(d)} />
+              </div>
+              <ArrowRight
+                size={12}
+                strokeWidth={2.25}
+                className="shrink-0 text-[var(--color-text-secondary)] opacity-55"
+              />
+              <div className="min-w-0 h-11 rounded-xl border border-[var(--input-border)] px-3 flex items-center gap-2 bg-[var(--color-surface)] text-sm">
+                <DatePicker value={endDate} onChange={(d) => setEndDate(d)} />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
             <Dropdown
-              icon={Calendar}
-              value={dateRange}
-              onChange={(v) => setDateRange(v as DateRangeType)}
+              icon={Filter}
+              value={filter}
+              onChange={(v) => setFilter(v as FilterType)}
               options={[
-                { label: "30 Days", value: "30" },
-                { label: "60 Days", value: "60" },
-                { label: "90 Days", value: "90" },
-                { label: "Custom", value: "custom" },
+                { label: "All Types", value: "all" },
+                { label: "Income", value: "income" },
+                { label: "Expense", value: "expense" },
+                { label: "Transfer", value: "transfer" },
+              ]}
+            />
+            <Dropdown
+              icon={ArrowUpDown}
+              value={sort}
+              onChange={(v) => setSort(v as SortType)}
+              options={[
+                { label: "Latest", value: "latest" },
+                { label: "Highest", value: "highest" },
+                { label: "Lowest", value: "lowest" },
               ]}
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <Dropdown
-            icon={Filter}
-            value={filter}
-            onChange={(v) => setFilter(v as FilterType)}
-            options={[
-              { label: "All Types", value: "all" },
-              { label: "Income", value: "income" },
-              { label: "Expense", value: "expense" },
-              { label: "Transfer", value: "transfer" },
-            ]}
-          />
-          <Dropdown
-            icon={ArrowUpDown}
-            value={sort}
-            onChange={(v) => setSort(v as SortType)}
-            options={[
-              { label: "Latest", value: "latest" },
-              { label: "Highest", value: "highest" },
-              { label: "Lowest", value: "lowest" },
-            ]}
-          />
-        </div>
-
-        <div className="rounded-2xl bg-[var(--color-surface)] border border-[var(--border)] overflow-hidden">
-          <div className="flex flex-col p-1 gap-2">
-            {isLoading ? (
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-2">
+            {isLoading && mobileItems.length === 0 ? (
               <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">Loading...</div>
             ) : isError ? (
               <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
                 {error instanceof Error ? error.message : "Failed to load transactions"}
               </div>
-            ) : currentItems.length === 0 ? (
+            ) : mobileItems.length === 0 ? (
               <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">No transactions</div>
             ) : (
-              Object.entries(groupedTransactions).map(([month, items]) => (
-                <div key={month} className="flex flex-col">
-                  <div className="pl-2 mb-2 pt-3 pb-1 text-sm font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-80">
-                    {month}
+              <>
+                {Object.entries(groupedTransactions).map(([month, items], groupIndex, arr) => {
+                  const isLastGroup = groupIndex === arr.length - 1;
+
+                  return (
+                    <div key={month} className="flex flex-col pl-1">
+                      <div className="mb-2 pt-3 pb-1 text-sm font-bold tracking-widest text-[var(--color-text-secondary)] uppercase opacity-80">
+                        {month}
+                      </div>
+                      {items.map((t, index) => (
+                        <TransactionListItem
+                          key={t._id}
+                          transaction={t}
+                          title={getTransactionTitle(t)}
+                          categoryLabel={getTransactionCategoryLabel(t)}
+                          displayDate={formatTransactionDisplayDate(t.date)}
+                          showDivider={index !== items.length - 1}
+                          onClick={() => {
+                            setSelectedTx(t);
+                            setDetailsOpen(true);
+                          }}
+                        />
+                      ))}
+                      {!isLastGroup && (
+                        <div className="md:hidden relative my-3">
+                          <div className="absolute -bottom-3 left-0 right-0 h-px bg-[var(--border)]" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                <div ref={sentryRef} />
+
+                {loadingMore && (
+                  <div className="flex justify-center">
+                    <svg
+                      className="animate-spin"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--color-text-secondary)"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    >
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
                   </div>
-                  {items.map((t, index) => (
-                    <TransactionListItem
-                      key={t._id}
-                      transaction={t}
-                      title={getTransactionTitle(t)}
-                      categoryLabel={getTransactionCategoryLabel(t)}
-                      displayDate={formatTransactionDisplayDate(t.date)}
-                      showDivider={index !== items.length - 1}
-                      onClick={() => {
-                        setSelectedTx(t);
-                        setDetailsOpen(true);
-                      }}
-                    />
-                  ))}
-                </div>
-              ))
+                )}
+
+                {!hasMore && mobileItems.length > 0 && (
+                  <div className="py-6 text-center text-xs text-[var(--color-text-secondary)]">
+                    No more transactions
+                  </div>
+                )}
+              </>
+
             )}
           </div>
         </div>
@@ -471,7 +581,7 @@ export default function Transactions() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search transactions, notes..."
+                  placeholder="Search transactions"
                   className="h-11 w-full rounded-lg border border-[var(--input-border)] bg-[var(--color-surface)] pl-9 pr-9 text-sm"
                 />
                 {search && (
@@ -516,7 +626,7 @@ export default function Transactions() {
               <>
                 {/* Month-grouped timeline */}
                 <div className="relative">
-                  {Object.entries(groupedTransactions).map(([month, items], groupIdx, groupsArr) => (
+                  {Object.entries(groupedTransactions).map(([month, items]) => (
                     <div className="p-2" key={month}>
 
 
@@ -531,7 +641,7 @@ export default function Transactions() {
                         const isSignedType =
                           t.type === "expense" || t.type === "income";
 
-                        const dateObj = new Date(t.date);
+                        // const dateObj = new Date(t.date);
                         const amountColor =
                           t.type === "expense"
                             ? "text-[var(--color-danger)]"
@@ -540,16 +650,16 @@ export default function Transactions() {
                               : "text-[var(--color-text-primary)]";
 
                         // Show date label only when date differs from previous row within this month
-                        const prevTx = items[idx - 1];
-                        const prevDay = prevTx ? new Date(prevTx.date).getDate() : null;
-                        const showDateLabel = prevDay !== dateObj.getDate();
-                        console.log(showDateLabel);
+                        // const prevTx = items[idx - 1];
+                        // const prevDay = prevTx ? new Date(prevTx.date).getDate() : null;
+                        // const showDateLabel = prevDay !== dateObj.getDate();
+                        // console.log(showDateLabel);
 
                         const dotColor = t.category_color ?? "#0d9488";
                         const showMonthLabel = idx === 0;
                         // Hide the vertical line after the very last row of the last group
-                        const isLastItem = groupIdx === groupsArr.length - 1 && idx === items.length - 1;
-                        console.log(isLastItem);
+                        // const isLastItem = groupIdx === groupsArr.length - 1 && idx === items.length - 1;
+                        // console.log(isLastItem);
 
                         return (
                           <button

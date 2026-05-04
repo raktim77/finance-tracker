@@ -56,7 +56,7 @@ export default function Dashboard() {
   }, [themeMenuOpen]);
 
   return (
-    <div className="mx-auto flex flex-col gap-4 pb-10 md:gap-5">
+    <div className="mx-auto flex flex-col gap-4 md:pb-10 pb-24 md:gap-5">
       {/* Mobile dashboard flow */}
       <div className="md:hidden flex flex-col gap-4">
         <HeroDashboard data={data} isLoading={isLoading} />
@@ -67,12 +67,12 @@ export default function Dashboard() {
           </div>
         ) : null}
 
-        <div className="px-2">
+        <div className="">
           <RecentTransactions />
         </div>
 
-        <div className="px-2">
-          <ExpenseTrend data={analyticsData?.trend} isLoading={analyticsLoading} />
+        <div className="px-2 h-full">
+            <ExpenseTrend data={analyticsData?.trend} isLoading={analyticsLoading} />
         </div>
 
         <div className="px-2">

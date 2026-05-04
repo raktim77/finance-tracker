@@ -4,7 +4,6 @@ import {
   Pencil,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Flame,
   Sparkles,
   Trash2,
@@ -28,7 +27,51 @@ import { useToast } from "../components/ui/confirm-modal/useToast";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 import { ThemeContext } from "../context/ThemeContext";
 import PaceVsIdealChart from "../components/budgets/PaceVsIdealChart";
+// Place this OUTSIDE and ABOVE the Budgets component
+const SemiGauge: React.FC<{ percent: number }> = ({ percent }) => {
+  const r = 90;
+  const cx = 110;
+  const cy = 110;
+  const circumference = Math.PI * r;
+  const target = Math.min(percent / 100, 1) * circumference;
 
+  const [animated, setAnimated] = useState(0);
+
+  useEffect(() => {
+    // Let the component paint at 0 first, then transition to target
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setAnimated(target);
+      });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [target]);
+
+  return (
+    <svg viewBox="0 0 220 120" style={{ width: "220px", height: "120px", display: "block" }}>
+      {/* Background arc */}
+      <path
+        d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
+        fill="none"
+        stroke="var(--border)"
+        strokeWidth="18"
+        strokeLinecap="round"
+      />
+      {/* Animated arc — CSS transition does the heavy lifting */}
+      <path
+        d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
+        fill="none"
+        stroke="var(--color-success)"
+        strokeWidth="18"
+        strokeLinecap="round"
+        strokeDasharray={`${animated} ${circumference}`}
+        style={{
+          transition: "stroke-dasharray 900ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
+      />
+    </svg>
+  );
+};
 export default function Budgets() {
   const { theme } = useContext(ThemeContext);
   const isDark =
@@ -110,7 +153,7 @@ export default function Budgets() {
     }
   }, [budget, isEditingBudget]);
 
-    const getFontSize = (val: string) => {
+  const getFontSize = (val: string) => {
     const len = val.length;
     if (len < 7) return "text-6xl";
     if (len < 10) return "text-4xl";
@@ -191,24 +234,10 @@ export default function Budgets() {
 
   const monthLabelLong = month.toLocaleString("default", { month: "long" });
   const monthLabelFull = month.toLocaleString("default", { month: "long", year: "numeric" });
-  const monthLabelShortUpper = month.toLocaleString("default", { month: "short", year: "numeric" }).toUpperCase();
+  // const monthLabelShortUpper = month.toLocaleString("default", { month: "short", year: "numeric" }).toUpperCase();
 
   // ─── SHARED SUB-COMPONENTS ────────────────────────────────────────────────
 
-  const SemiGauge: React.FC<{ percent: number }> = ({ percent }) => {
-    const r = 90, cx = 110, cy = 110;
-    const circumference = Math.PI * r;
-    const progress = Math.min(percent / 100, 1) * circumference;
-    return (
-      <svg viewBox="0 0 220 120" style={{ width: "220px", height: "120px", display: "block" }}>
-        <path d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
-          fill="none" stroke="var(--border)" strokeWidth="18" strokeLinecap="round" />
-        <path d={`M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`}
-          fill="none" stroke="var(--color-success)" strokeWidth="18" strokeLinecap="round"
-          strokeDasharray={`${progress} ${circumference}`} />
-      </svg>
-    );
-  };
 
   const DesktopDonut: React.FC<{ percent: number }> = ({ percent }) => {
     const donutData = [
@@ -234,21 +263,21 @@ export default function Budgets() {
 
 
   // Month nav pill — rounded for mobile, rectangular for desktop create header
-  const MonthNavPill: React.FC<{ rounded?: boolean }> = ({ rounded }) => (
-    <div className={`inline-flex items-center gap-3 border border-[var(--border)] bg-[var(--color-surface)] px-4 py-2.5 ${rounded ? "rounded-full" : "rounded-xl"}`}>
-      <button onClick={() => shiftMonth(-1)}
-        className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)]">
-        <ChevronLeft size={15} />
-      </button>
-      <span className="text-[0.78rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-primary)]">
-        {monthLabelShortUpper}
-      </span>
-      <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
-        className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed">
-        <ChevronRight size={15} />
-      </button>
-    </div>
-  );
+  // const MonthNavPill: React.FC<{ rounded?: boolean }> = ({ rounded }) => (
+  //   <div className={`inline-flex items-center gap-3 border border-[var(--border)] bg-[var(--color-surface)] px-4 py-2.5 ${rounded ? "rounded-full" : "rounded-xl"}`}>
+  //     <button onClick={() => shiftMonth(-1)}
+  //       className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)]">
+  //       <ChevronLeft size={15} />
+  //     </button>
+  //     <span className="text-[0.78rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-primary)]">
+  //       {monthLabelShortUpper}
+  //     </span>
+  //     <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+  //       className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed">
+  //       <ChevronRight size={15} />
+  //     </button>
+  //   </div>
+  // );
 
   // ─── LOADING ──────────────────────────────────────────────────────────────
   if (isLoading) {
@@ -268,24 +297,78 @@ export default function Budgets() {
   // ─── NO BUDGET (PAST MONTH) ───────────────────────────────────────────────
   if (!budget?.exists && !canCreateBudget) {
     return (
-      <div className="p-4 flex flex-col gap-6 pb-24 w-full">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[1.9rem] font-black tracking-tight text-[var(--color-text-primary)]">
-              {monthLabelLong} Budget
-            </h1>
-            <div className="mt-1.5"><MonthNavPill rounded /></div>
+      <div>
+        {/* MOBILE */}
+        <div className="p-2 flex md:hidden flex-col gap-6 pb-24 w-full ">
+          <div className="pb-">
+            <div>
+              <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+                {monthLabelLong} Budget
+              </h2>
+              <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3 py-2 mt-2 border border-(--color-accent-soft) mt-3">
+                <button
+                  onClick={() => shiftMonth(-1)}
+                  className="flex items-center text-[var(--color-text-primary)]"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+
+                <span className="text-[0.75rem] font-semibold text-[var(--color-text-primary)]">
+                  {monthLabelFull}
+                </span>
+
+                <button
+                  onClick={() => shiftMonth(1)}
+                  disabled={!canGoToNextMonth}
+                  className="flex items-center text-[var(--color-text-primary)] disabled:opacity-30"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl p-10 text-center bg-[var(--color-surface)] border border-[var(--border)]">
+            <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-4">
+              <Sparkles size={26} className="text-[var(--color-accent)]" />
+            </div>
+            <h3 className="text-xl font-black text-[var(--color-text-primary)]">No Budget Found</h3>
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+              Budget creation is only available for the current and next month.
+            </p>
           </div>
         </div>
-        <div className="rounded-[1.5rem] p-10 text-center bg-[var(--color-surface)] border border-[var(--border)]">
-          <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-4">
-            <Sparkles size={26} className="text-[var(--color-accent)]" />
+        {/* DESKTOP */}
+        <div className=" hidden md:flex flex-col gap-4 pb-24 w-full">
+          <div className="flex items-center justify-between gap-5">
+            <div className="flex flex-col gap-5">
+              <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+                {monthLabelLong} Budget
+              </h2>
+              {/* Month picker pill */}
+            <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
+              <button onClick={() => shiftMonth(-1)}
+                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-[0.9rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+              <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+            </div>
           </div>
-          <h3 className="text-xl font-black text-[var(--color-text-primary)]">No Budget Found</h3>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            Budget creation is only available for the current and next month.
-          </p>
+          <div className="rounded-2xl p-10 text-center bg-[var(--color-surface)] border border-[var(--border)]">
+            <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-4">
+              <Sparkles size={26} className="text-[var(--color-accent)]" />
+            </div>
+            <h3 className="text-xl font-black text-[var(--color-text-primary)]">No Budget Found</h3>
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+              Budget creation is only available for the current and next month.
+            </p>
+          </div>
         </div>
+
       </div>
     );
   }
@@ -381,11 +464,11 @@ export default function Budgets() {
         <div className="flex items-center gap-1.5 mt-4">
           {isFullyAllocated ? (
             <>
-                <CircleCheckBig width={18} strokeWidth={2} className="text-(--color-primary)"/>
+              <CircleCheckBig width={18} strokeWidth={2} className="text-(--color-primary)" />
               <span className="text-[0.8rem] font-semibold text-[var(--color-success)]">Fully allocated</span>
             </>
           ) : isInvalid ? (
-            <span className="text-[0.8rem] text-[var(--color-danger)] flex items-center gap-1.5 font-semibold"><TriangleAlert width={18} strokeWidth={2} className="text-(--color-warm)"/> Allocation exceeds monthly limit.</span>
+            <span className="text-[0.8rem] text-[var(--color-danger)] flex items-center gap-1.5 font-semibold"><TriangleAlert width={18} strokeWidth={2} className="text-(--color-warm)" /> Allocation exceeds monthly limit.</span>
           ) : (
             <span className="text-[0.8rem] text-[var(--color-text-primary)]">
               ₹{(draftTotal - allocated).toLocaleString()} left to allocate.
@@ -400,10 +483,9 @@ export default function Budgets() {
       <div className="flex flex-col gap-2.5">
         {draftCategories.map((c, i) => {
           const CatIcon = resolveLucideIcon(c.icon || "help");
-          const isFirst = i === 0;
           return (
             <div key={c.category_id}
-              className="rounded-[14px] overflow-hidden bg-[var(--color-surface)] border border-[var(--border)]">
+              className="rounded-2xl overflow-hidden bg-[var(--color-surface)] border border-[var(--border)] shadow-xs">
               {/* Top: icon + name + trash */}
               <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
                 <div className="flex items-center gap-3">
@@ -411,7 +493,7 @@ export default function Budgets() {
                     style={{ background: `${c.color}20`, color: c.color }}>
                     <CatIcon size={19} />
                   </div>
-                  <span className="text-[0.95rem] font-bold text-[var(--color-text-primary)]">{c.name}</span>
+                  <span className="text-[0.9rem] font-bold text-[var(--color-text-primary)]">{c.name}</span>
                 </div>
                 <button
                   onClick={() => {
@@ -424,11 +506,8 @@ export default function Budgets() {
               </div>
               {/* Bottom: ₹ input + pencil */}
               <label
-                className="flex items-center justify-between px-4 pb-3.5 cursor-text"
-                style={{
-                  background: isFirst ? "var(--color-accent-soft)" : "transparent",
-                  borderLeft: `3px solid ${isFirst ? "var(--color-accent)" : "transparent"}`,
-                }}
+                className="flex items-center justify-between px-5 pb-3.5 cursor-text"
+
               >
                 <div className="flex items-center gap-2">
                   <span className="text-[1.4rem] font-light text-[var(--color-text-secondary)] leading-none">₹</span>
@@ -444,7 +523,7 @@ export default function Budgets() {
                     placeholder="0"
                   />
                 </div>
-                <Pencil size={16} className={isFirst ? "text-[var(--color-accent)]" : "text-[var(--color-text-secondary)]"} />
+                <Pencil size={16} className="text-[var(--color-text-secondary)]" />
               </label>
             </div>
           );
@@ -456,21 +535,40 @@ export default function Budgets() {
     return (
       <>
         {/* ═══ MOBILE ══════════════════════════════════════════════════════════ */}
-        <div className="lg:hidden flex flex-col pb-28 px-4 pt-4 gap-5 bg-[var(--color-background)] min-h-screen">
+        <div className="lg:hidden flex flex-col pb-24 p-2 gap-5 bg-[var(--color-background)] min-h-screen">
           <div>
-            <h1 className="text-[1.7rem] font-black tracking-tight leading-tight text-[var(--color-text-primary)]">
+            <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
               {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
-            </h1>
-            <p className="mt-1.5 text-[0.82rem] text-[var(--color-text-secondary)]">
+            </h2>
+            <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3 py-2 mt-2 border border-(--color-accent-soft) mt-3">
+              <button
+                onClick={() => shiftMonth(-1)}
+                className="flex items-center text-[var(--color-text-primary)]"
+              >
+                <ChevronLeft size={14} />
+              </button>
+
+              <span className="text-[0.75rem] font-semibold text-[var(--color-text-primary)]">
+                {monthLabelFull}
+              </span>
+
+              <button
+                onClick={() => shiftMonth(1)}
+                disabled={!canGoToNextMonth}
+                className="flex items-center text-[var(--color-text-primary)] disabled:opacity-30"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+            <p className="mt-3 text-[0.8rem] font-semibold text-(--color-text-secondary)">
               {isEditingBudget ? "Update your monthly budget and category limits below." : "We've suggested limits based on your history. Fine-tune them below."}
             </p>
           </div>
 
-          <MonthNavPill rounded />
 
           {/* Step 1 panel */}
-          <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-6">
-            <p className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-[var(--color-text-secondary)] mb-3.5">
+          <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-5 shadow-xs">
+            <p className="text-[0.6rem] font-black uppercase tracking-[0.15em] text-[var(--color-text-secondary)] mb-3.5">
               Target Monthly Limit
             </p>
             <div className="flex items-center justify-between gap-3">
@@ -483,31 +581,37 @@ export default function Budgets() {
                   className="text-[2.4rem] font-black bg-transparent border-none outline-none w-full tracking-tight leading-none text-[var(--color-text-primary)]"
                   placeholder="0"
                 />
+                <Pencil size={17} className="relative top-1 bg-transparent border-none cursor-pointer text-[var(--color-text-secondary) flex-shrink-0" />
               </label>
-              <button className="bg-transparent border-none cursor-pointer text-[var(--color-text-secondary)] p-1 flex-shrink-0">
-                <Pencil size={17} />
-              </button>
             </div>
             {AllocationStatus}
           </div>
 
           {/* Cancel + Save */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => isEditingBudget ? setIsEditingBudget(false) : undefined}
-              className="py-4 rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors">
-              Cancel
-            </button>
+          <div className={`grid gap-3 ${isEditingBudget ? "grid-cols-2" : "grid-cols-1"}`}>
+            {isEditingBudget && (
+              <button
+                onClick={() => isEditingBudget ? setIsEditingBudget(false) : undefined}
+                className="py-[18px] rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-text-secondary)]/50 cursor-pointer hover:bg-[var(--color-background)] transition-colors">
+                Cancel
+              </button>
+            )}
             <button
               disabled={isInvalid || isSavingBudget || draftTotal <= 0 || isDraftTotalInputInvalid || hasInvalidCategoryInputs}
               onClick={async () => {
                 await mutateAsync({ month: monthString, total_limit: draftTotal, categories: draftCategories.map(c => ({ category_id: c.category_id, limit: c.limit })) });
                 setIsEditingBudget(false);
               }}
-              className="py-4 rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors disabled:opacity-30">
-              {isSavingBudget ? "Saving..." : "Save Budget"}
+              className="py-[18px] rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-accent)] text-white border border-[var(--border)] cursor-pointer transition-colors disabled:opacity-30">
+              {isSavingBudget
+                ? "Saving..."
+                : isEditingBudget
+                  ? "Save Budget"
+                  : "Initialize Budget"}
             </button>
           </div>
+
+          <div className="my-1 relative h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
 
           {/* Active distribution heading */}
           <div className="flex items-center justify-between">
@@ -526,14 +630,9 @@ export default function Budgets() {
         <div className="hidden lg:flex flex-col gap-6 pb-10 w-full">
           {/* Header */}
           <div className="flex flex-col gap-5">
-            <div>
               <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
                 {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
               </h2>
-              <p className="mt-2 text-[1rem] font-semibold text-[var(--color-text-secondary)]">
-                {isEditingBudget ? "Update your monthly budget and category limits below." : "We've suggested limits based on your history. Fine-tune them below."}
-              </p>
-            </div>
             <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
               <button onClick={() => shiftMonth(-1)}
                 className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
@@ -545,6 +644,9 @@ export default function Budgets() {
                 <ChevronRight size={16} />
               </button>
             </div>
+              <p className="text-[1rem] font-semibold text-[var(--color-text-secondary)]">
+                {isEditingBudget ? "Update your monthly budget and category limits below." : "We've suggested limits based on your history. Fine-tune them below."}
+              </p>
           </div>
 
           {/* 2/3 grid */}
@@ -560,7 +662,7 @@ export default function Budgets() {
                   </div>
                   <span className="text-base font-bold text-[var(--color-text-primary)]">Set your monthly limit</span>
                 </div>
-{/* 
+                {/* 
                 <p className="text-[0.6rem] font-black uppercase tracking-[0.1rem] text-[var(--color-text-secondary)] mb-3.5">
                   Total Monthly Limit
                 </p> */}
@@ -574,7 +676,7 @@ export default function Budgets() {
                       className="text-[2.6rem] font-black bg-transparent border-none outline-none w-full tracking-tight leading-none text-[var(--color-text-primary)]"
                       placeholder="0"
                     />
-                    <Pencil size={18} className="cursor-pointer absolute right-0 text-[var(--color-text-secondary)] "/>
+                    <Pencil size={18} className="cursor-pointer absolute right-0 text-[var(--color-text-secondary)] " />
                   </label>
                 </div>
 
@@ -584,12 +686,12 @@ export default function Budgets() {
               {/* CANCEL + SAVE */}
               <div className={`grid gap-3 ${isEditingBudget ? "grid-cols-2" : "grid-cols-1"}`}>
                 {isEditingBudget && (
-                <button
-                  onClick={() => isEditingBudget ? setIsEditingBudget(false) : undefined}
-                  className="py-[18px] rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-text-secondary)]/50 cursor-pointer hover:bg-[var(--color-background)] transition-colors">
-                  Cancel
-                </button>
-              )}
+                  <button
+                    onClick={() => isEditingBudget ? setIsEditingBudget(false) : undefined}
+                    className="py-[18px] rounded-xl text-[0.72rem] font-black uppercase tracking-[0.18em] bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-text-secondary)]/50 cursor-pointer hover:bg-[var(--color-background)] transition-colors">
+                    Cancel
+                  </button>
+                )}
                 <button
                   disabled={isInvalid || isSavingBudget || draftTotal <= 0 || isDraftTotalInputInvalid || hasInvalidCategoryInputs}
                   onClick={async () => {
@@ -691,15 +793,56 @@ export default function Budgets() {
   return (
     <>
       {/* ═══ MOBILE VIEW ══════════════════════════════════════════════════════ */}
-      <div className="lg:hidden flex flex-col pb-28 bg-[var(--color-background)] min-h-screen">
+      <div className="lg:hidden flex flex-col pb-24 bg-[var(--color-background)] min-h-screen">
         {/* Header */}
-        <div className="px-4 pt-5 pb-4 text-center">
-          <h1 className="text-[1.35rem] font-black tracking-tight text-[var(--color-text-primary)]">
-            {monthLabelLong} Budget
-          </h1>
-          <button className="inline-flex items-center gap-1 mt-1.5 bg-transparent border-none cursor-pointer text-[var(--color-text-secondary)] text-[0.85rem] font-semibold">
-            {monthLabelFull} <ChevronDown size={14} />
-          </button>
+        <div className="px-2 pt-2 pb-4 flex items-start justify-between">
+          {/* LEFT: TITLE + MONTH */}
+          <div>
+            <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+              {monthLabelLong} Budget
+            </h2>
+
+            <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3 py-2 mt-2 border border-(--color-accent-soft) mt-3">
+              <button
+                onClick={() => shiftMonth(-1)}
+                className="flex items-center text-[var(--color-text-primary)]"
+              >
+                <ChevronLeft size={14} />
+              </button>
+
+              <span className="text-[0.75rem] font-semibold text-[var(--color-text-primary)]">
+                {monthLabelFull}
+              </span>
+
+              <button
+                onClick={() => shiftMonth(1)}
+                disabled={!canGoToNextMonth}
+                className="flex items-center text-[var(--color-text-primary)] disabled:opacity-30"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT: ACTIONS */}
+          {canCreateBudget && (
+            <div className="flex items-center gap-2 mt-1">
+              <button
+                onClick={() => setIsEditingBudget(true)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center border border-[var(--border)] bg-[var(--color-surface)]"
+              >
+                <Pencil size={16} className="text-[var(--color-text-secondary)]" />
+              </button>
+
+              <button
+                onClick={handleDeleteBudget}
+                disabled={isDeletingBudget}
+                className="w-9 h-9 rounded-xl flex items-center justify-center border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/10 disabled:opacity-50"
+              >
+                <Trash2 size={16} className="text-[var(--color-danger)]" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Semicircle gauge */}
@@ -716,43 +859,80 @@ export default function Budgets() {
         </div>
 
         {/* Stats row */}
-        <div className="mx-4 mt-2 rounded-[1.2rem] overflow-hidden bg-[var(--color-surface)] border border-[var(--border)]">
+        <div
+          className="mx-2 mt-2 rounded-2xl"
+          style={{
+            background: "linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))",
+            border: "1px solid rgba(16,185,129,0.15)",
+          }}
+        >
           {[
-            { label: "Limit Set", value: `₹${totalBudget.toLocaleString()}`, cls: "text-[var(--color-text-primary)]" },
-            { label: "Spent", value: `₹${spentTotal.toLocaleString()}`, cls: "text-[var(--color-warm)]" },
-            { label: "Available", value: `₹${availableAmount.toLocaleString()}`, cls: "text-[var(--color-success)]" },
+            { label: "Limit Set", value: totalBudget, cls: "text-[var(--color-text-primary)]" },
+            { label: "Spent", value: spentTotal, cls: "text-[var(--color-warm)]" },
+            { label: "Available", value: availableAmount, cls: "text-[var(--color-success)]" },
           ].map((item, i) => (
-            <div key={i} className="px-4 py-3" style={{ borderBottom: i < 2 ? "1px solid var(--border)" : "none" }}>
-              <p className="text-[0.65rem] text-[var(--color-text-secondary)] font-semibold mb-1">{item.label}</p>
-              <p className={`text-[1.1rem] font-black tracking-tight ${item.cls}`}>{item.value}</p>
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 16px",
+                // borderTop: i !== 0 ? "1px solid var(--border)" : "none",
+              }}
+            >
+              {/* Label on left */}
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "var(--color-text-secondary)",
+                  flexShrink: 0,
+                }}
+              >
+                {item.label}
+              </span>
+
+              {/* Amount on right */}
+              <span
+                className={item.cls}
+                style={{
+                  fontSize: "0.95rem",
+                  fontWeight: 700,
+                  textAlign: "right",
+                }}
+              >
+                ₹{item.value.toLocaleString("en-IN")}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Unallocated */}
-        <div className="mx-4 mt-3 rounded-[1.2rem] flex items-center justify-between px-4 py-4 bg-[var(--color-surface)] border border-[var(--border)]">
+        <div className="mx-2 mt-3 rounded-2xl flex items-center justify-between px-4 py-4 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--color-accent-soft)] flex items-center justify-center">
               <Wallet size={18} className="text-[var(--color-accent)]" />
             </div>
             <div>
-              <p className="text-[0.72rem] text-[var(--color-text-secondary)] font-semibold">Unallocated Funds</p>
+              <p className="text-[0.72rem] text-[var(--color-text-secondary)] font-semibold mb-1">Unallocated Funds</p>
               <p className="text-[1.05rem] font-black tracking-tight text-[var(--color-text-primary)]">
                 ₹{remainingToAllocate.toLocaleString()}
               </p>
             </div>
           </div>
-          <ChevronRight size={18} className="text-[var(--color-text-secondary)] opacity-40" />
+          {/* <ChevronRight size={18} className="text-[var(--color-text-secondary)] opacity-40" /> */}
         </div>
 
+
         {/* Category Overview */}
-        <div className="mx-4 mt-5 mb-2 flex items-center justify-between">
-          <h2 className="text-[1.05rem] font-black text-[var(--color-text-primary)]">Category Overview</h2>
+        <div className="mx-2 mt-5 mb-3 flex items-center justify-between">
+          <h2 className="text-base font-black text-[var(--color-text-primary)]">Category Overview</h2>
           <span className="text-[0.72rem] text-[var(--color-text-secondary)]">{groups.length} Categories</span>
         </div>
 
         {/* Category list */}
-        <div className="mx-4 rounded-[1.2rem] overflow-hidden bg-[var(--color-surface)] border border-[var(--border)]">
+        <div className="mx-2 rounded-2xl overflow-hidden bg-[var(--color-surface)] border border-[var(--border)] shadow-xs">
           {groups.map((b, i) => {
             const Icon = resolveLucideIcon(b.icon || "help");
             const percent = Math.min((b.spent / b.allocated) * 100, 100);
@@ -761,17 +941,17 @@ export default function Budgets() {
             return (
               <div key={i} className="px-4 py-3.5"
                 style={{ borderBottom: i < groups.length - 1 ? "1px solid var(--border)" : "none" }}>
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: `${b.color}18`, color: b.color }}>
                     <Icon size={20} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <p className="text-[0.9rem] font-bold text-[var(--color-text-primary)]">{b.category}</p>
+                      <p className="text-[0.9rem] font-bold text-[var(--color-text-primary)] mb-1">{b.category}</p>
                       <span className={`text-[0.7rem] font-bold ${status.cls}`}>{status.label}</span>
                     </div>
-                    <p className="text-[0.72rem] text-[var(--color-text-secondary)] mb-2">
+                    <p className="text-[0.75rem] text-[var(--color-text-secondary)] mb-2 font-semibold">
                       ₹{b.spent.toLocaleString()} / ₹{b.allocated.toLocaleString()}
                     </p>
                     <div className="flex items-center gap-2.5">
@@ -790,8 +970,8 @@ export default function Budgets() {
         </div>
 
         {/* Edit/Delete */}
-        {canCreateBudget && (
-          <div className="mx-4 mt-4 flex gap-3">
+        {/* {canCreateBudget && (
+          <div className="mx-2 mt-4 flex gap-3">
             <button onClick={() => setIsEditingBudget(true)}
               className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors">
               <Pencil size={15} /> Edit Budget
@@ -801,7 +981,7 @@ export default function Budgets() {
               <Trash2 size={15} /> Delete
             </button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* ═══ DESKTOP VIEW ═════════════════════════════════════════════════════ */}

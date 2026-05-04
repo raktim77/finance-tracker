@@ -93,7 +93,7 @@ export const ExpenseTrend = ({ data, isLoading }: Props) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <h2 className="text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
+          <h2 className="text-[14px] md:text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
             Spending Trend
           </h2>
         </div>
@@ -105,7 +105,7 @@ export const ExpenseTrend = ({ data, isLoading }: Props) => {
 
       {/* Chart */}
       <div className="flex-1 min-h-[240px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" minHeight={240}>
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
 
             <defs>
@@ -148,6 +148,9 @@ export const ExpenseTrend = ({ data, isLoading }: Props) => {
               axisLine={false}
               tickLine={false}
               tick={{ fill: "var(--color-text-secondary)", fontSize: 10 }}
+              tickFormatter={(v) =>
+                v === 0 ? "₹0" : `₹${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}K` : v}`
+              }
             />
 
             <Area

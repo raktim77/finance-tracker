@@ -15,10 +15,9 @@ import TransactionSheet from "../components/transactions/TransactionSheet";
 import { useAuth } from "../lib/context/useAuth";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import { isNativeCapacitorApp } from "../lib/capacitor/platform";
-import Topbar from "../components/layout/Topbar";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const { sidebarLayout,toggleSidebarLayout } = useContext(ThemeContext);
+  const { sidebarLayout } = useContext(ThemeContext);
   const collapsed = sidebarLayout === "icons";
   const navigate = useNavigate();
   const location = useLocation();

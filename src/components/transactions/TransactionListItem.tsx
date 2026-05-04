@@ -45,20 +45,21 @@ export default function TransactionListItem({
   return (
     <div
       onClick={onClick}
-      style={{
-        borderLeftColor:
-          transaction.type === "income" || transaction.type === "expense"
-            ? transaction.category_color
-            : "#0d9488",
-      }}
-      className={`relative flex items-center justify-between md:pl-0 pl-3 py-3 md:mb-0 mb-2
-border-l-[3px]  md:border-l-0 rounded-r-xl md:rounded-none 
+      // style={{
+      //   borderLeftColor:
+      //     transaction.type === "income" || transaction.type === "expense"
+      //       ? transaction.category_color
+      //       : "#0d9488",
+      // }}
+      // border-l-[3px]  md:border-l-0
+      className={`relative flex items-center justify-between md:pl-0 py-3 md:mb-0 mb-2
+ rounded-r-xl md:rounded-none 
 md:hover:bg-[var(--color-background)] transition-all group min-w-0 cursor-pointer
 active:scale-[0.97] active:brightness-[0.98] active:bg-[var(--color-accent-soft)]
 ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
     >
       {showDivider && (
-        <div className="absolute -bottom-1 md:bottom-0 left-18 right-3 h-px bg-[var(--border)] md:left-15 md:right-2" />
+        <div className="absolute -bottom-1 left-15 right-2 h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
       )}
 
       <div className={`flex items-center min-w-0 flex-1 ${isCompact ? "gap-4" : "gap-4 md:gap-4"}`}>
@@ -81,13 +82,13 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
 
         <div className="flex flex-col min-w-0 flex-1 justify-center">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 md:gap-12 mb-2 min-w-0">
-            <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[15px] text-[var(--color-text-primary)] ">
+            <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-bold md:text-[15px] text-[14px] text-[var(--color-text-primary)] ">
               {title}
             </span>
 
             <span
               className={`${isCompact ? "inline-block" : "md:hidden"
-                } font-black text-base shrink-0 whitespace-nowrap ${amountClassName}`}
+                } font-black md:text-base text-[14px] shrink-0 whitespace-nowrap ${amountClassName}`}
             >
               {isSignedType
                 ? displayAmount < 0
@@ -105,8 +106,8 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
               }`}
           >
             <span
-              className={`text-[13px] font-semibold text-[var(--color-text-secondary)] truncate ${isCompact
-                  ? "flex-1 max-w-[120px] md:max-w-full"
+              className={`md:text-[13px] text-[12px] font-semibold text-[var(--color-text-secondary)] truncate ${isCompact
+                  ? "flex-1 max-w-[140px] md:max-w-full"
                   : "flex-1 md:flex-none max-w-[120px] md:max-w-96"
                 }`}
             >
@@ -119,7 +120,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
             />
 
             <span
-              className={`shrink-0 text-[13px] font-semibold text-[var(--color-text-secondary)]
+              className={`shrink-0 md:text-[13px] text-[12px] font-semibold text-[var(--color-text-secondary)]
                 }`}
             >
               {displayDate}
@@ -132,6 +133,7 @@ ${isCompact ? "gap-1" : "gap-1 md:gap-8 md:p-4 md:pl-4"}`}
         className={`flex items-center shrink-0 min-w-fit ${isCompact ? "gap-1" : "gap-1 md:gap-2"
           }`}
       >
+        {/* NO USE JUST SPACE */}
         <div
           className={`font-black text-sm shrink-0 whitespace-nowrap ${amountClassName} ${isCompact ? "" : "md:text-base"
             }`}

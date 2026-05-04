@@ -99,16 +99,16 @@ export const RecentTransactions = () => {
   };
 // px-2 py-3 md:px-4 md:py-4
   return (
-    <div className="p-4 md:p-6 w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)]  shadow-sm transition-all h-full flex flex-col">
+    <div className="mt-4 md:mt-0 md:pl-6 pl-3 pr-2 md:pr-6 md:pb-6 md:p-6 w-full md:rounded-2xl md:border md:border-[var(--border)] md:bg-[var(--color-surface)] md:shadow-sm transition-all h-full flex flex-col">
       {currentItems.length > 0 ? (
         <div className="flex items-center justify-between mb-4 md:mb-5">
-          <h2 className="text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
+          <h2 className="text-[14px] md:text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
             <span className="hidden md:inline">Recent Transactions</span>
             <span className="md:hidden">Recent History</span>
           </h2>
           <button
             onClick={() => navigate("/transactions")}
-            className="flex items-center px-3 py-1.5 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] text-[var(--color-accent)] text-xs font-semibold transition-all"
+            className="flex items-center px-1.5 md:px-3 py-1.5 rounded-xl md:border md:border-[var(--color-accent)]/20 md:bg-[var(--color-accent-soft)] text-[var(--color-accent)] text-xs font-semibold transition-all"
           >
             View all
             {/* <ArrowRight size={10} strokeWidth={3} className="ml-1"/> */}
@@ -117,7 +117,7 @@ export const RecentTransactions = () => {
       ) : ''}
 
 
-      <div className="rounded-xl overflow-hidden w-full flex-1">
+      <div className="md:rounded-xl overflow-hidden w-full flex-1">
         <div className="flex flex-col h-full">
           {isLoading ? (
             <div className="flex flex-col gap-1 p-1">

@@ -259,7 +259,7 @@ export function QuarterlyBarChart({ barData, isLoading }: QuarterlyBarChartProps
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
                                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "var(--color-text-secondary)", fontSize: 10, fontWeight: "900" }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--color-text-secondary)", fontSize: 10, fontWeight: "700" }} tickFormatter={(v) => v === 0 ? '₹0' : `₹${v / 1000}k`} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--color-text-secondary)", fontSize: 10 }} tickFormatter={(v) => v === 0 ? '₹0' : `₹${v / 1000}K`} />
                                 <Tooltip
                                     active={isTouchScrolling ? false : (activeIndex !== null)}
                                     trigger={isCoarsePointer ? "click" : "hover"}

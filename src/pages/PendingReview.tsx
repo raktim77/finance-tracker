@@ -349,7 +349,7 @@ export default function PendingReview() {
   return (
     <>
       <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-col gap-6 overflow-x-hidden pb-24 animate-in fade-in duration-500 p-2">
-        <section className="relative min-w-0 overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--color-surface)] p-5 md:p-8 shadow-sm mb-4">
+        <section className="relative min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-5 md:p-8 shadow-xs mb-4">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               {/* <div className="flex h-12 w-12 md:h-14 md:w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--color-accent)]/10 bg-[var(--color-accent-soft)] text-[var(--color-accent)]">
@@ -363,7 +363,7 @@ export default function PendingReview() {
                   {items.length} Pending {items.length > 1 ? "Transactions" : "Transaction"}
                 </h2>
                 <p className="mt-2 max-w-xl text-xs font-medium text-[var(--color-text-secondary)]">
-                  Confirm detected SMS activity before it becomes part of your transaction history. <span className="font-black font-extrabold">Tap to review or swipe from  right to left sto ignore.</span>
+                  Confirm detected SMS activity before it becomes part of your transaction history. <span className="font-black font-extrabold">Tap to review or swipe from  right to left to ignore.</span>
                 </p>
               </div>
             </div>

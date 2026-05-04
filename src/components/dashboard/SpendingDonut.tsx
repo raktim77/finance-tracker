@@ -71,7 +71,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
+        <h2 className="text-[14px] md:text-base font-semibold text-[var(--color-text-primary)] tracking-wide uppercase">
           Spending by Category
         </h2>
       </div>
