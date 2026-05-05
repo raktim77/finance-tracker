@@ -46,30 +46,31 @@ export function AnalyticsHeader({
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4 md:gap-6 mb-4">
-        <div className="flex flex-col gap-2 md:gap-4 min-w-0">
-          <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)] hidden lg:block">
+      <div className="flex items-start justify-between gap-4 md:gap-6 mb-1 md:mb-4 p-2 md:p-0">
+        <div className="flex flex-col gap-3 md:gap-4 min-w-0">
+          <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)] hidden md:block">
             Analytics
           </h2>
-          <h2 className="text-[2.75rem] leading-[0.95] font-black tracking-[-0.02em] text-[var(--color-text-primary)] lg:hidden">
+          <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)] md:hidden">
             Analytics
           </h2>
 
           <div className="flex items-center gap-2 opacity-80">
             <Calendar size={15} className="text-[var(--color-accent)]" />
-            <p className="text-[0.7rem] font-black uppercase tracking-[0.15em] text-[var(--color-text-primary)]/80">
+            <p className="font-semibold text-[var(--color-text-primary)]/80 text-[0.7rem]  md:text-[0.8rem] ">
               {overviewText}
             </p>
           </div>
         </div>
 
-        <div className="w-[170px] lg:w-[210px] shrink-0">
+        <div className="w-[120px] lg:w-[210px] shrink-0">
           <Dropdown
+          compact
             value={selectedPreset}
             onChange={(value) => onPresetChange(value as AnalyticsDatePreset)}
             options={analyticsDatePresetOptions}
             className="w-full"
-            buttonClassName="rounded-xl h-[42px] text-[1rem] lg:text-[1rem] font-semibold"
+            buttonClassName="rounded-xl h-[42px] text-[11px] md:text-[1rem] font-semibold"
           />
         </div>
       </div>

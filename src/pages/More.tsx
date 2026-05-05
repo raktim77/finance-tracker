@@ -97,9 +97,9 @@ export default function MorePage() {
                     <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--color-primary)] opacity-80">
                         Xpensio Directory
                     </span>
-                    <h1 className="text-4xl font-black tracking-tighter text-[var(--color-text-primary)]">
+                    <h2 className="text-4xl font-black tracking-tighter text-[var(--color-text-primary)]">
                         More Options<span className="text-[var(--color-primary)]">.</span>
-                    </h1>
+                    </h2>
                 </div>
             </header>
             
@@ -111,7 +111,7 @@ export default function MorePage() {
                         onClick={() => navigate(item.path)}
                         className="
                             w-full flex items-center justify-between p-2 
-                            rounded-[1.25rem] bg-[var(--color-surface)] 
+                            rounded-2xl bg-[var(--color-surface)] 
                             border border-[var(--border)] 
                             shadow-sm active:scale-[0.97] 
                             transition-all duration-300 group
@@ -130,7 +130,7 @@ export default function MorePage() {
                                 <item.icon size={22} strokeWidth={2.5} />
                             </div>
 
-                            <div className="text-left">
+                            <div className="text-left flex flex-col gap-1">
                                 <p className="text-sm font-black text-[var(--color-text-primary)] uppercase tracking-widest">
                                     {item.name}
                                 </p>
@@ -140,7 +140,7 @@ export default function MorePage() {
                             </div>
                         </div>
 
-                        <div className="p-2 rounded-full bg-[var(--color-background)] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="p-2 rounded-full bg-[var(--color-background)]">
                             <ChevronRight size={14} className="text-[var(--color-primary)]" />
                         </div>
                     </button>

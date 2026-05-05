@@ -93,9 +93,10 @@ export default function Dropdown({
       <button
         type="button"
         onClick={toggleDropdown}
+        // In Dropdown.tsx, change the button className:
         className={`w-full flex items-center justify-between bg-[var(--color-surface)] border font-bold transition-all hover:border-[var(--color-accent)]/30 border-[var(--border)] ${compact
-            ? "pl-3 pr-2 h-9 rounded-lg text-[13px]"
-            : "pl-9 pr-3 h-11 rounded-xl text-[12px]"
+            ? `pl-3 pr-2 h-9 rounded-lg ${buttonClassName?.includes("text-") ? "" : "text-[13px]"}`
+            : `pl-9 pr-3 h-11 rounded-xl ${buttonClassName?.includes("text-") ? "" : "text-[12px]"}`
           } ${buttonClassName ?? ""}`}
       >
         <div className="flex items-center gap-2">
@@ -138,8 +139,8 @@ export default function Dropdown({
                 width: `${coords.width}px`,
               }}
               className={`bg-[var(--color-surface)] border border-[var(--input-border)] shadow-xl overflow-y-auto overscroll-contain z-[9999] animate-in fade-in slide-in-from-top-1 ${compact
-                  ? "max-h-56 rounded-lg"
-                  : "rounded-xl overflow-hidden"
+                ? "rounded-lg"
+                : "rounded-xl overflow-hidden"
                 } ${menuClassName ?? ""}`}
             >
               {options.map((option) => (
@@ -154,8 +155,8 @@ export default function Dropdown({
                     setOpen(false);
                   }}
                   className={`w-full text-left font-semibold transition-colors ${compact
-                      ? "px-3 py-2 rounded-md text-[13px] whitespace-nowrap"
-                      : "px-4 py-2 text-sm"
+                    ? "px-3 py-2 rounded-md text-[13px] whitespace-nowrap"
+                    : "px-4 py-2 text-sm"
                     } hover:bg-[var(--color-background)] ${value === option.value
                       ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]"
                       : ""

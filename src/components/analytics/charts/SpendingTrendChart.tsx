@@ -89,7 +89,7 @@ export function SpendingTrendChart({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-lg text-[var(--color-text-primary)] tracking-tight">
+            <h3 className="font-bold text-base md:text-lg text-[var(--color-text-primary)] tracking-tight">
               Spending Trend
             </h3>
            

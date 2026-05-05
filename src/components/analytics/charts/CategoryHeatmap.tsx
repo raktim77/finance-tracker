@@ -66,8 +66,8 @@ export function CategoryHeatmap({ pieData, isLoading }: CategoryHeatmapProps) {
     <div className="lg:col-span-3 h-full rounded-2xl p-4 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col">
 
       {/* HEADER */}
-      <div className="flex flex-col gap-1">
-        <h3 className="font-bold text-lg text-[var(--color-text-primary)] tracking-tight">
+      <div className="flex flex-col gap-1 md:mb-0 mb-8">
+        <h3 className="font-bold text-base md:text-lg text-[var(--color-text-primary)] tracking-tight">
           Category Heatmap
         </h3>
         <p className="text-xs text-[var(--color-text-secondary)]">
@@ -169,36 +169,41 @@ export function CategoryHeatmap({ pieData, isLoading }: CategoryHeatmapProps) {
 
             {/* CENTER TEXT */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[10px] font-black uppercase text-[var(--color-text-secondary)] tracking-widest opacity-60">
+              <span className="text-[8px] md:text-[10px] font-black uppercase text-[var(--color-text-secondary)] tracking-widest opacity-60">
                 {activeIndex !== null ? "Focusing" : "Top Spend"}
               </span>
-              <span className="text-sm font-black text-[var(--color-text-primary)] truncate max-w-[120px] text-center">
+              <span className="text-[10px] md:text-sm font-semibold md:font-black text-[var(--color-text-primary)] truncate max-w-[120px] text-center">
                 {display.name}
               </span>
-              <span className="text-xl font-black text-[var(--color-text-primary)]">
+              <span className="text-lg md:text-xl font-black text-[var(--color-text-primary)]">
                 ₹{formatCompactCurrency(display.value)}
               </span>
             </div>
           </div>
 
           {/* RIGHT: LEGEND WITH SCROLL */}
-          <div className="flex-1 flex flex-col max-h-[220px]">
+          <div className="flex-1 flex flex-col max-h-[180px] md:max-h-[220px]">
 
             {/* HEADER */}
             <div className="flex items-center justify-between px-1 mb-3">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-80">
+              <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)] opacity-80">
                 Breakdown ({pieData.length})
               </span>
 
+              {pieData.length > 2 && (
+                <span className="block md:hidden text-[10px] font-bold text-[var(--color-accent)] animate-bounce">
+                  ↓ Scroll
+                </span>
+              )}
               {pieData.length > 6 && (
-                <span className="text-[10px] font-bold text-[var(--color-accent)] animate-bounce">
+                <span className="hidden md:block text-[10px] font-bold text-[var(--color-accent)] animate-bounce">
                   ↓ Scroll
                 </span>
               )}
             </div>
 
             {/* SCROLL GRID */}
-            <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1 no-scrollbar flex-1">
+            <div className="grid md:grid-cols-2 grid-cols-1 gap-2 overflow-y-auto pr-1 no-scrollbar flex-1">
               {pieData.map((item, i) => (
                 <div
                   key={i}

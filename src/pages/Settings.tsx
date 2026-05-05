@@ -767,7 +767,7 @@ export default function Settings() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-2xl shadow-xs">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Display Name</label>
                   <input
@@ -801,7 +801,7 @@ export default function Settings() {
 
           {/* FINANCIAL */}
           {activeTab === "financial" && (
-            <div className="settings-section-animate space-y-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
+            <div className="settings-section-animate space-y-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-2xl shadow-xs">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Default Currency</label>
@@ -854,7 +854,7 @@ export default function Settings() {
           {/* APPEARANCE */}
           {activeTab === "appearance" && (
             <div className="settings-section-animate space-y-4">
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-[2.5rem] overflow-visible">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl overflow-visible shadow-xs">
                 <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between md:p-6">
                   <div className="flex min-w-0 items-start gap-3 md:gap-4">
                     <div className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
@@ -920,7 +920,7 @@ export default function Settings() {
           {/* SECURITY & DATA */}
           {activeTab === "security" && (
             <div className="settings-section-animate space-y-8">
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-2xl shadow-xs">
                 <h3 className="text-sm font-black uppercase tracking-widest mb-6 text-[var(--color-text-primary)] flex items-center gap-2">
                   <Lock size={16} /> Account Security
                 </h3>
@@ -932,7 +932,7 @@ export default function Settings() {
                 </div>
               </div>
 
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-2xl shadow-xs">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-sm font-black uppercase tracking-widest text-[var(--color-text-primary)]">Active Sessions</h3>
                   <span className="px-3 py-1 bg-[var(--color-success)]/10 text-[var(--color-success)] text-[9px] font-black rounded-full uppercase">{sessions.length} {sessions.length > 1 ? "Devices" : "Device"} Online</span>
@@ -982,7 +982,7 @@ export default function Settings() {
                 </button>
               </div>
 
-              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-[2.5rem] shadow-sm">
+              <div className="bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-2xl shadow-xs">
                 <h3 className="text-sm font-black uppercase tracking-widest mb-6 text-[var(--color-text-primary)] flex items-center gap-2">
                   <Database size={16} /> Data & Privacy
                 </h3>

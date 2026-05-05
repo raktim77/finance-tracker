@@ -49,19 +49,19 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
 
   // ─── MOBILE layout: 2×2 metric cards + efficiency/budget row ───
   const MobileHero = (
-    <div className="flex flex-col gap-3 md:hidden">
+    <div className="flex flex-col gap-3 md:hidden px-2">
       {/* Row 1 */}
       <div className="grid grid-cols-2 gap-3">
         {/* Cumulative Spending */}
-        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
             Cumulative Spending
           </span>
           {isLoading ? (
             <SkeletonVal wide />
           ) : (
             <>
-              <span className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight leading-none">
+              <span className="text-2xl font-semibold text-[var(--color-text-primary)] tracking-tight leading-none">
                 ₹{formatCompactCurrency(totalSpending)}
               </span>
               <div
@@ -86,14 +86,14 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
         </div>
 
         {/* Total Income */}
-        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
             Total Income
           </span>
           {isLoading ? (
             <SkeletonVal />
           ) : (
-            <span className="text-2xl font-black text-[var(--color-success)] tracking-tight leading-none">
+            <span className="text-2xl font-semibold text-[var(--color-success)] tracking-tight leading-none">
               ₹{formatCompactCurrency(totalIncome)}
             </span>
           )}
@@ -103,28 +103,28 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
       {/* Row 2 */}
       <div className="grid grid-cols-2 gap-3">
         {/* Total Savings */}
-        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
             Total Savings
           </span>
           {isLoading ? (
             <SkeletonVal />
           ) : (
-            <span className="text-2xl font-black text-[var(--color-success)] tracking-tight leading-none">
+            <span className="text-2xl font-semibold text-[var(--color-success)] tracking-tight leading-none">
               ₹{formatCompactCurrency(totalSavings)}
             </span>
           )}
         </div>
 
         {/* Avg Daily Spend */}
-        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-1">
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+        <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-2">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
             Avg Daily Spend
           </span>
           {isLoading ? (
             <SkeletonVal />
           ) : (
-            <span className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight leading-none">
+            <span className="text-2xl font-semibold text-[var(--color-text-primary)] tracking-tight leading-none">
               ₹{formatCompactCurrency(avgDaily)}
             </span>
           )}
@@ -134,8 +134,8 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
       {/* Efficiency + Budget row */}
       <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl p-4 flex items-center gap-0">
         {/* Efficiency */}
-        <div className="flex flex-col gap-0.5 flex-1">
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+        <div className="flex flex-col gap-1 flex-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
             Efficiency
           </span>
           {isLoading ? (
@@ -143,7 +143,7 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
           ) : (
             <div className="flex items-center gap-1.5">
               <span
-                className={`text-xl font-black ${efficiencyColor[efficiency]}`}
+                className={`text-xl font-semibold ${efficiencyColor[efficiency]}`}
               >
                 {efficiency}
               </span>
@@ -159,8 +159,8 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
         <div className="w-px h-10 bg-[var(--border)] mx-4" />
 
         {/* Budget Left */}
-        <div className="flex flex-col gap-1.5 flex-1">
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)] opacity-70">
+        <div className="flex flex-col gap-2 flex-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
             Budget Left
           </span>
           {isLoading ? (

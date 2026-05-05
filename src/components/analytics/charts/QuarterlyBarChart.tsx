@@ -197,7 +197,7 @@ export function QuarterlyBarChart({ barData, isLoading }: QuarterlyBarChartProps
             <div className="flex flex-col mb-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="flex flex-col gap-1">
-                        <h3 className="font-bold text-lg text-[var(--color-text-primary)] tracking-tight text-left">
+                        <h3 className="font-bold text-base md:text-lg text-[var(--color-text-primary)] tracking-tight text-left">
                             Transactional Velocity
                         </h3>
                         <p className="text-xs text-[var(--color-text-secondary)]">

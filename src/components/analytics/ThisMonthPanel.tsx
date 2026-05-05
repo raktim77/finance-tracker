@@ -23,8 +23,8 @@ export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
   return (
     <div className="lg:col-span-2 rounded-2xl p-4 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-lg text-[var(--color-text-primary)] tracking-tight text-left">
+      <div className="flex items-center justify-between md:mb-4 mb-6">
+        <h3 className="font-bold text-base md:text-lg text-[var(--color-text-primary)] tracking-tight text-left">
           This Month
         </h3>
         

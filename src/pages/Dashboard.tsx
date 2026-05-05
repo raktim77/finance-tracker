@@ -18,8 +18,8 @@ import ProfileMenu from "../components/ProfileMenu";
 
 export default function Dashboard() {
   useHeaderConfig({
-    heroColor: "#2f8c3d",
-    heroHeight: 280,
+    heroColor: "#071209",        // matches the hero's top color
+    heroHeight: 320,
     showLogo: true,
     scrollTitle: null,
     scrollAction: null,

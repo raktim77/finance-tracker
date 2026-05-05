@@ -253,6 +253,7 @@ export default function Transactions() {
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasRequestedMore, setHasRequestedMore] = useState(false);
   const mobileItems = allTransactions.length ? allTransactions : (data?.transactions ?? []);
 
   useEffect(() => {
@@ -261,6 +262,7 @@ export default function Transactions() {
     setCurrentPage(1);
     setHasMore(true);
     setLoadingMore(false);
+    setHasRequestedMore(false);
     previousMobileCriteriaRef.current = mobileCriteriaKey;
   }, [mobileCriteriaChanged, mobileCriteriaKey]);
 
@@ -281,6 +283,7 @@ export default function Transactions() {
     loading: loadingMore || isLoading,
     hasNextPage: hasMore,
     onLoadMore: () => {
+      setHasRequestedMore(true);
       setLoadingMore(true);
       setCurrentPage((prev) => prev + 1);
     },
@@ -453,8 +456,8 @@ export default function Transactions() {
                   </div>
                 )}
 
-                {!hasMore && mobileItems.length > 0 && (
-                  <div className="py-6 text-center text-xs text-[var(--color-text-secondary)]">
+                {!hasMore && hasRequestedMore && mobileItems.length > 0 && (
+                  <div className="py-6 text-center text-xs text-[var(--color-text-secondary)]/60">
                     No more transactions
                   </div>
                 )}

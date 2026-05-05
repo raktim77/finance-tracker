@@ -93,7 +93,7 @@ export function SavingsTrendChart({
     <div className="h-full rounded-2xl p-4 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs hover:shadow-md transition-all flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg text-[var(--color-text-primary)] tracking-tight">
+          <h3 className="font-bold text-base md:text-lg text-[var(--color-text-primary)] tracking-tight">
             Savings Performance
           </h3>
           

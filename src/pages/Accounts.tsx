@@ -259,11 +259,11 @@ export default function Accounts() {
               <div>
                 {/* text-[0.8rem] uppercase tracking-[0.13em] font-semibold mb-4 text-(--color-text-primary) */}
                 <p className="text-[0.7rem] font-semibold tracking-[0.13em] uppercase mb-3 text-(--color-text-primary)/80"
-                  >
+                >
                   Total Balance
                 </p>
                 <h2 className="text-[2.1rem] font-bold tracking-[-0.03em] leading-none truncate text-(--color-text-primary)"
-                  >
+                >
                   {formatCurrency(totalBalance)}
                 </h2>
                 <p className="mt-3 text-[0.85rem] text-(--color-text-primary)/80" >
@@ -316,51 +316,7 @@ export default function Accounts() {
           </div>
         </div>
 
-        {/* Summary Strip */}
-        {/* {(() => {
-          const dividerColor = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-          const SavingsIcon: React.FC = () => (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          );
-          const InvestIcon: React.FC = () => (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-          );
-          const WalletIcon: React.FC = () => <Wallet size={18} />;
-          const items = [
-            { icon: WalletIcon, label: "Cash Wallet", amount: formatCurrency(cashTotal), color: "#22c55e" },
-            { icon: SavingsIcon, label: "Savings", amount: formatCurrency(savingsTotal), color: "#3b82f6" },
-            { icon: InvestIcon, label: "Investments", amount: formatCurrency(investTotal), color: "#7c3aed" },
-          ];
-          return (
-            <div className="mx-4 mt-3 rounded-[1.1rem] overflow-hidden"
-              style={{ background: isDark ? "#141414" : "#ffffff", border: `1px solid ${dividerColor}` }}>
-              <div className="flex">
-                {items.map((item, i) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={i}
-                      className="flex-1 min-w-0 flex items-center gap-2 px-3 py-3.5"
-                      style={i > 0 ? { borderLeft: `1px solid ${dividerColor}` } : undefined}
-                    >
-                      <span style={{ color: item.color, flexShrink: 0 }}>
-                        <Icon />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[0.65rem] font-medium truncate" style={{ color: isDark ? "#6b7280" : "#9ca3af" }}>{item.label}</p>
-                        <p className="text-[0.8rem] font-bold tracking-[-0.01em] truncate" style={{ color: isDark ? "#f5f5f5" : "#111318" }}>{item.amount}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })()} */}
+
 
         {/* Filter Tabs — key fix: width strictly contained, scroll inside */}
         <div className="mt-6 w-full max-w-[100vw] overflow-x-hidden box-border">
@@ -376,11 +332,10 @@ export default function Accounts() {
                   <button
                     key={f.key}
                     onClick={() => setDesktopFilter(f.key)}
-                    className={`pb-2.5 px-0 mr-5 text-[0.85rem] font-bold whitespace-nowrap bg-transparent border-0 border-b-2 mb-[-1px] shrink-0 transition-colors ${
-                      desktopFilter === f.key
+                    className={`pb-2.5 px-0 mr-5 text-[0.85rem] font-bold whitespace-nowrap bg-transparent border-0 border-b-3 mb-[-1px] shrink-0 transition-colors ${desktopFilter === f.key
                         ? "text-[var(--color-primary)] border-[var(--color-primary)]"
                         : "text-[var(--color-text-secondary)] border-transparent"
-                    }`}
+                      }`}
                   >
                     {f.label}
                   </button>
@@ -410,97 +365,98 @@ export default function Accounts() {
               <div key={i} className="mx-2 mt-2 h-[72px] rounded-xl animate-pulse bg-(--color-surface)" />
             ))
           ) : filteredAccounts.length === 0 ? (
-                  <div className="text-center mx-2 mt-2 rounded-2xl p-10 text-base bg-(--color-surface) border border-(--border)"
+            <div className="text-center mx-2 mt-2 rounded-2xl p-10 text-base bg-(--color-surface) border border-(--border)"
+            >
+              No accounts found in this category.
+            </div>
+          ) : filteredAccounts.map((acc) => {
+            const Icon = acc.icon;
+
+            return (
+              <div
+                key={acc._id}
+                onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
+                className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border) shadow-xs"
+              >
+                {/* TOP ROW */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0 w-0 flex-1 basis-0 overflow-hidden">
+                    <div
+                      className="w-11 h-11 flex items-center justify-center rounded-xl flex-shrink-0"
+                      style={{
+                        background: isDark ? `${acc.color}22` : `${acc.color}15`,
+                        color: acc.color,
+                      }}
                     >
-                    No accounts found in this category.
+                      <Icon size={20} strokeWidth={2.2} />
+                    </div>
+
+                    <div className="min-w-0 w-0 flex-1 overflow-hidden">
+                      <p
+                        className="block max-w-full min-w-0 truncate text-[0.95rem] font-semibold text-(--color-text-primary)"
+                      >
+                        {acc.name}
+                      </p>
+                      <p
+                        className="text-[0.75rem] mt-0.5 text-(--color-text-secondary)"
+                      >
+                        {acc.type}
+                      </p>
+                    </div>
                   </div>
-                ) : filteredAccounts.map((acc) => {
-  const Icon = acc.icon;
 
-  return (
-    <div
-      key={acc._id}
-      className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border) shadow-xs"
-    >
-      {/* TOP ROW */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-3 min-w-0 w-0 flex-1 basis-0 overflow-hidden">
-          <div
-            className="w-11 h-11 flex items-center justify-center rounded-xl flex-shrink-0"
-            style={{
-              background: isDark ? `${acc.color}22` : `${acc.color}15`,
-              color: acc.color,
-            }}
-          >
-            <Icon size={20} strokeWidth={2.2} />
-          </div>
+                  {/* ACTIONS */}
+                  <div className="flex items-center gap-2 ml-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => setEditingAccountId(acc._id)}
+                      className="p-2 rounded-lg text-(--color-text-secondary)"
+                    >
+                      <Pencil size={16} />
+                    </button>
 
-          <div className="min-w-0 w-0 flex-1 overflow-hidden">
-            <p
-              className="block max-w-full min-w-0 truncate text-[0.95rem] font-semibold text-(--color-text-primary)"
-            >
-              {acc.name}
-            </p>
-            <p
-              className="text-[0.75rem] mt-0.5 text-(--color-text-secondary)"
-            >
-              {acc.type}
-            </p>
-          </div>
-        </div>
+                    <button
+                      onClick={() => void handleArchiveAccount(acc)}
+                      className="p-2 rounded-lg text-(--color-danger)"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
 
-        {/* ACTIONS */}
-        <div className="flex items-center gap-2 ml-2 shrink-0">
-          <button
-            onClick={() => setEditingAccountId(acc._id)}
-            className="p-2 rounded-lg text-(--color-text-secondary)"
-          >
-            <Pencil size={16} />
-          </button>
+                {/* BALANCE */}
+                <div className="mt-4 flex items-end justify-between">
+                  <div>
+                    <p
+                      className="text-[1.25rem] font-bold tracking-[-0.02em] text-(--color-text-primary)"
+                    >
+                      {acc.balance}
+                    </p>
+                    <p
+                      className="text-[0.7rem] mt-1 text-(--color-text-secondary)"
+                    >
+                      Last updated · {acc.lastUpdated}
+                    </p>
+                  </div>
 
-          <button
-            onClick={() => void handleArchiveAccount(acc)}
-            className="p-2 rounded-lg text-(--color-danger)"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
+                  <button
 
-      {/* BALANCE */}
-      <div className="mt-4 flex items-end justify-between">
-        <div>
-          <p
-            className="text-[1.25rem] font-bold tracking-[-0.02em] text-(--color-text-primary)"
-          >
-            {acc.balance}
-          </p>
-          <p
-            className="text-[0.7rem] mt-1 text-(--color-text-secondary)"
-          >
-            Last updated · {acc.lastUpdated}
-          </p>
-        </div>
-
-        <button
-          onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
-          className="flex items-center gap-1 text-[0.75rem] font-semibold"
-          style={{ color: "#22c55e" }}
-        >
-          View
-          <ChevronRight size={14} />
-        </button>
-      </div>
-    </div>
-  );
-})}
+                    className="flex items-center gap-1 text-[0.75rem] font-semibold"
+                    style={{ color: "#22c55e" }}
+                  >
+                    View
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="my-6 mx-3 relative h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
 
         {/* Account Insights Card */}
         <div className="mx-2 mt-4 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
-          >
+        >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <h3 className="text-[1.05rem] font-bold text-(--color-text-primary)">Account Insights</h3>
@@ -519,7 +475,7 @@ export default function Accounts() {
 
         {/* Account Distribution Card */}
         <div className="mx-2 mt-3 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
-          >
+        >
           <h3 className="text-[1.05rem] font-bold mb-4 text-(--color-text-primary)">Account Distribution</h3>
           <div className="flex items-center gap-5">
             <div className="relative flex-shrink-0" style={{ width: "100px", height: "100px" }}>
@@ -713,7 +669,7 @@ export default function Accounts() {
                   ))
                 ) : filteredAccounts.length === 0 ? (
                   <div className="rounded-2xl p-10 text-base bg-(--color-surface) border border-(--border)"
-                    >
+                  >
                     No accounts found in this category.
                   </div>
                 ) : (

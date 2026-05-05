@@ -36,7 +36,7 @@ export function AnalyticsMainGrid({
   thisMonthData,
 }: AnalyticsMainGridProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-2">
       {/* ── ROW 1: Spending Trend + Savings Performance + This Month ── */}
       {/* Desktop: 3-col (5fr + 5fr + 2fr), Mobile: stacked */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-stretch">
