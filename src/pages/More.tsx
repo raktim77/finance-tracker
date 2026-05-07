@@ -13,6 +13,7 @@ import { useAuth } from "../lib/context/useAuth";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { isNativeAndroidApp } from "../lib/capacitor/platform";
 import { ThemeContext } from "../context/ThemeContext";
+import { useHeaderConfig } from "../hooks/useHeaderConfig";
 
 type MenuItem = {
     name: string;
@@ -63,6 +64,8 @@ function ThemeSwitcher() {
   );
 }
 
+
+
 export default function MorePage() {
     const navigate = useNavigate();
     const { logout } = useAuth();
@@ -87,7 +90,14 @@ export default function MorePage() {
             console.error("Logout failed", err);
         }
     };
-
+     useHeaderConfig({
+         heroColor: null,
+         heroHeight: 80,
+         showLogo: false,
+         scrollTitle: "More",
+         scrollAction: null,
+         onAction: null,
+       });
     return (
         <div className="section-animate bg-[var(--color-background)] pb-10 md:hidden min-h-screen p-2">
 

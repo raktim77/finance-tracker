@@ -27,6 +27,7 @@ import { useToast } from "../components/ui/confirm-modal/useToast";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 import { ThemeContext } from "../context/ThemeContext";
 import PaceVsIdealChart from "../components/budgets/PaceVsIdealChart";
+import { useHeaderConfig } from "../hooks/useHeaderConfig";
 // Place this OUTSIDE and ABOVE the Budgets component
 const SemiGauge: React.FC<{ percent: number }> = ({ percent }) => {
   const r = 90;
@@ -73,6 +74,7 @@ const SemiGauge: React.FC<{ percent: number }> = ({ percent }) => {
   );
 };
 export default function Budgets() {
+
   const { theme } = useContext(ThemeContext);
   const isDark =
     theme === "dark" ||
@@ -235,7 +237,14 @@ export default function Budgets() {
   const monthLabelLong = month.toLocaleString("default", { month: "long" });
   const monthLabelFull = month.toLocaleString("default", { month: "long", year: "numeric" });
   // const monthLabelShortUpper = month.toLocaleString("default", { month: "short", year: "numeric" }).toUpperCase();
-
+    useHeaderConfig({
+           heroColor: null,
+           heroHeight: 80,
+           showLogo: false,
+           scrollTitle: `${monthLabelLong} Budget`,
+           scrollAction: null,
+           onAction: null,
+         });
   // ─── SHARED SUB-COMPONENTS ────────────────────────────────────────────────
 
 

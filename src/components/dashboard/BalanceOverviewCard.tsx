@@ -50,7 +50,7 @@ export function BalanceOverviewCard({ data, isLoading }: Props) {
   // ] as const;
 
   return (
-    <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-6 shadow-sm">
+    <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-6 shadow-xs">
 
       <div className="flex flex-col lg:flex-row gap-2">
 

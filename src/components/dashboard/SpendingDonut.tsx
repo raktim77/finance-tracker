@@ -18,7 +18,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
 
   if (isLoading) {
     return (
-      <div className="h-full w-full rounded-2xl p-4 md:p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-4">
+      <div className="h-full w-full rounded-2xl p-4 md:p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col gap-4">
         <div className="h-5 w-40 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
         <div className="flex items-center gap-4">
           <div className="relative shrink-0" style={{ width: 110, height: 110 }}>
@@ -44,7 +44,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
 
   if (!hasData) {
     return (
-      <div className="h-full w-full rounded-2xl p-5 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-4 items-center justify-center text-center min-h-[200px]">
+      <div className="h-full w-full rounded-2xl p-5 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col gap-4 items-center justify-center text-center min-h-[200px]">
         <div className="w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
           <span className="text-lg">🍩</span>
         </div>
@@ -67,7 +67,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
   };
 
   return (
-    <div className="h-full w-full rounded-2xl p-4 md:p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-sm flex flex-col gap-4">
+    <div className="h-full w-full rounded-2xl p-4 md:p-6 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col gap-4">
 
       {/* Header */}
       <div className="flex items-center justify-between">

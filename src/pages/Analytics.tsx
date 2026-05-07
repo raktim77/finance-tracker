@@ -8,6 +8,7 @@ import { formatOverviewText, getPresetRange } from "../components/analytics/data
 import type { AnalyticsDatePreset, AnalyticsDateRange } from "../components/analytics/data/types";
 import { useAnalytics } from "../features/analytics/hooks/useAnalytics";
 import { getAnalyticsMode } from "../utils/getAnalyticsMode";
+import { useHeaderConfig } from "../hooks/useHeaderConfig";
 
 export default function Analytics() {
   const defaultPreset: Exclude<AnalyticsDatePreset, "custom"> = "last_3_months";
@@ -96,7 +97,14 @@ export default function Analytics() {
   };
 
   const mode = getAnalyticsMode(activeRange.from, activeRange.to);
-  
+   useHeaderConfig({
+             heroColor: null,
+             heroHeight: 50,
+             showLogo: false,
+             scrollTitle: "Analytics",
+             scrollAction: null,
+             onAction: null,
+           });
   return (<div className="flex flex-col gap-4 pb-24 md:pb-10 mx-auto w-full">
     <AnalyticsHeader
       selectedPreset={selectedPreset}

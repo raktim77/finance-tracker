@@ -7,6 +7,7 @@ export function useHeaderConfig(config: HeaderConfig) {
   useLayoutEffect(() => {
     registerConfig(config);
   }, [
+    config.isDashboard,
     config.heroColor,
     config.heroHeight,
     config.showLogo,

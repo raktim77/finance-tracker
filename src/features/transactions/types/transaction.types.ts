@@ -61,6 +61,32 @@ export interface TransactionsListResponse {
   page: number;
   pages: number;
   transactions: Transaction[];
+  analytics?: {
+    summary: {
+      totalSpent: number;
+      totalReceived: number;
+      netFlow: number;
+    };
+    counts: {
+      income: number;
+      expense: number;
+      transfer: number;
+    };
+    spendingByType: Array<{
+      label?: string;
+      type?: string;
+      category?: string;
+      name?: string;
+      value?: number;
+      amount?: number;
+      total?: number;
+      percent?: number;
+      percentage?: number;
+      share?: number;
+      color?: string;
+      icon?: string;
+    }>;
+  };
 }
 
 export interface TransactionResponse {

@@ -8,13 +8,15 @@ import {
   ArrowUpDown,
   PlusCircle,
   Calendar,
-  Wallet,
-  CircleAlert,
+  // Wallet,
+  // CircleAlert,
   ChartColumn,
   ChevronRight,
   ChevronLeft,
-  FileDown,
+  // FileDown,
   ArrowRight,
+  Sheet,
+  FileText,
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
@@ -36,6 +38,7 @@ import {
 import { useHeaderConfig } from "../hooks/useHeaderConfig";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 import useInfiniteScroll from "react-infinite-scroll-hook";
+import { useExportTransactions } from "../features/transactions/hooks/useExportTransactions";
 
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
@@ -73,6 +76,7 @@ export default function Transactions() {
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<TransactionDraft | null>(null);
+  const [exportingFormat, setExportingFormat] = useState<"csv" | "pdf" | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -112,7 +116,10 @@ export default function Transactions() {
   const createTransactionMutation = useCreateTransaction();
   const updateTransactionMutation = useUpdateTransaction();
   const deleteTransactionMutation = useDeleteTransaction();
-
+  const exportMutation =
+    useExportTransactions({
+      accessToken,
+    });
   useEffect(() => {
     if (dateRange === "custom") return;
     const { startDate: nextStartDate, endDate: nextEndDate } = getPresetDateRange(dateRange);
@@ -199,7 +206,56 @@ export default function Transactions() {
   const currentItems = data?.transactions ?? [];
   const totalPages = Math.max(data?.pages ?? 1, 1);
   const totalRecords = data?.total ?? 0;
+  const analyticsSummary = data?.analytics?.summary;
+  const totalSpent = Math.abs(analyticsSummary?.totalSpent ?? 0);
+  const totalReceived = Math.abs(analyticsSummary?.totalReceived ?? 0);
+  const netFlow = analyticsSummary?.netFlow ?? 0;
+  const hasExportableRows = currentItems.length > 0;
 
+  const handleExport = async (
+  format: "csv" | "pdf"
+) => {
+  if (exportingFormat === format || !hasExportableRows) return;
+
+  try {
+    setExportingFormat(format);
+    await exportMutation.mutateAsync({
+      format,
+
+      params: {
+        search:
+          debouncedSearch || undefined,
+
+        type:
+          filter === "all"
+            ? undefined
+            : filter,
+
+        account_id,
+
+        sort,
+
+        startDate:
+          formattedStartDate,
+
+        endDate:
+          formattedEndDate,
+      },
+    });
+
+    toast.success(
+      "Your export has started"
+    );
+  } catch (err) {
+    console.error(err);
+
+    toast.error(
+      "Failed to export transactions"
+    );
+  } finally {
+    setExportingFormat(null);
+  }
+};
 
   const handleOpenTransactionSheet = useCallback(() => {
     if (!hasAccounts) {
@@ -212,20 +268,33 @@ export default function Transactions() {
 
   useHeaderConfig({
     heroColor: null,
-    heroHeight: 92,
-    showLogo: true,
+    heroHeight: 60,
+    showLogo: false,
     scrollTitle: displayTitle,
     scrollAction: "+",
     onAction: handleOpenTransactionSheet,
   });
 
-  const desktopSpendingByType = [
-    { label: "Investment", value: "₹2,145 (44%)", width: 44, color: "#8b5cf6" },
-    { label: "Bills & Utilities", value: "₹1,020 (21%)", width: 21, color: "#f97316" },
-    { label: "Food & Dining", value: "₹730 (15%)", width: 15, color: "#22c55e" },
-    { label: "Transfer", value: "₹480 (10%)", width: 10, color: "#06b6d4" },
-    { label: "Others", value: "₹478 (10%)", width: 10, color: "#64748b" },
-  ];
+  const desktopSpendingByType = useMemo(() => {
+    const rawItems = data?.analytics?.spendingByType ?? [];
+
+    return rawItems
+      .map((item) => {
+        const label = item.label || item.category || item.type || item.name || "Others";
+        const amount = Math.abs(item.value ?? item.amount ?? item.total ?? 0);
+        const rawPercent = item.percentage ?? item.percent ?? item.share;
+        const percentage = Number.isFinite(rawPercent) ? Number(rawPercent) : 0;
+        const normalizedPercentage = Math.max(0, Math.min(100, percentage));
+
+        return {
+          label,
+          amount,
+          percentage: normalizedPercentage,
+          color: item.color ?? "#64748b",  // ← use API color, fallback to gray
+        };
+      })
+      .filter((item) => item.amount > 0 || item.percentage > 0);
+  }, [data?.analytics?.spendingByType]);
 
   const activeDateLabel = useMemo(() => {
     if (!startDate || !endDate) return "";
@@ -254,6 +323,9 @@ export default function Transactions() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasRequestedMore, setHasRequestedMore] = useState(false);
+  const desktopListTopRef = useRef<HTMLDivElement | null>(null);
+  const previousPageRef = useRef(currentPage);
+  const shouldScrollDesktopOnLoadRef = useRef(false);
   const mobileItems = allTransactions.length ? allTransactions : (data?.transactions ?? []);
 
   useEffect(() => {
@@ -279,6 +351,20 @@ export default function Transactions() {
     setLoadingMore(false);
   }, [data, pageForQuery]);
 
+  useEffect(() => {
+    if (previousPageRef.current === currentPage) return;
+    if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) {
+      shouldScrollDesktopOnLoadRef.current = true;
+    }
+    previousPageRef.current = currentPage;
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (!shouldScrollDesktopOnLoadRef.current || isLoading) return;
+    desktopListTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    shouldScrollDesktopOnLoadRef.current = false;
+  }, [isLoading, currentItems.length]);
+
   const [sentryRef] = useInfiniteScroll({
     loading: loadingMore || isLoading,
     hasNextPage: hasMore,
@@ -290,14 +376,24 @@ export default function Transactions() {
     disabled: isError,
     rootMargin: "0px 0px 200px 0px",
   });
-  // Group by "Month Year" — same logic for both mobile and desktop
-  const groupedTransactions = mobileItems.reduce((acc, tx) => {
-    const date = new Date(tx.date);
-    const key = date.toLocaleString("default", { month: "short", year: "numeric" });
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(tx);
-    return acc;
-  }, {} as Record<string, typeof mobileItems>);
+
+  const groupTransactionsByMonth = (items: Transaction[]) =>
+    items.reduce((acc, tx) => {
+      const date = new Date(tx.date);
+      const key = date.toLocaleString("default", { month: "short", year: "numeric" });
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(tx);
+      return acc;
+    }, {} as Record<string, Transaction[]>);
+
+  // Mobile uses accumulated infinite-scroll data
+  const groupedMobileTransactions = groupTransactionsByMonth(mobileItems);
+  // Desktop uses only the current page data
+  const groupedDesktopTransactions = groupTransactionsByMonth(currentItems);
+
+
+  
+
 
   return (
     <>
@@ -406,7 +502,7 @@ export default function Transactions() {
               <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">No transactions</div>
             ) : (
               <>
-                {Object.entries(groupedTransactions).map(([month, items], groupIndex, arr) => {
+                {Object.entries(groupedMobileTransactions).map(([month, items], groupIndex, arr) => {
                   const isLastGroup = groupIndex === arr.length - 1;
 
                   return (
@@ -469,7 +565,7 @@ export default function Transactions() {
       </div>
 
       {/* DESKTOP VIEW */}
-      <div className="hidden md:flex md:flex-col gap-5 pb-10">
+      <div className="hidden md:flex md:flex-col gap-5 pb-10" ref={desktopListTopRef}>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-6">
@@ -554,14 +650,14 @@ export default function Transactions() {
             </div>
 
             {/* Accounts filter */}
-            <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
+            {/* <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
               <Dropdown
                 icon={Wallet}
                 value="all_accounts"
                 onChange={() => undefined}
                 options={[{ label: "All Accounts", value: "all_accounts" }]}
               />
-            </div>
+            </div> */}
 
             {/* Sort */}
             <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
@@ -603,6 +699,7 @@ export default function Transactions() {
 
           {/* Transaction List */}
           <div className="col-span-9 rounded-2xl border border-[var(--border)] bg-[var(--color-surface)]/60 overflow-hidden shadow-xs">
+            <div />
 
             {/* Table header */}
             {/* <div className="grid items-center px-4 py-3 border-b border-[var(--border)] bg-[var(--color-surface)]/40"
@@ -629,7 +726,7 @@ export default function Transactions() {
               <>
                 {/* Month-grouped timeline */}
                 <div className="relative">
-                  {Object.entries(groupedTransactions).map(([month, items]) => (
+                  {Object.entries(groupedDesktopTransactions).map(([month, items]) => (
                     <div className="p-2" key={month}>
 
 
@@ -837,15 +934,17 @@ export default function Transactions() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[var(--color-text-secondary)]">Total Spent</span>
-                  <span className="text-sm font-semibold text-(--color-danger)">₹4,853</span>
+                  <span className="text-sm font-semibold text-(--color-danger)">₹{totalSpent.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[var(--color-text-secondary)]">Total Received</span>
-                  <span className="text-sm font-semibold text-(--color-success)">₹33,900</span>
+                  <span className="text-sm font-semibold text-(--color-success)">₹{totalReceived.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[var(--color-text-secondary)]">Net Flow</span>
-                  <span className="text-sm font-semibold text-(--color-success)">₹29,047</span>
+                  <span className={`text-sm font-semibold ${netFlow >= 0 ? "text-(--color-success)" : "text-(--color-danger)"}`}>
+                    {netFlow < 0 ? "-" : ""}₹{Math.abs(netFlow).toLocaleString("en-IN")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -854,36 +953,64 @@ export default function Transactions() {
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-6 shadow-xs">
               <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-5">Quick Actions</h3>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-2">
-                  <FileDown className="mx-auto text-[var(--color-success)] mb-1.5" size={22} />
-                  <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">Export CSV</p>
+                <div
+                  onClick={exportingFormat === "csv" || !hasExportableRows ? undefined : () => handleExport("csv")}
+                  aria-disabled={exportingFormat === "csv" || currentItems.length === 0}
+                  className={`rounded-xl border border-[var(--border)] p-3 text-center transition-colors flex flex-col gap-2 ${exportingFormat === "csv" || currentItems.length === 0 ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-[var(--color-background)]/40"}`}
+                >
+                  <Sheet className="mx-auto text-[var(--color-success)] mb-1.5" size={22} />
+                  <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">{exportingFormat === "csv"
+                    ? "Exporting..."
+                    : "Export CSV"}</p>
                 </div>
-                <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-2">
+                <div
+                  onClick={exportingFormat === "pdf" || !hasExportableRows ? undefined : () => handleExport("pdf")}
+                  aria-disabled={exportingFormat === "pdf" || currentItems.length === 0}
+                  className={`rounded-xl border border-[var(--border)] p-3 text-center transition-colors flex flex-col gap-2 ${exportingFormat === "pdf" || currentItems.length === 0 ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-[var(--color-background)]/40"}`}
+                >
+                  <FileText className="mx-auto text-[var(--color-warm)] mb-1.5" size={22} />
+                  <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">{exportingFormat === "pdf"
+                    ? "Exporting..."
+                    : "Export PDF"}</p>
+                </div>
+                {/* <div className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-2">
                   <CircleAlert className="mx-auto text-[var(--color-text-primary)] mb-1.5" size={22} />
                   <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">Report issue</p>
-                </div>
+                </div> */}
               </div>
             </div>
 
             {/* Spending by Type */}
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--color-surface)]/60 p-6 shadow-xs">
               <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-5">Spending by Type</h3>
-              <div className="space-y-5">
-                {desktopSpendingByType.map((item) => (
-                  <div key={item.label}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs text-[var(--color-text-secondary)]">{item.label}</span>
-                      <span className="text-xs text-[var(--color-text-secondary)]">{item.value}</span>
+              {desktopSpendingByType.length === 0 ? (
+                <p className="text-xs text-[var(--color-text-secondary)]">No spending data in selected range.</p>
+              ) : (
+                <div className="space-y-5">
+                  {desktopSpendingByType.map((item, index) => (
+                    <div key={item.label}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs text-[var(--color-text-secondary)]">{item.label}</span>
+                        <span className="text-xs text-[var(--color-text-secondary)]">
+                          ₹{item.amount.toLocaleString("en-IN")} ({Math.round(item.percentage)}%)
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-[var(--color-background)]">
+                        <div
+                          className="h-1.5 rounded-full"
+                          style={{
+                            width: `${item.percentage}%`,
+                            backgroundColor: item.color,
+                            animation: `growBar 0.6s ease-out both`,
+                            animationDelay: `${index * 80}ms`,
+                            transformOrigin: "left",
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 rounded-full bg-[var(--color-background)]">
-                      <div
-                        className="h-1.5 rounded-full"
-                        style={{ width: `${item.width}%`, backgroundColor: item.color }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
@@ -938,6 +1065,19 @@ export default function Transactions() {
           }
         }}
       />
+      <style>{
+        `
+      @keyframes growBar {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+      `}</style>
     </>
   );
 }

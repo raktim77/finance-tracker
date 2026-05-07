@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Pencil,
   Trash2,
@@ -23,6 +23,7 @@ import resolveLucideIcon from "../utils/LucideIconsResolver";
 import { useConfirm } from "../components/ui/confirm-modal/useConfirm";
 import { useToast } from "../components/ui/confirm-modal/useToast";
 import { ThemeContext } from "../context/ThemeContext";
+import { useHeaderConfig } from "../hooks/useHeaderConfig";
 
 type UiAccount = {
   _id: string;
@@ -186,6 +187,18 @@ export default function Accounts() {
     };
   }, []);
 
+   const handleOpenAccountSheet = useCallback(() => {
+      setShowAddAccountModal(true);
+    }, []);
+  
+  useHeaderConfig({
+      heroColor: null,
+      heroHeight: 60,
+      showLogo: false,
+      scrollTitle: "Accounts",
+      scrollAction: "+",
+      onAction: handleOpenAccountSheet,
+    });
   return (
     <>
       {/* ─── MOBILE ─────────────────────────────────────────────────────────── */}

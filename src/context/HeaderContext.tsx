@@ -15,6 +15,7 @@ import { NativeChrome } from "../lib/capacitor/nativeChrome";
 export const SURFACE_COLOR = "#fffcf7";
 
 export type HeaderConfig = {
+  isDashboard?: boolean;
   heroColor?: string | null;
   heroHeight?: number;
   showLogo?: boolean;
@@ -24,6 +25,7 @@ export type HeaderConfig = {
 };
 
 type HeaderState = {
+  isDashboard: boolean;
   backgroundColor: string;
   textColor: string;
   showShadow: boolean;
@@ -117,6 +119,7 @@ function syncNativeHeader(backgroundColor: string, textColor: string) {
 }
 
 const defaultState: HeaderState = {
+  isDashboard: false,
   backgroundColor: SURFACE_COLOR,
   textColor: "#111111",
   showShadow: false,
@@ -130,6 +133,7 @@ const defaultState: HeaderState = {
 
 export function HeaderProvider({ children }: { children: ReactNode }) {
   const configRef = useRef<Required<HeaderConfig>>({
+    isDashboard: false,
     heroColor: null,
     heroHeight: 200,
     showLogo: true,
@@ -193,6 +197,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
 
   const registerConfig = useCallback((config: HeaderConfig) => {
     const nextConfig = {
+      isDashboard: false,
       heroColor: null,
       heroHeight: 200,
       showLogo: true,
@@ -215,6 +220,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
     syncNativeHeader(heroColor, textColor);
 
     setState({
+      isDashboard: nextConfig.isDashboard,
       backgroundColor: heroColor,
       textColor,
       showShadow: false,

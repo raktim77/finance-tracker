@@ -46,7 +46,7 @@ export function AIInsights({ insights = [] }: Props) {
   const insight = insights[displayIndex];
 
   return (
-    <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-5 shadow-sm">
+    <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-5 shadow-xs">
 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-6">

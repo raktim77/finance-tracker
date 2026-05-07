@@ -37,6 +37,7 @@ import {
 import { API_ORIGIN } from "../lib/api/config";
 import { ApiError } from "../lib/api/errors";
 import { useDismissibleLayer } from "../components/app-back/DismissibleLayerProvider";
+import { useHeaderConfig } from "../hooks/useHeaderConfig";
 
 // --- TYPES & INTERFACES ---
 
@@ -641,10 +642,19 @@ export default function Settings() {
     toast.success("Session revoked");
   };
 
+   useHeaderConfig({
+           heroColor: null,
+           heroHeight: 80,
+           showLogo: false,
+           scrollTitle: "Settings",
+           scrollAction: null,
+           onAction: null,
+         });
+
   return (
 
 
-    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-2 md:p-0">
+    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-2 md:p-0 pb-24">
       <input
         ref={avatarInputRef}
         type="file"
@@ -660,10 +670,10 @@ export default function Settings() {
       />
       {/* 1. HEADER - Static and Pinned */}
       <div className="flex flex-col shrink-0  bg-[var(--color-background)] z-20">
-        <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+        <h2 className="text-[1.5rem] md:text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
           Settings
         </h2>
-        <p className="mt-2 text-[1rem] font-semibold text-(--color-text-secondary)">
+        <p className="mt-2 text-[0.8rem] md:text-[1rem] font-semibold text-(--color-text-secondary)">
           Personalize your financial experience
         </p>
       </div>
@@ -750,7 +760,7 @@ export default function Settings() {
                   <button type="button"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={uploading}
-                    className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-[var(--border)] hover:bg-[var(--color-background)] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {hasAvatar ? "Change Avatar" : "Add Avatar"}
                   </button>
                   {hasAvatar && (
@@ -769,12 +779,12 @@ export default function Settings() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--color-surface)] border border-[var(--border)] p-6 rounded-2xl shadow-xs">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2">Display Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] px-2 ">Display Name</label>
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="settings-input"
+                    className="settings-input mt-2"
                   />
                   <button
                     type="button"
@@ -792,7 +802,7 @@ export default function Settings() {
                     value={data?.user?.email}
                     readOnly
                     disabled
-                    className="settings-input settings-input-disabled"
+                    className="settings-input settings-input-disabled mt-2"
                   />
                 </div>
               </div>

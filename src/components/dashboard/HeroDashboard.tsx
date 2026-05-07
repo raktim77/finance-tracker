@@ -1,10 +1,11 @@
 import { Sparkles, TrendingUp, ArrowUpRight, TrendingDown } from "lucide-react";
 import { useAuth } from "../../lib/context/useAuth";
 import type { DashboardSummaryResponse } from "../../features/dashboard/types/dashboard.types";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import formatCompactCurrency from "../../utils/getCompactAmount";
 import ProfileMenu from "../ProfileMenu";
+import { ThemeContext } from "../../context/ThemeContext";
 
 type Props = {
   data?: DashboardSummaryResponse;
@@ -13,7 +14,21 @@ type Props = {
 
 export const HeroDashboard = ({ data, isLoading }: Props) => {
   const { user } = useAuth();
+  const { theme } = useContext(ThemeContext);
   const [index, setIndex] = useState(0);
+  const positiveColor = "var(--color-success)";
+  const negativeColor = "var(--color-danger)";
+  const mutedText = "color-mix(in srgb, var(--color-text-primary) 45%, transparent)";
+  const softText = "color-mix(in srgb, var(--color-text-primary) 70%, transparent)";
+  const divider = "color-mix(in srgb, var(--color-text-primary) 10%, transparent)";
+  const softOverlay = "color-mix(in srgb, var(--color-text-primary) 8%, transparent)";
+  const mediumOverlay = "color-mix(in srgb, var(--color-text-primary) 12%, transparent)";
+  const heroDot = "color-mix(in srgb, var(--color-primary) 45%, transparent)";
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   const hour = new Date().getHours();
   const greeting =
@@ -38,66 +53,51 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
     return (
       <div>
         {/* Mobile skeleton */}
-        <div className="block md:hidden relative overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem]"
+        <div
+          className="block md:hidden relative overflow-hidden rounded-bl-[1.6rem] rounded-br-[1.6rem]"
           style={{
+            marginTop: "calc(-1 * var(--app-header-height, 76px))",
             background: "linear-gradient(160deg, #071209 0%, #0a1f0e 40%, #0c2a12 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}>
-          {/* dot texture */}
-          <div style={{
-            position: "absolute", inset: 0, opacity: 0.15,
-            backgroundImage: "radial-gradient(circle, #22c55e 1px, transparent 1px)",
-            backgroundSize: "18px 18px",
-          }} />
-          <div className="relative z-10 p-5 pt-4 flex flex-col gap-4">
+            border: "1px solid var(--border)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute", inset: 0, opacity: 0.15,
+              backgroundImage: `radial-gradient(circle, ${heroDot} 1px, transparent 1px)`,
+              backgroundSize: "18px 18px",
+            }}
+          />
+          <div
+            className="relative z-10 p-5 flex flex-col gap-4"
+            style={{ paddingTop: "calc(var(--app-header-height, 76px) + 1rem)" }}
+          >
             <div className="flex justify-between items-start">
               <div className="space-y-2.5">
                 <div className="h-2.5 w-28 bg-white/15 rounded animate-pulse" />
                 <div className="h-7 w-44 bg-white/25 rounded-lg animate-pulse" />
               </div>
-              <div className="h-10 w-10 rounded-full bg-white/20 animate-pulse" />
+              <div className="h-10 w-10 rounded-full animate-pulse" style={{ background: mediumOverlay }} />
             </div>
-            <div className="h-px w-full bg-white/8" />
+            <div className="h-px w-full" style={{ background: divider }} />
             <div className="flex items-end justify-between gap-3">
               <div className="space-y-2">
                 <div className="h-2.5 w-16 bg-white/15 rounded animate-pulse" />
                 <div className="h-9 w-32 bg-white/25 rounded-lg animate-pulse" />
               </div>
-              <div className="flex-1 max-w-[170px] h-14 bg-white/10 rounded-xl animate-pulse" />
+              <div className="flex-1 max-w-[170px] h-14 rounded-xl animate-pulse" style={{ background: mediumOverlay }} />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="h-14 bg-black/25 rounded-xl animate-pulse" />
-              <div className="h-14 bg-black/25 rounded-xl animate-pulse" />
+              <div className="h-14 rounded-xl animate-pulse" style={{ background: softOverlay }} />
+              <div className="h-14 rounded-xl animate-pulse" style={{ background: softOverlay }} />
             </div>
             <div className="flex gap-2">
-              <div className="h-7 w-24 bg-white/10 rounded-full animate-pulse" />
-              <div className="h-7 w-32 bg-white/10 rounded-full animate-pulse" />
+              <div className="h-7 w-24 rounded-full animate-pulse" style={{ background: mediumOverlay }} />
+              <div className="h-7 w-32 rounded-full animate-pulse" style={{ background: mediumOverlay }} />
             </div>
           </div>
         </div>
 
-        {/* Desktop skeleton */}
-        <div className="hidden md:block relative overflow-hidden rounded-[2.5rem]"
-          style={{
-            background: "linear-gradient(155deg, #060e08 0%, #071209 35%, #0b1e0e 65%, #0d2812 100%)",
-            border: "1px solid rgba(255,255,255,0.07)",
-          }}>
-          <div style={{
-            position: "absolute", inset: 0, opacity: 0.15,
-            backgroundImage: "radial-gradient(circle, rgba(34,197,94,0.5) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
-          }} />
-          <div className="relative z-10 p-10 flex flex-col gap-8">
-            <div className="space-y-3">
-              <div className="h-3 w-24 bg-white/20 rounded animate-pulse" />
-              <div className="h-10 w-48 bg-white/30 rounded animate-pulse" />
-            </div>
-            <div className="flex gap-6 items-center justify-between">
-              <div className="h-12 w-52 bg-white/25 rounded-xl animate-pulse" />
-              <div className="h-16 flex-1 max-w-md bg-white/15 rounded-2xl animate-pulse" />
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -116,32 +116,64 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
 
   const isPositive = netChange >= 0;
 
+
   // ── SHARED BACKGROUND LAYERS ─────────────────────────────────────────────
   const BgLayers = ({ mobile }: { mobile?: boolean }) => (
     <>
       {/* Dot texture */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        backgroundImage: "radial-gradient(circle, rgba(34,197,94,0.28) 1px, transparent 1px)",
-        backgroundSize: mobile ? "16px 16px" : "22px 22px",
-        opacity: 0.55,
-      }} />
+      {isDark ? (
+        <div
+          style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            backgroundImage: `radial-gradient(circle, ${heroDot} 1px, transparent 1px)`,
+            backgroundSize: mobile ? "16px 16px" : "22px 22px",
+            opacity: 0.55,
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            backgroundImage: `radial-gradient(circle, var(--color-primary) 1px, transparent 1px)`,
+            backgroundSize: mobile ? "16px 16px" : "22px 22px",
+            opacity: 0.3,
+            filter: "blur(0.8px)",
+          }}
+        />
+      )}
+
       {/* Top-right radial glow */}
-      <div style={{
-        position: "absolute", top: "-40px", right: "-30px",
-        width: mobile ? "220px" : "320px",
-        height: mobile ? "180px" : "240px",
-        background: "radial-gradient(ellipse at center, rgba(34,197,94,0.22) 0%, transparent 70%)",
-        pointerEvents: "none",
-      }} />
-      {/* Bottom-left subtle glow */}
-      <div style={{
-        position: "absolute", bottom: "-20px", left: "-10px",
-        width: mobile ? "160px" : "220px",
-        height: mobile ? "120px" : "160px",
-        background: "radial-gradient(ellipse at center, rgba(34,197,94,0.10) 0%, transparent 70%)",
-        pointerEvents: "none",
-      }} />
+      {isDark ? (
+        <div
+          style={{
+            position: "absolute", top: "-40px", right: "-30px",
+            width: mobile ? "220px" : "320px",
+            height: mobile ? "180px" : "240px",
+            background: "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 22%, transparent) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            background: `radial-gradient(60% 60% at 100% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent) 0%, color-mix(in srgb, var(--color-primary) 10%, transparent) 25%, color-mix(in srgb, var(--color-primary) 5%, transparent) 40%, transparent 55%)`,
+          }}
+        />
+      )}
+
+      {/* Bottom-left subtle glow — dark only */}
+      {isDark && (
+        <div
+          style={{
+            position: "absolute", bottom: "-20px", left: "-10px",
+            width: mobile ? "160px" : "220px",
+            height: mobile ? "120px" : "160px",
+            background: "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 10%, transparent) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+      )}
     </>
   );
 
@@ -154,60 +186,83 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
 
   return (
     <div>
-      {/* ══ MOBILE ══════════════════════════════════════════════════════════ */}
       <div
-        className="md:hidden relative overflow-hidden rounded-bl-[1.8rem] rounded-br-[1.8rem]"
+        className="md:hidden relative overflow-hidden rounded-bl-[1.8rem] rounded-br-[1.8rem] shadow-sm"
         style={{
-          background: "linear-gradient(160deg, #071209 0%, #0a1f0e 45%, #0c2a12 100%)",
-          // border: "1px solid rgba(255,255,255,0.06)",
+          marginTop: "calc(-1 * var(--app-header-height, 76px))",
+          background: isDark
+            ? "linear-gradient(160deg, #071209 0%, #0a1f0e 45%, #0c2a12 100%)"
+            : "var(--color-surface)",
+          border: isDark ? undefined : "1px solid var(--border)",
         }}
       >
         <BgLayers mobile />
 
-        <div className="relative z-10 px-4 pt-4 pb-5 flex flex-col gap-4">
-
+        <div
+          className="relative z-10 px-4 pb-5 flex flex-col gap-4"
+          style={{ paddingTop: "calc(var(--app-header-height, 76px) + 1rem)" }}
+        >
           {/* Row 1: Greeting + Avatar */}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
-                <Sparkles size={9} className="text-[#4ade80] animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
+                <Sparkles size={9} className="animate-pulse text-[var(--color-success)]" />
+                <span
+                  className="text-[9px] font-black uppercase tracking-[0.2em]"
+                  style={{ color: mutedText }}
+                >
                   {greeting}
                 </span>
               </div>
-              <h2 className="text-[1.65rem] font-black text-white tracking-tight leading-none">
+              <h2
+                className="text-[1.65rem] font-black tracking-tight leading-none"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 Hey, {displayName}!
               </h2>
             </div>
             <div
-              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center ring-2 ring-white/15"
-              style={{ background: "rgba(255,255,255,0.12)" }}
+              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center ring-2"
+              style={{
+                background: mediumOverlay,
+              }}
             >
               <ProfileMenu />
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-px w-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+          <div
+            className="h-px w-full"
+            style={{ background: divider }}
+          />
 
           {/* Row 2: Net + Insight */}
           <div className="flex items-stretch justify-between gap-3">
             {/* Net change */}
             <div className="shrink-0 flex flex-col justify-center">
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/45 mb-1">
+              <span
+                className="text-[8px] font-black uppercase tracking-[0.2em] mb-1"
+                style={{ color: mutedText }}
+              >
                 This Month
               </span>
-              <div className={`text-[1.8rem] font-black leading-none tracking-tight ${isPositive ? "text-[#4ade80]" : "text-[#fca5a5]"}`}>
+              <div
+                className="text-[1.8rem] font-black leading-none tracking-tight"
+                style={{ color: isPositive ? positiveColor : negativeColor }}
+              >
                 {netChange > 0 ? "+" : netChange < 0 ? "−" : ""}₹{formatCompactCurrency(Math.abs(netChange))}
               </div>
               {/* % change badge */}
-              <div className="mt-2 inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5"
-                style={{ background: "rgba(255,255,255,0.10)" }}>
+              <div
+                className="mt-2 inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5"
+                style={{ background: softOverlay }}
+              >
                 {isPositive
-                  ? <ArrowUpRight size={9} strokeWidth={3} className="text-[#4ade80]" />
-                  : <TrendingDown size={9} strokeWidth={3} className="text-[#fca5a5]" />
+                  ? <ArrowUpRight size={9} strokeWidth={3} style={{ color: positiveColor }} />
+                  : <TrendingDown size={9} strokeWidth={3} style={{ color: negativeColor }} />
                 }
-                <span className={`text-[9px] font-black ${isPositive ? "text-[#4ade80]" : "text-[#fca5a5]"}`}>
+                <span className="text-[9px] font-black" style={{ color: isPositive ? positiveColor : negativeColor }}>
                   {percentChange}%
                 </span>
               </div>
@@ -224,13 +279,21 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.3 }}
                     className={`w-full rounded-2xl p-3 flex items-start gap-2 border backdrop-blur-xl ${insightBg[insight.type]}`}
-                    style={{ background: "rgba(0,0,0,0.25)" }}
+                    style={{
+                      background: "color-mix(in srgb, var(--color-surface) 75%, transparent)",
+                      borderColor: "var(--border)",
+                    }}
                   >
-                    <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                      style={{ background: "rgba(74,222,128,0.2)" }}>
-                      <TrendingUp size={11} className="text-[#4ade80]" />
+                    <div
+                      className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                      style={{ background: "color-mix(in srgb, var(--color-success) 20%, transparent)" }}
+                    >
+                      <TrendingUp size={11} style={{ color: positiveColor }} />
                     </div>
-                    <p className="text-[9.5px] font-semibold text-white/80 leading-snug">
+                    <p
+                      className="text-[9.5px] font-semibold leading-snug"
+                      style={{ color: softText }}
+                    >
                       {insight.message}
                     </p>
                   </motion.div>
@@ -243,23 +306,35 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
           <div className="grid grid-cols-2 gap-2.5">
             <div
               className="rounded-2xl px-4 py-3"
-              style={{ background: "rgba(0,0,0,0.30)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{
+                background: softOverlay,
+                border: "1px solid var(--border)",
+              }}
             >
-              <span className="block text-[8px] font-black uppercase tracking-[0.18em] text-white/40 mb-1.5">
+              <span
+                className="block text-[8px] font-black uppercase tracking-[0.18em] mb-1.5"
+                style={{ color: mutedText }}
+              >
                 Income
               </span>
-              <span className="block text-[1.05rem] font-black leading-none text-[#4ade80]">
+              <span className="block text-[1.05rem] font-black leading-none" style={{ color: positiveColor }}>
                 {compactAmount(data.summary.income)}
               </span>
             </div>
             <div
               className="rounded-2xl px-4 py-3"
-              style={{ background: "rgba(0,0,0,0.30)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{
+                background: softOverlay,
+                border: "1px solid var(--border)",
+              }}
             >
-              <span className="block text-[8px] font-black uppercase tracking-[0.18em] text-white/40 mb-1.5">
+              <span
+                className="block text-[8px] font-black uppercase tracking-[0.18em] mb-1.5"
+                style={{ color: mutedText }}
+              >
                 Spent
               </span>
-              <span className="block text-[1.05rem] font-black leading-none text-[#fca5a5]">
+              <span className="block text-[1.05rem] font-black leading-none" style={{ color: negativeColor }}>
                 {compactAmount(data.summary.expenses)}
               </span>
             </div>
@@ -268,45 +343,28 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
           {/* Row 4: Pills */}
           <div className="flex flex-wrap gap-2">
             <div
-              className="rounded-full px-3 py-1.5 text-[9.5px] font-black text-[#4ade80]"
-              style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.2)" }}
+              className="rounded-full px-3 py-1.5 text-[9.5px] font-black"
+              style={{
+                color: positiveColor,
+                background: "color-mix(in srgb, var(--color-success) 15%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--color-success) 30%, transparent)",
+              }}
             >
               {data.summary.savings_rate.toFixed(1)}% saved
             </div>
             <div
-              className="rounded-full px-3 py-1.5 text-[9.5px] font-black text-white/70"
-              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.10)" }}
+              className="rounded-full px-3 py-1.5 text-[9.5px] font-black"
+              style={{
+                color: softText,
+                background: softOverlay,
+                border: "1px solid var(--border)",
+              }}
             >
               {budgetLabel}
             </div>
           </div>
-
         </div>
-
-        {/* Wave at bottom — same as accounts card */}
-        {/* <div style={{ height: "48px", position: "relative", marginTop: "-4px" }}>
-          <svg viewBox="0 0 390 48" preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
-            <defs>
-              <linearGradient id="heroWaveGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity="0.22" />
-                <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M0,24 C50,14 100,32 160,20 C210,10 260,28 310,18 C345,10 370,24 390,16 L390,48 L0,48 Z"
-              fill="url(#heroWaveGrad)"
-            />
-            <path
-              d="M0,24 C50,14 100,32 160,20 C210,10 260,28 310,18 C345,10 370,24 390,16"
-              fill="none"
-              stroke="#4ade80"
-              strokeWidth="1.5"
-              strokeOpacity="0.4"
-            />
-          </svg>
-        </div> */}
       </div>
-
     </div>
   );
 };

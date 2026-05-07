@@ -10,7 +10,7 @@ const metrics = [
 
 export function BudgetsPromoCard({summary}: Props) {
   return (
-    <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-6 shadow-sm">
+    <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-6 shadow-xs">
 
       {/* ROOT: stacks vertically on mobile, horizontal on md+ */}
       <div className="flex flex-col md:flex-row md:items-stretch md:justify-between gap-4 md:gap-6">

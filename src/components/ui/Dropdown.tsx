@@ -139,7 +139,7 @@ export default function Dropdown({
                 width: `${coords.width}px`,
               }}
               className={`bg-[var(--color-surface)] border border-[var(--input-border)] shadow-xl overflow-y-auto overscroll-contain z-[9999] animate-in fade-in slide-in-from-top-1 ${compact
-                ? "rounded-lg"
+                ? "max-h-65 rounded-lg"
                 : "rounded-xl overflow-hidden"
                 } ${menuClassName ?? ""}`}
             >

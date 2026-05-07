@@ -103,7 +103,7 @@ export default function PendingReviewCard() {
                 } as React.CSSProperties}
             >
                 <div
-                    className="pending-border-inner group w-full cursor-pointer p-4 md:p-5 shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
+                    className="pending-border-inner group w-full cursor-pointer p-4 md:p-5 shadow-xs transition-all hover:shadow-md active:scale-[0.99]"
                     onClick={() => navigate("/pending-review")}
                 >
                     <div className="flex w-full items-center justify-between gap-3">

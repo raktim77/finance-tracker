@@ -5,9 +5,16 @@
   right: 0;
   z-index: 45;
   display: block;
+  overflow: hidden;
   transition:
     background-color 300ms ease,
     box-shadow 300ms ease;
+}
+
+.app-header__status-bar,
+.app-header__nav-bar {
+  position: relative;
+  z-index: 1;
 }
 
 /* .app-header__status-bar {
@@ -21,17 +28,16 @@
   background-color: inherit;   /* inherits header backgroundColor */
 }
 .app-header__nav-bar {
-  position: relative;
   display: flex;
   height: 48px;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 8px;
 }
 
 .app-header__logo,
 .app-header__title {
   position: absolute;
-  left: 16px;
+  left: 10px;
   opacity: 0;
   pointer-events: none;
   transform: translateY(4px);
@@ -53,6 +59,21 @@
   width: 34px;
   object-fit: contain;
 }
+.app-header__logo-image_scrolled {
+  display: block;
+  /* height: 34px; */
+  width: 80px;
+  object-fit: contain;
+}
+.app-header__logo_scrolled {
+  position: absolute;
+  top: 10px;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
 
 .app-header__title {
   max-width: calc(100% - 88px);
@@ -66,7 +87,7 @@
 
 .app-header__action {
   position: absolute;
-  right: 14px;
+  right: 10px;
   display: flex;
   width: 34px;
   height: 34px;
