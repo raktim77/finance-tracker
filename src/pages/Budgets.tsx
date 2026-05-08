@@ -28,6 +28,7 @@ import resolveLucideIcon from "../utils/LucideIconsResolver";
 import { ThemeContext } from "../context/ThemeContext";
 import PaceVsIdealChart from "../components/budgets/PaceVsIdealChart";
 import { useHeaderConfig } from "../hooks/useHeaderConfig";
+import formatCompactCurrency from "../utils/getCompactAmount";
 // Place this OUTSIDE and ABOVE the Budgets component
 const SemiGauge: React.FC<{ percent: number }> = ({ percent }) => {
   const r = 90;
@@ -994,6 +995,245 @@ export default function Budgets() {
           {/* <ChevronRight size={18} className="text-[var(--color-text-secondary)] opacity-40" /> */}
         </div>
 
+        {/* ── RISKY BUDGETS (mobile) ───────────────────────────── */}
+        <div className="mx-2 mt-3">
+          {riskyBudgets.length === 0 ? (
+            <div className="px-4 py-3.5 flex items-center gap-3 bg-[var(--color-accent-soft)] rounded-2xl border border-(--color-accent-soft)">
+              <div className="w-9 h-9 rounded-[10px] bg-[var(--color-accent-soft)] flex items-center justify-center flex-shrink-0">
+                <Sparkles size={17} className="text-[var(--color-accent)]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[0.8rem] font-bold text-[var(--color-success)]">You're doing great!</span>
+                <span className="text-[0.7rem] text-[var(--color-text-secondary)]">
+                  All categories are within healthy limits.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="px-4 py-3.5 flex items-center gap-3 bg-[var(--color-danger)]/10 rounded-2xl border border-[var(--color-danger)]/10">
+              <div className="w-9 h-9 rounded-[10px] bg-[var(--color-danger)]/10 flex items-center justify-center flex-shrink-0">
+                <Flame size={17} className="text-[var(--color-danger)]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[0.8rem] font-bold text-[var(--color-danger)]">Budget Warnings</span>
+                <span className="text-[0.7rem] text-[var(--color-text-secondary)]">
+                  {riskyBudgets.length} categories exceeding limit.
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── SPENDING PACE (mobile) ───────────────────────────── */}
+        <div className="mx-2 mt-3 bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-xs">
+
+          {/* Header */}
+          <div className="px-4 pt-4 pb-3 mb-2">
+            <p className="font-bold text-base md:text-lg text-[var(--color-text-primary)] tracking-tight">Spending Pace</p>
+            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+              How you're tracking against your ideal pace
+            </p>
+          </div>
+
+          {/* Hero + Chart Combined */}
+          <div className="px-4 pt-5 pb-4">
+            <div className="flex gap-3 items-stretch">
+
+              {/* Left Hero */}
+              <div className="w-[38%] flex flex-col justify-between">
+                <div>
+                  <p
+                    className={`text-[1.5rem] font-black tracking-tight leading-none ${budgetIsOver
+                        ? "text-[var(--color-danger)]"
+                        : "text-[var(--color-success)]"
+                      }`}
+                  >
+                    {budgetActualSpent === 0
+                      ? "0%"
+                      : `${budgetIsOver ? "+" : "-"}${Math.abs(
+                        budgetPacePercent
+                      ).toFixed(0)}%`}
+                  </p>
+
+                  <p className="text-[0.78rem] text-[var(--color-text-secondary)] mt-2 leading-snug">
+                    {budgetIsOver
+                      ? "over ideal pace"
+                      : "under ideal pace"}
+                  </p>
+                </div>
+
+                <div className="mt-4">
+                  <p className="text-[0.62rem] uppercase tracking-[0.12em] font-black text-[var(--color-text-secondary)]">
+                    Ideal pace
+                  </p>
+
+                  <p className="text-[0.9rem] font-black text-[var(--color-text-primary)] mt-1">
+                    ₹{formatCompactCurrency(+budgetIdealPerDay.toFixed(2))}
+                    <span className="text-[0.72rem] font-semibold text-[var(--color-text-secondary)]">
+                      /day
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Chart */}
+              <div className="flex-1 rounded-2xl border border-[var(--border)] bg-[var(--color-background)] px-3 py-3">
+                <div style={{ height: "88px" }}>
+                  <PaceVsIdealChart
+                    totalBudget={totalBudget}
+                    daysInMonth={budgetDaysInMonth}
+                    currentDay={budgetCurrentDay}
+                    dailySpending={budget.daily_spending ?? []}
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Financial Summary */}
+          <div className="pb-4">
+            <div className="rounded-2xl overflow-hidden mt-2">
+              {[
+                {
+                  label: "Should Be",
+                  value: `₹${budgetShouldHaveSpent.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}`,
+                  cls: "text-[var(--color-text-primary)]",
+                },
+                {
+                  label: "Actual Spent",
+                  value: `₹${budgetActualSpent.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}`,
+                  cls: "text-[var(--color-text-primary)]",
+                },
+                {
+                  label: "Difference",
+                  value: `${budgetIsOver ? "+" : "-"}₹${Math.abs(
+                    budgetDifference
+                  ).toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}`,
+                  cls: budgetIsOver
+                    ? "text-[var(--color-danger)]"
+                    : "text-[var(--color-success)]",
+                },
+              ].map((item, i, arr) => (
+                <div
+                  key={i}
+                  className={`flex items-center justify-between gap-4 px-4 py-3.5 ${i < arr.length - 1
+                    ? "border-b border-[var(--border)]"
+                    : ""
+                    }`}
+                >
+                  <span className="text-[0.75rem] font-semibold text-[var(--color-text-secondary)] shrink-0">
+                    {item.label}
+                  </span>
+
+                  <span
+                    className={`text-[0.95rem] font-semibold text-right leading-none ${item.cls}`}
+                  >
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Metrics */}
+          <div className="mx-4 mb-4 rounded-2xl border border-[var(--border)] overflow-hidden">
+            <div className="grid grid-cols-3 bg-[var(--color-background)]">
+
+              {/* Pace */}
+              <div className="flex flex-col items-center justify-center py-3 px-2">
+                <CircleGauge
+                  size={18}
+                  strokeWidth={2}
+                  className="text-(--color-primary)"
+                />
+
+                <p className="mt-2 text-[0.58rem] uppercase tracking-[0.1em] font-black text-[var(--color-text-secondary)]">
+                  Pace
+                </p>
+
+                <p className="mt-1 text-[0.82rem] font-black text-[var(--color-text-primary)] leading-none">
+                  ₹{formatCompactCurrency(Math.round(
+                    budgetActualSpent / Math.max(budgetCurrentDay, 1)
+                  ))}
+                </p>
+
+                <p className="mt-2 text-[0.64rem] text-[var(--color-text-secondary)] leading-none">
+                  per day
+                </p>
+              </div>
+
+              {/* Burn */}
+              <div className="flex flex-col items-center justify-center py-3 px-2 border-x border-[var(--border)]">
+                <Flame
+                  size={18}
+                  strokeWidth={2}
+                  className="text-(--color-warm)"
+                />
+
+                <p className="mt-2 text-[0.58rem] uppercase tracking-[0.1em] font-black text-[var(--color-text-secondary)]">
+                  Burn
+                </p>
+
+                <p className="mt-1 text-[0.82rem] font-black text-(--color-warm) leading-none">
+                  {budgetBurnRate.toFixed(1)}×
+                </p>
+
+                <p className="mt-2 text-[0.64rem] text-[var(--color-text-secondary)] leading-none">
+                  vs ideal
+                </p>
+              </div>
+
+              {/* Risk */}
+              <div className="flex flex-col items-center justify-center py-3 px-2">
+                {budgetProjectedSpend > totalBudget ? (
+                  <ShieldAlert
+                    size={18}
+                    strokeWidth={2}
+                    className="text-(--color-danger)"
+                  />
+                ) : (
+                  <ShieldCheck
+                    size={18}
+                    strokeWidth={2}
+                    className="text-(--color-primary)"
+                  />
+                )}
+
+                <p className="mt-2 text-[0.58rem] uppercase tracking-[0.1em] font-black text-[var(--color-text-secondary)]">
+                  Risk
+                </p>
+
+                <p
+                  className={`mt-1 text-[0.8rem] font-black leading-none text-center ${budgetProjectedSpend > totalBudget
+                    ? "text-[var(--color-danger)]"
+                    : "text-[var(--color-success)]"
+                    }`}
+                >
+                  {budgetProjectedSpend > totalBudget
+                    ? `+₹${Math.round(
+                      budgetProjectedOverBudget
+                    ).toLocaleString()}`
+                    : "On track"}
+                </p>
+
+                <p className="mt-2 text-[0.64rem] text-[var(--color-text-secondary)] text-center leading-none">
+                  {budgetProjectedSpend > totalBudget
+                    ? "projected overspend"
+                    : "within budget"}
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
 
         {/* Category Overview */}
         <div className="mx-2 mt-5 mb-3 flex items-center justify-between">
@@ -1039,19 +1279,6 @@ export default function Budgets() {
           })}
         </div>
 
-        {/* Edit/Delete */}
-        {/* {canCreateBudget && (
-          <div className="mx-2 mt-4 flex gap-3">
-            <button onClick={() => setIsEditingBudget(true)}
-              className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border)] cursor-pointer hover:bg-[var(--color-background)] transition-colors">
-              <Pencil size={15} /> Edit Budget
-            </button>
-            <button onClick={handleDeleteBudget} disabled={isDeletingBudget}
-              className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 text-[var(--color-danger)] border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/8 cursor-pointer disabled:opacity-50 hover:bg-[var(--color-danger)]/10 transition-colors">
-              <Trash2 size={15} /> Delete
-            </button>
-          </div>
-        )} */}
       </div>
 
       {/* ═══ DESKTOP VIEW ═════════════════════════════════════════════════════ */}
@@ -1276,8 +1503,8 @@ export default function Budgets() {
                   <div>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">PACE</p>
                     <p className="text-[1rem] font-bold text-[var(--color-text-primary)] mb-1">
-                      ₹{Math.round(budgetActualSpent / Math.max(budgetCurrentDay, 1))} /
-                      ₹{Math.round(budgetIdealPerDay)}
+                      ₹{formatCompactCurrency(Math.round(budgetActualSpent / Math.max(budgetCurrentDay, 1)))} / 
+                      ₹{formatCompactCurrency(Math.round(budgetIdealPerDay))}
                     </p>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)]">per day</p>
                   </div>

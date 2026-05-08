@@ -97,7 +97,7 @@ export default function PaceVsIdealChart({
         <div className="w-full h-full relative">
 
             {/* LEGEND */}
-            <div className="absolute -top-3 left-0 flex flex-col gap-1.5 text-[0.7rem] text-[var(--color-text-primary)]">
+            <div className="mb-2 flex flex-col gap-1 text-[0.68rem] text-[var(--color-text-primary)]">
 
                 <div className="flex items-center gap-1.5">
                     <span className="w-6 border-t-2 border-dashed border-[var(--color-text-primary)] opacity-60" />
@@ -117,21 +117,19 @@ export default function PaceVsIdealChart({
             </div>
 
             {/* CHART */}
-            <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={data}>
+            <ResponsiveContainer width="100%" height="82%">
+                <ComposedChart
+                    data={data}
+                    margin={{
+                        top: 0,
+                        right: 0,
+                        left: -14,
+                        bottom: 25,
+                    }}
+                >
 
-                    <CartesianGrid
-                        vertical={false}
-                        stroke="var(--border)"
-                        strokeOpacity={0.3}
-                    />
 
-                    <XAxis
-                        dataKey="day"
-                        tick={false}
-                        axisLine={false}
-                        tickLine={false}
-                    />
+                   <XAxis hide />
 
                     <Tooltip
                         cursor={false}
