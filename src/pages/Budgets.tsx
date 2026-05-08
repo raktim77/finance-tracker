@@ -12,7 +12,7 @@ import {
   ShieldAlert,
   TriangleAlert,
   CircleCheckBig,
-  // ShieldCheck,
+  ShieldCheck,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
@@ -187,6 +187,61 @@ export default function Budgets() {
   const remainingToAllocate = budget?.unallocated ?? 0;
   const spentPercent = totalBudget > 0 ? Math.round((spentTotal / totalBudget) * 100) : 0;
   const availableAmount = allocatedTotal - spentTotal;
+  const now = new Date();
+
+  const budgetSelectedYear = month.getFullYear();
+  const budgetSelectedMonth = month.getMonth();
+  const budgetDaysInMonth = new Date(
+    budgetSelectedYear,
+    budgetSelectedMonth + 1,
+    0
+  ).getDate();
+
+  const isFutureMonth =
+    selectedMonth > currentMonth;
+
+  const budgetCurrentDay =
+    isFutureMonth
+      ? 0
+      : isCurrentMonth
+        ? now.getDate()
+        : budgetDaysInMonth;
+
+  const budgetIdealPerDay =
+    budgetDaysInMonth > 0
+      ? totalBudget / budgetDaysInMonth
+      : 0;
+
+  const budgetShouldHaveSpent =
+    budgetIdealPerDay * budgetCurrentDay;
+
+  const budgetActualSpent = spentTotal;
+
+  const budgetDifference =
+    budgetActualSpent - budgetShouldHaveSpent;
+
+  const budgetPacePercent =
+    budgetShouldHaveSpent > 0 &&
+      budgetActualSpent > 0
+      ? (budgetDifference / budgetShouldHaveSpent) * 100
+      : 0;
+
+  const budgetBurnRate =
+    budgetShouldHaveSpent > 0 &&
+      budgetActualSpent > 0
+      ? budgetActualSpent / budgetShouldHaveSpent
+      : 0;
+
+  const budgetProjectedSpend =
+    budgetCurrentDay > 0
+      ? (budgetActualSpent / budgetCurrentDay) *
+      budgetDaysInMonth
+      : 0;
+
+  const budgetProjectedOverBudget =
+    budgetProjectedSpend - totalBudget;
+
+  const budgetIsOver = budgetDifference > 0;
 
   const getProgressColor = (spent: number, allocated: number) => {
     const p = (spent / allocated) * 100;
@@ -237,14 +292,20 @@ export default function Budgets() {
   const monthLabelLong = month.toLocaleString("default", { month: "long" });
   const monthLabelFull = month.toLocaleString("default", { month: "long", year: "numeric" });
   // const monthLabelShortUpper = month.toLocaleString("default", { month: "short", year: "numeric" }).toUpperCase();
-    useHeaderConfig({
-           heroColor: null,
-           heroHeight: 80,
-           showLogo: false,
-           scrollTitle: `${monthLabelLong} Budget`,
-           scrollAction: null,
-           onAction: null,
-         });
+  useHeaderConfig({
+    heroColor: null,
+    heroHeight: 80,
+    showLogo: false,
+    scrollTitle: `${monthLabelLong} Budget`,
+    scrollAction: null,
+    onAction: null,
+  });
+
+
+
+
+
+
   // ─── SHARED SUB-COMPONENTS ────────────────────────────────────────────────
 
 
@@ -354,17 +415,17 @@ export default function Budgets() {
                 {monthLabelLong} Budget
               </h2>
               {/* Month picker pill */}
-            <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
-              <button onClick={() => shiftMonth(-1)}
-                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
-                <ChevronLeft size={16} />
-              </button>
-              <span className="text-[0.9rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
-              <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
-                className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
-                <ChevronRight size={16} />
-              </button>
-            </div>
+              <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
+                <button onClick={() => shiftMonth(-1)}
+                  className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-[0.9rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+                <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+                  className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
           </div>
           <div className="rounded-2xl p-10 text-center bg-[var(--color-surface)] border border-[var(--border)]">
@@ -639,9 +700,9 @@ export default function Budgets() {
         <div className="hidden lg:flex flex-col gap-6 pb-10 w-full">
           {/* Header */}
           <div className="flex flex-col gap-5">
-              <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
-                {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
-              </h2>
+            <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+              {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
+            </h2>
             <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
               <button onClick={() => shiftMonth(-1)}
                 className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
@@ -653,9 +714,9 @@ export default function Budgets() {
                 <ChevronRight size={16} />
               </button>
             </div>
-              <p className="text-[1rem] font-semibold text-[var(--color-text-secondary)]">
-                {isEditingBudget ? "Update your monthly budget and category limits below." : "We've suggested limits based on your history. Fine-tune them below."}
-              </p>
+            <p className="text-[1rem] font-semibold text-[var(--color-text-secondary)]">
+              {isEditingBudget ? "Update your monthly budget and category limits below." : "We've suggested limits based on your history. Fine-tune them below."}
+            </p>
           </div>
 
           {/* 2/3 grid */}
@@ -1118,12 +1179,21 @@ export default function Budgets() {
                 {/* LEFT */}
                 <div className="flex-1 min-w-0 flex justify-between items-start">
                   <div>
-                    <p className="text-[2.6rem] font-black tracking-tight leading-none text-[var(--color-danger)]">
-                      +12%
+                    <p
+                      className={`text-[2.6rem] font-black tracking-tight leading-none ${budgetIsOver
+                        ? "text-[var(--color-danger)]"
+                        : "text-[var(--color-success)]"
+                        }`}
+                    >
+                      {budgetActualSpent === 0
+                        ? "0%"
+                        : `${budgetIsOver ? "+" : "-"}${Math.abs(
+                          budgetPacePercent
+                        ).toFixed(0)}%`}
                     </p>
 
                     <p className="text-[0.85rem] text-[var(--color-text-secondary)] mt-3">
-                      over ideal pace
+                      {budgetIsOver ? "over ideal pace" : "under ideal pace"}
                     </p>
 
                   </div>
@@ -1133,7 +1203,11 @@ export default function Budgets() {
 
                 {/* CHART */}
                 <div className="w-[280px] h-[130px] flex-shrink-0 flex items-center justify-center">
-                  <PaceVsIdealChart />
+                  <PaceVsIdealChart
+                    totalBudget={totalBudget}
+                    daysInMonth={budgetDaysInMonth}
+                    currentDay={budgetCurrentDay}
+                    dailySpending={budget.daily_spending ?? []} />
                 </div>
 
               </div>
@@ -1148,8 +1222,12 @@ export default function Budgets() {
                   <p className="text-[0.7rem] font-semibold text-[var(--color-text-secondary)] mb-2">
                     SHOULD BE
                   </p>
+
                   <p className="text-[1rem] font-bold text-[var(--color-text-primary)]">
-                    ₹6,700.00
+                    ₹
+                    {budgetShouldHaveSpent.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                 </div>
 
@@ -1157,8 +1235,12 @@ export default function Budgets() {
                   <p className="text-[0.7rem] font-semibold text-[var(--color-text-secondary)] mb-2">
                     ACTUAL
                   </p>
+
                   <p className="text-[1rem] font-bold text-[var(--color-text-primary)]">
-                    ₹7,520.00
+                    ₹
+                    {budgetActualSpent.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                 </div>
 
@@ -1166,8 +1248,17 @@ export default function Budgets() {
                   <p className="text-[0.7rem] font-semibold text-[var(--color-text-secondary)] mb-2">
                     DIFFERENCE
                   </p>
-                  <p className="text-[1rem] font-bold text-[var(--color-danger)]">
-                    +₹820.00
+
+                  <p
+                    className={`text-[1rem] font-bold ${budgetIsOver
+                      ? "text-[var(--color-danger)]"
+                      : "text-[var(--color-success)]"
+                      }`}
+                  >
+                    {budgetIsOver ? "+" : "-"}₹
+                    {Math.abs(budgetDifference).toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                 </div>
 
@@ -1184,7 +1275,10 @@ export default function Budgets() {
                   <CircleGauge size={34} strokeWidth={2} className="text-(--color-primary)" />
                   <div>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">PACE</p>
-                    <p className="text-[1rem] font-bold text-[var(--color-text-primary)] mb-1">₹268 / ₹224</p>
+                    <p className="text-[1rem] font-bold text-[var(--color-text-primary)] mb-1">
+                      ₹{Math.round(budgetActualSpent / Math.max(budgetCurrentDay, 1))} /
+                      ₹{Math.round(budgetIdealPerDay)}
+                    </p>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)]">per day</p>
                   </div>
                 </div>
@@ -1195,20 +1289,40 @@ export default function Budgets() {
 
                   <div>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">BURN RATE</p>
-                    <p className="text-[1rem] font-bold text-(--color-warm) mb-1" >1.2×</p>
+                    <p className="text-[1rem] font-bold text-(--color-warm) mb-1">
+                      {budgetBurnRate.toFixed(1)}×
+                    </p>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)]">vs ideal</p>
                   </div>
                 </div>
 
                 {/* RISK */}
                 <div className="flex items-center gap-3 pl-4">
-                  {/* <ShieldCheck size={34} strokeWidth={2} className="text-(--color-primary)" /> */}
-                  <ShieldAlert size={34} strokeWidth={2} className="text-(--color-danger)" />
+                  {budgetProjectedSpend > totalBudget ? (
+                    <ShieldAlert size={34} strokeWidth={2} className="text-(--color-danger)" />
+
+                  ) : (
+
+                    <ShieldCheck size={34} strokeWidth={2} className="text-(--color-primary)" />
+                  )}
 
                   <div>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">RISK</p>
-                    <p className="text-[1rem] font-bold text-[var(--color-danger)] mb-1">+₹2,300</p>
-                    <p className="text-[0.7rem] text-[var(--color-text-secondary)]">over budget</p>
+                    <p
+                      className={`text-[1rem] font-bold mb-1 ${budgetProjectedSpend > totalBudget
+                        ? "text-[var(--color-danger)]"
+                        : "text-[var(--color-success)]"
+                        }`}
+                    >
+                      {budgetProjectedSpend > totalBudget
+                        ? `+₹${Math.round(budgetProjectedOverBudget).toLocaleString()}`
+                        : "On track"}
+                    </p>
+                    <p className="text-[0.7rem] text-[var(--color-text-secondary)]">
+                      {budgetProjectedSpend > totalBudget
+                        ? "projected overspend"
+                        : "within budget"}
+                    </p>
                   </div>
                 </div>
 

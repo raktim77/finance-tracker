@@ -10,6 +10,11 @@ export interface BudgetCategoryStat {
   percent: number;
 }
 
+export interface BudgetDailySpendingStat {
+  day: number;
+  amount: number;
+}
+
 export interface BudgetResponse {
   month: string;
   exists: boolean;
@@ -19,6 +24,7 @@ export interface BudgetResponse {
   spent?: number;
   unallocated?: number;
 
+  daily_spending?: BudgetDailySpendingStat[];
   categories?: BudgetCategoryStat[];
 }
 

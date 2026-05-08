@@ -1,5 +1,4 @@
 import {
-    // LineChart,
     Line,
     XAxis,
     Tooltip,
@@ -11,12 +10,15 @@ import {
 } from "recharts";
 import { useMemo } from "react";
 
-
 type Props = {
     totalBudget?: number;
-    totalSpent?: number;
     daysInMonth?: number;
     currentDay?: number;
+
+    dailySpending?: {
+        day: number;
+        amount: number;
+    }[];
 };
 
 type Formatter = NonNullable<TooltipProps["formatter"]>;
@@ -29,45 +31,73 @@ const formatter: Formatter = (value, name) => {
 
 export default function PaceVsIdealChart({
     totalBudget = 23548,
-    totalSpent = 5520,
     daysInMonth = 31,
     currentDay = 12,
+    dailySpending = [],
 }: Props) {
     const data = useMemo(() => {
-        const idealPerDay = totalBudget / daysInMonth;
+
+        const safeDaysInMonth =
+            Math.max(daysInMonth, 1);
+
+        const idealPerDay =
+            totalBudget / safeDaysInMonth;
+
+        const spendingMap = new Map(
+            dailySpending.map(d => [d.day, d.amount])
+        );
 
         let cumulativeActual = 0;
 
-        const raw = Array.from({ length: currentDay }, (_, i) => {
-            const variance = 0.6 + Math.random() * 0.8;
-            const daily = (totalSpent / currentDay) * variance;
+        return Array.from(
+            { length: safeDaysInMonth },
+            (_, i) => {
 
-            cumulativeActual += daily;
+                const day = i + 1;
 
-            return {
-                day: i + 1,
-                actual: cumulativeActual,
-                ideal: idealPerDay * (i + 1),
-            };
-        });
+                const spentToday =
+                    spendingMap.get(day) ?? 0;
 
-        // normalize actual to match totalSpent exactly
-        const scale = totalSpent / cumulativeActual;
+                cumulativeActual += spentToday;
 
-        return raw.map(d => ({
-            ...d,
-            actual: d.actual * scale,
-        }));
-    }, [totalBudget, totalSpent, daysInMonth, currentDay]);
+                return {
+                    day,
 
-    const isOver =
-        data[data.length - 1].actual > data[data.length - 1].ideal;
+                    ideal:
+                        idealPerDay * day,
+
+                    actual:
+                        day <= currentDay
+                            ? cumulativeActual
+                            : null,
+                };
+            }
+        );
+
+    }, [
+        totalBudget,
+        daysInMonth,
+        currentDay,
+        dailySpending,
+    ]);
+
+    const latestActual =
+        [...data]
+            .reverse()
+            .find(d => d.actual != null)?.actual ?? 0;
+
+    const latestIdeal =
+        [...data]
+            .reverse()
+            .find(d => d.ideal != null)?.ideal ?? 0;
+
+    const isOver = latestActual > latestIdeal;
 
     return (
         <div className="w-full h-full relative">
 
-            {/* LEGEND (TOP LEFT) */}
-            <div className="absolute -top-3 left-0 flex flex-col gap-1.5 text-[0.7rem] text-[var(--color-text-primary)] z-10">
+            {/* LEGEND */}
+            <div className="absolute -top-3 left-0 flex flex-col gap-1.5 text-[0.7rem] text-[var(--color-text-primary)]">
 
                 <div className="flex items-center gap-1.5">
                     <span className="w-6 border-t-2 border-dashed border-[var(--color-text-primary)] opacity-60" />
@@ -75,7 +105,12 @@ export default function PaceVsIdealChart({
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                    <span className="w-6 h-[2px] bg-[var(--color-success)]" />
+                    <span
+                        className={`w-6 h-[2px] ${isOver
+                            ? "bg-[var(--color-danger)]"
+                            : "bg-[var(--color-success)]"
+                            }`}
+                    />
                     Actual Pace
                 </div>
 
@@ -83,18 +118,21 @@ export default function PaceVsIdealChart({
 
             {/* CHART */}
             <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={data}>  {/* ← was LineChart */}
+                <ComposedChart data={data}>
+
                     <CartesianGrid
                         vertical={false}
                         stroke="var(--border)"
                         strokeOpacity={0.3}
                     />
+
                     <XAxis
                         dataKey="day"
                         tick={false}
                         axisLine={false}
                         tickLine={false}
                     />
+
                     <Tooltip
                         cursor={false}
                         contentStyle={{
@@ -105,7 +143,8 @@ export default function PaceVsIdealChart({
                         }}
                         formatter={formatter}
                     />
-                    {/* Ideal */}
+
+                    {/* IDEAL */}
                     <Line
                         type="monotone"
                         dataKey="ideal"
@@ -114,25 +153,38 @@ export default function PaceVsIdealChart({
                         strokeWidth={2}
                         dot={false}
                     />
-                    {/* AREA FILL — must come before the actual Line so line renders on top */}
+
+                    {/* AREA */}
                     <Area
                         type="monotone"
                         dataKey="actual"
                         stroke="none"
-                        fill={isOver ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.12)"}
+                        fill={
+                            isOver
+                                ? "rgba(239,68,68,0.12)"
+                                : "rgba(34,197,94,0.12)"
+                        }
                         legendType="none"
                         tooltipType="none"
+                        connectNulls={false}
                     />
-                    {/* Actual line on top */}
+
+                    {/* ACTUAL */}
                     <Line
                         type="monotone"
                         dataKey="actual"
-                        stroke={isOver ? "var(--color-danger)" : "var(--color-success)"}
+                        stroke={
+                            isOver
+                                ? "var(--color-danger)"
+                                : "var(--color-success)"
+                        }
                         strokeWidth={3}
                         dot={false}
                         activeDot={{ r: 4 }}
+                        connectNulls={false}
                     />
-                </ComposedChart>  {/* ← was LineChart */}
+
+                </ComposedChart>
             </ResponsiveContainer>
 
         </div>
