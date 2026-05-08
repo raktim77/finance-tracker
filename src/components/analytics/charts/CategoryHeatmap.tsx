@@ -169,13 +169,13 @@ export function CategoryHeatmap({ pieData, isLoading }: CategoryHeatmapProps) {
 
             {/* CENTER TEXT */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[8px] md:text-[10px] font-black uppercase text-[var(--color-text-secondary)] tracking-widest opacity-60">
+              <span className="text-[8px] md:text-[10px] font-black uppercase text-[var(--color-text-secondary)] tracking-widest opacity-80">
                 {activeIndex !== null ? "Focusing" : "Top Spend"}
               </span>
               <span className="text-[10px] md:text-sm font-semibold md:font-black text-[var(--color-text-primary)] truncate max-w-[120px] text-center">
                 {display.name}
               </span>
-              <span className="text-lg md:text-xl font-black text-[var(--color-text-primary)]">
+              <span className="text-base md:text-xl font-black text-[var(--color-text-primary)]">
                 ₹{formatCompactCurrency(display.value)}
               </span>
             </div>
@@ -222,10 +222,10 @@ export function CategoryHeatmap({ pieData, isLoading }: CategoryHeatmapProps) {
 
                   {/* TEXT */}
                   <div className="flex flex-col min-w-0 flex-1 gap-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] truncate mb-0.5" title={item.name}>
+                    <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] truncate mb-0.5" title={item.name}>
                       {item.name}
                     </span>
-                    <span className="text-[14px] font-semibold truncate text-[var(--color-text-primary)] leading-none" title={ '₹' + item.value.toLocaleString()}>
+                    <span className="text-[12px] md:text-[14px] font-semibold truncate text-[var(--color-text-primary)] leading-none" title={ '₹' + item.value.toLocaleString()}>
                       ₹{item.value.toLocaleString()}
                     </span>
                   </div>

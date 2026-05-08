@@ -1,8 +1,10 @@
+import formatCompactCurrency from "../../utils/getCompactAmount";
+
 type ThisMonthPanelProps = {
   data?: {
-    thisMonthSpending: number;
-    thisMonthIncome: number;
-    thisMonthExpenses: number;
+    spent: number;
+    income: number;
+    savings: number;
     savingsRate: number;
     daysRemaining: number;
   };
@@ -10,9 +12,9 @@ type ThisMonthPanelProps = {
 };
 
 export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
-  const spend = data?.thisMonthSpending ?? 0;
-  const income = data?.thisMonthIncome ?? 0;
-  const expenses = data?.thisMonthExpenses ?? 0;
+  const spend = data?.spent ?? 0;
+  const income = data?.income ?? 0;
+  const savings = data?.savings ?? 0;
   const savingsRate = data?.savingsRate ?? 0;
   const daysRemaining = data?.daysRemaining ?? 0;
 
@@ -35,8 +37,8 @@ export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
         {isLoading ? (
           <Skeleton w="w-24" h="h-12" />
         ) : (
-          <span className="text-[clamp(1.2rem,2vw,2.1rem)] font-black text-[var(--color-text-primary)] tracking-tighter leading-none break-all">
-            ₹{spend.toLocaleString()}
+          <span className="text-[clamp(1.5rem,1.6vw,1.9rem)] font-semibold text-[var(--color-text-primary)] tracking-tighter leading-none break-all">
+            ₹{formatCompactCurrency(spend)}
           </span>
         )}
         <span className="text-xs font-bold text-[var(--color-text-secondary)] opacity-60 mt-1">
@@ -58,27 +60,27 @@ export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
             {isLoading ? (
               <Skeleton w="w-10" h="h-4" />
             ) : (
-              <span className="text-sm font-black text-[var(--color-text-primary)] truncate">
-                ₹{income.toLocaleString()}
+              <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+                ₹{formatCompactCurrency(income)}
               </span>
             )}
           </div>
         </div>
 
-        {/* Expenses */}
+        {/* Savings */}
         <div className="border border-[var(--border)] rounded-xl p-4 flex items-center gap-2 bg-[var(--color-background)]/40">
           {/* <div className="w-7 h-7 rounded-lg bg-[var(--color-danger)]/10 flex items-center justify-center text-[var(--color-danger)] shrink-0">
             <CirclePower size={13} strokeWidth={2.5} />
           </div> */}
           <div className="flex flex-col min-w-0 gap-1">
             <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)] truncate">
-              Expenses
+              Savings
             </span>
             {isLoading ? (
               <Skeleton w="w-10" h="h-4" />
             ) : (
-              <span className="text-sm font-black text-[var(--color-text-primary)] truncate">
-                ₹{expenses.toLocaleString()}
+              <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+                ₹{formatCompactCurrency(savings)}
               </span>
             )}
           </div>
@@ -96,7 +98,7 @@ export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
             {isLoading ? (
               <Skeleton w="w-10" h="h-4" />
             ) : (
-              <span className="text-sm font-black text-[var(--color-text-primary)] truncate">
+              <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
                 {savingsRate}%
               </span>
             )}
@@ -115,7 +117,7 @@ export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
             {isLoading ? (
               <Skeleton w="w-10" h="h-4" />
             ) : (
-              <span className="text-sm font-black text-[var(--color-text-primary)] truncate">
+              <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
                 {daysRemaining}
               </span>
             )}

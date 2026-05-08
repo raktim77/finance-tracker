@@ -8,10 +8,11 @@ interface AuthOptions {
 export async function getAnalyticsSummary(
   from: string,
   to: string,
+  currentDate: string,
   options: AuthOptions = {},
 ): Promise<AnalyticsSummaryResponse> {
   return apiClient.get<AnalyticsSummaryResponse>("/analytics/summary", {
     authToken: options.accessToken,
-    query: { from, to },
+    query: { from, to, currentDate },
   });
 }

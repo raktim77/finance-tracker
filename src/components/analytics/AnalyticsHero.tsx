@@ -1,6 +1,4 @@
 import {
-  TrendingDown,
-  TrendingUp,
   ArrowUpRight,
   ArrowDown,
   ArrowUp,
@@ -60,28 +58,28 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
           {isLoading ? (
             <SkeletonVal wide />
           ) : (
-            <>
+            <div className="flex flex-wrap items-end gap-x-2 gap-y-2 justify-between">
               <span className="text-2xl font-semibold text-[var(--color-text-primary)] tracking-tight leading-none">
                 ₹{formatCompactCurrency(totalSpending)}
               </span>
+
               <div
-                className={`mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-black w-fit ${
-                  isNegativeChange
+                className={`inline-flex items-center gap-1 px-1 py-0.5 rounded-lg text-[12px] font-black w-fit ${isNegativeChange
                     ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
                     : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
-                }`}
+                  }`}
               >
                 {isNegativeChange ? (
-                  <TrendingDown size={11} strokeWidth={2.5} />
+                  <ArrowDown size={10} strokeWidth={2.5} />
                 ) : (
-                  <TrendingUp size={11} strokeWidth={2.5} />
+                  <ArrowUp size={10} strokeWidth={2.5} />
                 )}
                 <span>
                   {change >= 0 ? "+" : ""}
                   {change.toFixed(1)}%
                 </span>
               </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -161,7 +159,7 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
         {/* Budget Left */}
         <div className="flex flex-col gap-2 flex-1">
           <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
-            Budget Left
+            Budget Used
           </span>
           {isLoading ? (
             <div className="h-2 w-full bg-[var(--color-text-secondary)]/10 rounded-full animate-pulse" />
@@ -205,11 +203,10 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
               </span>
 
               <div
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-black shrink-0 ${
-                  isNegativeChange
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-black shrink-0 ${isNegativeChange
                     ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
                     : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
-                }`}
+                  }`}
               >
                 {isNegativeChange ? (
                   <ArrowDown size={12} strokeWidth={2.5} />
@@ -296,7 +293,7 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
           {/* Budget */}
           <div className="flex flex-col gap-2 pl-6 justify-center min-w-0">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
-              Budget Remaining
+              Budget Used
             </span>
 
             {isLoading ? (
@@ -321,7 +318,7 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
     </div>
   );
 
-    return (
+  return (
     <>
       {DesktopHero}
       {MobileHero}

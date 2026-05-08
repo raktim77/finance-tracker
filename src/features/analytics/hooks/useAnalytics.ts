@@ -10,14 +10,15 @@ interface AuthOptions {
 export function useAnalytics(
   from?: string,
   to?: string,
+  currentDate?: string,
   options: AuthOptions = {},
 ) {
   return useQuery({
-    queryKey: analyticsKeys.summary(from, to),
+    queryKey: analyticsKeys.summary(from, to, currentDate),
     queryFn: () =>
-      getAnalyticsSummary(from!, to!, {
+      getAnalyticsSummary(from!, to!, currentDate!, {
         accessToken: options.accessToken,
       }),
-    enabled: !!from && !!to && (options.enabled ?? true),
+    enabled: !!from && !!to && !!currentDate && (options.enabled ?? true),
   });
 }

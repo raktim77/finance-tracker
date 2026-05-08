@@ -4,6 +4,13 @@ export type AnalyticsSummaryResponse = {
     totalIncome: number;
     totalSavings: number;
     thisMonthSpending: number;
+    thisMonthCard: {
+      spent: number;
+      income: number;
+      savings: number;
+      savingsRate: number;
+      daysRemaining: number;
+    };
     avgDailySpending: number;
     budgetUsedPercent: number;
     spendingChangePercent: number;

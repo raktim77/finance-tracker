@@ -3,7 +3,6 @@ import {
     XAxis,
     Tooltip,
     ResponsiveContainer,
-    CartesianGrid,
     type TooltipProps,
     Area,
     ComposedChart,

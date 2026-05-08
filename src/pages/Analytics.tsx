@@ -30,11 +30,13 @@ export default function Analytics() {
     () => formatOverviewText(activeRange),
     [activeRange]
   );
+  const today = new Date().toISOString().slice(0, 10);
 
   // 🔥 API CALL
   const { data, isLoading } = useAnalytics(
     activeRange.from,
-    activeRange.to
+    activeRange.to,
+    today
   );
 
   // 🔥 MAPPING
@@ -133,6 +135,7 @@ export default function Analytics() {
       pieData={pieData}
       savingsData={savingsData}
       barData={barData}
+      thisMonthData={data?.metrics?.thisMonthCard}
       mode={mode}
       isLoading={isLoading}
     >

@@ -16,9 +16,9 @@ type AnalyticsMainGridProps = {
   mode: "daily" | "monthly" | "weekly";
   isLoading: boolean;
   thisMonthData?: {
-    thisMonthSpending: number;
-    thisMonthIncome: number;
-    thisMonthExpenses: number;
+    spent: number;
+    income: number;
+    savings: number;
     savingsRate: number;
     daysRemaining: number;
   };
