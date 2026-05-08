@@ -47,12 +47,44 @@ export interface GetAccountsParams
   sort?: "latest" | "oldest" | "name_asc" | "name_desc" | "balance_high" | "balance_low";
 }
 
+export type AccountStatementFormat = "csv" | "pdf";
+
+export interface GetAccountStatementParams
+  extends Record<string, string | number | boolean | null | undefined> {
+  startDate: string;
+  endDate: string;
+}
+
+export interface GetAccountSummaryParams
+  extends Record<string, string | number | boolean | null | undefined> {
+  currentDate: string;
+}
+
 export interface AccountsListResponse {
   ok: boolean;
   total: number;
   page: number;
   pages: number;
   accounts: Account[];
+  analytics?: {
+    summary: {
+      totalBalance: number;
+      monthlyNetFlow: number;
+      monthlyFlowChange: number;
+    };
+    distribution: Array<{
+      label: string;
+      amount: number;
+      percentage: number;
+      color: string;
+    }>;
+    insights: {
+      trend: Array<{
+        month: string;
+        value: number;
+      }>;
+    };
+  };
 }
 
 export interface AccountResponse {
