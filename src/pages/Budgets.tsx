@@ -1040,12 +1040,12 @@ export default function Budgets() {
             <div className="flex gap-3 items-stretch">
 
               {/* Left Hero */}
-              <div className="w-[38%] flex flex-col justify-between">
+              <div className="w-[38%] flex flex-col gap-1 justify-between border-r border-(--border)">
                 <div>
                   <p
                     className={`text-[1.5rem] font-black tracking-tight leading-none ${budgetIsOver
-                        ? "text-[var(--color-danger)]"
-                        : "text-[var(--color-success)]"
+                      ? "text-[var(--color-danger)]"
+                      : "text-[var(--color-success)]"
                       }`}
                   >
                     {budgetActualSpent === 0
@@ -1067,7 +1067,7 @@ export default function Budgets() {
                     Ideal pace
                   </p>
 
-                  <p className="text-[0.9rem] font-black text-[var(--color-text-primary)] mt-1">
+                  <p className="text-[0.82rem] font-black text-[var(--color-text-primary)] mt-1">
                     ₹{formatCompactCurrency(+budgetIdealPerDay.toFixed(2))}
                     <span className="text-[0.72rem] font-semibold text-[var(--color-text-secondary)]">
                       /day
@@ -1077,7 +1077,7 @@ export default function Budgets() {
               </div>
 
               {/* Right Chart */}
-              <div className="flex-1 rounded-2xl border border-[var(--border)] bg-[var(--color-background)] px-3 py-3">
+              <div className="flex-1">
                 <div style={{ height: "88px" }}>
                   <PaceVsIdealChart
                     totalBudget={totalBudget}
@@ -1404,7 +1404,7 @@ export default function Budgets() {
               <div className="flex items-center gap-10">
 
                 {/* LEFT */}
-                <div className="flex-1 min-w-0 flex justify-between items-start">
+                <div className="flex-1 min-w-0 flex flex-col justify-between items-start gap-2 border-r border-(--border)">
                   <div>
                     <p
                       className={`text-[2.6rem] font-black tracking-tight leading-none ${budgetIsOver
@@ -1419,13 +1419,24 @@ export default function Budgets() {
                         ).toFixed(0)}%`}
                     </p>
 
-                    <p className="text-[0.85rem] text-[var(--color-text-secondary)] mt-3">
+                    <p className="text-[0.85rem] text-[var(--color-text-secondary)] mt-2">
                       {budgetIsOver ? "over ideal pace" : "under ideal pace"}
                     </p>
 
                   </div>
 
+                  <div className="mt-4">
+                    <p className="text-[0.62rem] uppercase tracking-[0.12em] font-black text-[var(--color-text-secondary)]">
+                      Ideal pace
+                    </p>
 
+                    <p className="text-[1rem] font-bold text-[var(--color-text-primary)] mt-1">
+                      ₹{formatCompactCurrency(+budgetIdealPerDay.toFixed(2))}
+                      <span className="text-[0.72rem] font-semibold text-[var(--color-text-secondary)]">
+                        /day
+                      </span>
+                    </p>
+                  </div>
                 </div>
 
                 {/* CHART */}
@@ -1503,8 +1514,9 @@ export default function Budgets() {
                   <div>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">PACE</p>
                     <p className="text-[1rem] font-bold text-[var(--color-text-primary)] mb-1">
-                      ₹{formatCompactCurrency(Math.round(budgetActualSpent / Math.max(budgetCurrentDay, 1)))} / 
-                      ₹{formatCompactCurrency(Math.round(budgetIdealPerDay))}
+                      ₹{formatCompactCurrency(Math.round(budgetActualSpent / Math.max(budgetCurrentDay, 1)))} 
+                      {/* /
+                      ₹{formatCompactCurrency(Math.round(budgetIdealPerDay))} */}
                     </p>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)]">per day</p>
                   </div>
