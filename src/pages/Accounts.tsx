@@ -10,6 +10,8 @@ import {
   type LucideIcon,
   ArrowUp,
   ArrowDown,
+  Download,
+  X,
 } from "lucide-react";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +32,7 @@ import { useHeaderConfig } from "../hooks/useHeaderConfig";
 import { useExportAccountStatement } from "../features/accounts/hooks/useExportAccountStatement";
 import { useExportAccountSummary } from "../features/accounts/hooks/useExportAccountSummary";
 import { useAuth } from "../lib/context/useAuth";
-
+import { AnimatePresence, motion } from "framer-motion";
 type UiAccount = {
   _id: string;
   name: string;
@@ -545,6 +547,7 @@ export default function Accounts() {
   const handleOpenAccountSheet = useCallback(() => {
     setShowAddAccountModal(true);
   }, []);
+    const [mobileExportOpen, setMobileExportOpen] = useState(false);
 
   useHeaderConfig({
     heroColor: null,
@@ -980,6 +983,115 @@ export default function Accounts() {
               ): null}
 
       </div>
+
+       {accounts.length > 0 && (
+        <>
+          {/* BACKDROP — Smoother blur transition */}
+          <AnimatePresence>
+            {mobileExportOpen && (
+              <motion.div
+                initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
+                exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                onClick={() => setMobileExportOpen(false)}
+                className="md:hidden fixed inset-0 z-30 bg-black/20"
+              />
+            )}
+          </AnimatePresence>
+
+          {/* WRAPPER */}
+          <div className="md:hidden fixed right-4 bottom-24 z-40 w-14 pointer-events-none">
+
+            {/* ACTIONS — Switched to Spring for "Snap" feel (removes jerkiness) */}
+            <div className="absolute bottom-[72px] right-0 flex flex-col items-end gap-3 pointer-events-auto">
+              <AnimatePresence mode="popLayout">
+                {mobileExportOpen && (
+                  <>
+                    {/* CSV */}
+                    <motion.button
+                      key="csv"
+                      layout
+                      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28, delay: 0.05 }}
+                      onClick={() => { setShowStatementModal(true); setMobileExportOpen(false); }}
+                      disabled={disableQuickActions || !hasExportableAccounts}
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--color-surface)]/95 backdrop-blur-2xl px-5 py-3.5 shadow-2xl active:scale-95 disabled:opacity-50"
+                    >
+                      <FileText size={18} className="text-[var(--color-success)]" />
+                      <span className="text-sm font-bold text-[var(--color-text-primary)]">Statement</span>
+                    </motion.button>
+
+                    {/* PDF */}
+                    <motion.button
+                      key="pdf"
+                      layout
+                      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                      onClick={() => { handleExportSummary(); setMobileExportOpen(false); }}
+                      disabled={disableQuickActions || !hasExportableAccounts}
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--color-surface)]/95 backdrop-blur-2xl px-5 py-3.5 shadow-2xl active:scale-95 disabled:opacity-50"
+                    >
+                      <FileSpreadsheet size={18} className="text-[var(--color-warm)]" />
+                      <span className="text-sm font-bold text-[var(--color-text-primary)]">Summary</span>
+                    </motion.button>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* MAIN FAB — "The Industrial Chamber" (Static Version) */}
+            <motion.button
+              layout
+              whileTap={{ scale: 0.94 }}
+              onClick={() => setMobileExportOpen((prev) => !prev)}
+              className="
+    pointer-events-auto
+    relative h-14 w-14
+    rounded-[22px] 
+    flex items-center justify-center
+    bg-[var(--color-text-primary)]
+    shadow-[0_0_20px_rgba(var(--color-accent-rgb),0.15)]
+    overflow-hidden
+  "
+            >
+              {/* Internal Glow logic */}
+              <div className={`absolute inset-0 transition-opacity duration-300 ${mobileExportOpen ? 'opacity-100' : 'opacity-0'} bg-gradient-to-tr from-[var(--color-accent)]/20 to-transparent`} />
+
+              {/* Changed text color to white for the icons */}
+              <div className="relative z-10 text-(--color-surface)">
+                <AnimatePresence mode="wait">
+                  {mobileExportOpen ? (
+                    <motion.div
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <X size={24} strokeWidth={2.5} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="download"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {/* Lucide Download Icon replaced the custom SVG */}
+                      <Download size={24} strokeWidth={2.5} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.button>
+          </div>
+        </>
+      )}  
 
       {/* ─── DESKTOP ─────────────────────────────────────────────────────────── */}
       <div className="hidden lg:block w-full md:pb-10">
