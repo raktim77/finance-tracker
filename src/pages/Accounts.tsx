@@ -303,11 +303,7 @@ function AccountDistributionDonut({
   );
 }
 
-function Skeleton({
-  className = "",
-}: {
-  className?: string;
-}) {
+function Skeleton({ className = "" }: { className?: string; style?: React.CSSProperties }) {
   return (
     <div
       className={`animate-pulse rounded-xl ${className}`}
@@ -318,35 +314,83 @@ function Skeleton({
     />
   );
 }
-
-function AccountsListEmpty({
-  compact = false,
-  onAdd,
-}: {
-  compact?: boolean;
-  onAdd: () => void;
-}) {
+function AccountsListEmpty({ compact = false, onAdd }: { compact?: boolean; onAdd: () => void }) {
   return (
-    <div className={`rounded-2xl border border-(--border) bg-(--color-surface) text-center ${compact ? "p-6" : "p-10"}`}>
-      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)] text-[var(--color-primary)]">
-        <Wallet size={compact ? 20 : 24} />
+    <div className={`rounded-2xl border border-(--border) bg-(--color-surface) text-center relative overflow-hidden ${compact ? "p-6" : "p-10"}`}>
+      <div className="relative z-10">
+        <div className="mx-auto mb-10 relative" style={{ width: 72, height: 72 }}>
+          {/* Pulse ring 1 */}
+          <div style={{
+            position: "absolute",
+            inset: -8,
+            borderRadius: "50%",
+            border: "1.5px solid rgba(34,197,94,0.22)",
+            animation: "etPulse 2.8s ease-in-out infinite",
+            zIndex: 0,
+          }} />
+
+          {/* Pulse ring 2 */}
+          <div style={{
+            position: "absolute",
+            inset: -18,
+            borderRadius: "50%",
+            border: "1px solid rgba(34,197,94,0.10)",
+            animation: "etPulse 2.8s ease-in-out infinite 0.5s",
+            zIndex: 0,
+          }} />
+
+          {/* Icon container */}
+          <div style={{
+            width: 72, height: 72, borderRadius: 20,
+            background: "linear-gradient(135deg, rgba(34,197,94,0.14) 0%, rgba(16,185,129,0.07) 100%)",
+            border: "1px solid rgba(34,197,94,0.20)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 0 1px rgba(34,197,94,0.06), 0 8px 24px rgba(34,197,94,0.10)",
+          }}>
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Wallet body */}
+              <rect x="4" y="11" width="28" height="18" rx="3.5" stroke="#22c55e" strokeWidth="2" fill="rgba(34,197,94,0.08)" />
+              {/* Wallet flap */}
+              <path d="M4 16 C4 13.5 6 11 8 11 L28 11 C30 11 32 12 32 14 L32 16 Z" fill="rgba(34,197,94,0.12)" stroke="#22c55e" strokeWidth="2" />
+              {/* Coin slot / keyhole */}
+              <rect x="24" y="17" width="8" height="6" rx="3" fill="rgba(34,197,94,0.15)" stroke="#22c55e" strokeWidth="1.5" />
+              <circle cx="28" cy="20" r="1.5" fill="#22c55e" />
+
+              {/* Coin 1 — drops in and fades */}
+              <circle cx="18" cy="6" r="3" fill="#22c55e" fillOpacity="0.9">
+                <animate attributeName="cy" values="2;11;11" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.4;1" calcMode="spline" keySplines="0.4 0 0.2 1; 0 0 1 1" />
+                <animate attributeName="fillOpacity" values="0.9;0.9;0" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.38;0.48" />
+                <animate attributeName="r" values="3;3;0" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.38;0.48" />
+              </circle>
+
+              {/* Coin 2 — staggers behind coin 1 */}
+              <circle cx="14" cy="6" r="3" fill="#4ade80" fillOpacity="0.7">
+                <animate attributeName="cy" values="2;11;11" dur="2.4s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.4;1" calcMode="spline" keySplines="0.4 0 0.2 1; 0 0 1 1" />
+                <animate attributeName="fillOpacity" values="0.7;0.7;0" dur="2.4s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.38;0.48" />
+                <animate attributeName="r" values="3;3;0" dur="2.4s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.38;0.48" />
+              </circle>
+            </svg>
+          </div>
+        </div>
+
+        <p className={`font-bold text-(--color-text-primary) ${compact ? "text-[14px]" : "text-[16px]"}`}>
+          No accounts yet
+        </p>
+        <p className={`mt-2 text-(--color-text-secondary) ${compact ? "text-[12px]" : "text-[14px]"} max-w-[400px] mx-auto`}>
+          Add your first account to start tracking balances, trends, and allocation.
+        </p>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-4 py-2 text-xs font-semibold text-[var(--color-primary)]"
+        >
+          <PlusCircle size={14} />
+          Add Account
+        </button>
       </div>
-      <p className={`font-bold text-(--color-text-primary) ${compact ? "text-[14px]" : "text-[16px]"}`}>No accounts yet</p>
-      <p className={`mt-2 text-(--color-text-secondary) ${compact ? "text-[12px]" : "text-[14px]"} max-w-[400px] mx-auto`}>
-        Add your first account to start tracking balances, trends, and allocation.
-      </p>
-      <button
-        type="button"
-        onClick={onAdd}
-        className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-4 py-2 text-xs font-semibold text-[var(--color-primary)]"
-      >
-        <PlusCircle size={14} />
-        Add Account
-      </button>
     </div>
   );
 }
-
 function AccountsDataEmpty({
   title,
   subtitle,
@@ -547,7 +591,7 @@ export default function Accounts() {
   const handleOpenAccountSheet = useCallback(() => {
     setShowAddAccountModal(true);
   }, []);
-    const [mobileExportOpen, setMobileExportOpen] = useState(false);
+  const [mobileExportOpen, setMobileExportOpen] = useState(false);
 
   useHeaderConfig({
     heroColor: null,
@@ -732,259 +776,306 @@ export default function Accounts() {
         {/* Account List */}
         <div className="mt-5 mx-1">
           {accountsLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border) overflow-hidden"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
+    Array.from({ length: 5 }).map((_, i) => (
+      <div
+        key={i}
+        className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border)"
+      >
+        {/* TOP */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
 
-                    <div className="flex-1 min-w-0">
-                      <Skeleton className="h-4 w-[65%] rounded-md" />
-                      <Skeleton className="h-3 w-[40%] rounded-md mt-2" />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Skeleton className="w-8 h-8 rounded-lg" />
-                    <Skeleton className="w-8 h-8 rounded-lg" />
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-end justify-between">
-                  <div className="flex-1">
-                    <Skeleton className="h-6 w-[55%] rounded-md" />
-                    <Skeleton className="h-3 w-[45%] rounded-md mt-2" />
-                  </div>
-
-                  <Skeleton className="h-4 w-14 rounded-md" />
-                </div>
-
-                <div className="mt-4 h-px w-full bg-[var(--border)]/50" />
-              </div>
-            ))
-          ) : filteredAccounts.length === 0 ? (
-            <div className="mx-2 mt-4">
-              <AccountsListEmpty compact onAdd={() => setShowAddAccountModal(true)} />
-            </div>
-          ) : filteredAccounts.map((acc) => {
-            const Icon = acc.icon;
-
-            return (
-              <div
-                key={acc._id}
-                onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
-                className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border) shadow-xs"
-              >
-                {/* TOP ROW */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0 w-0 flex-1 basis-0 overflow-hidden">
-                    <div
-                      className="w-11 h-11 flex items-center justify-center rounded-xl flex-shrink-0"
-                      style={{
-                        background: isDark ? `${acc.color}22` : `${acc.color}15`,
-                        color: acc.color,
-                      }}
-                    >
-                      <Icon size={20} strokeWidth={2.2} />
-                    </div>
-
-                    <div className="min-w-0 w-0 flex-1 overflow-hidden">
-                      <p
-                        className="block max-w-full min-w-0 truncate text-[0.95rem] font-semibold text-(--color-text-primary)"
-                      >
-                        {acc.name}
-                      </p>
-                      <p
-                        className="text-[0.75rem] mt-0.5 text-(--color-text-secondary)"
-                      >
-                        {acc.type}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* ACTIONS */}
-                  <div className="flex items-center gap-2 ml-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => setEditingAccountId(acc._id)}
-                      className="p-2 rounded-lg text-(--color-text-secondary)"
-                    >
-                      <Pencil size={16} />
-                    </button>
-
-                    <button
-                      onClick={() => void handleArchiveAccount(acc)}
-                      className="p-2 rounded-lg text-(--color-danger)"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* BALANCE */}
-                <div className="mt-4 flex items-end justify-between">
-                  <div>
-                    <p
-                      className="text-[1.25rem] font-bold tracking-[-0.02em] text-(--color-text-primary)"
-                    >
-                      {acc.balance}
-                    </p>
-                    <p
-                      className="text-[0.7rem] mt-1 text-(--color-text-secondary)"
-                    >
-                      Last updated · {acc.lastUpdated}
-                    </p>
-                  </div>
-
-                  <button
-
-                    className="flex items-center gap-1 text-[0.75rem] font-semibold"
-                    style={{ color: "#22c55e" }}
-                  >
-                    View
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-          {accounts.length > 0 && !accountsLoading ? (
-            <>
-        <div className="my-6 mx-4 relative h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
-        {/* Account Insights Card */}
-        <div className="mx-3 mt-4 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
-        >
-          <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              {trendData.length > 0 && accounts.length > 0 && !accountsLoading ? (
-                <h3 className="text-[1.05rem] font-bold text-(--color-text-primary)">Account Insights</h3>
-              ): null}
-              <div className="mt-2">
-                {accountsLoading ? (
-                  <div className="mt-2 space-y-2">
-                    <Skeleton className="h-[80px] w-full rounded-2xl" />
-                    <div className="grid grid-cols-4 gap-2">
-                      <Skeleton className="h-1.5 rounded-full" />
-                      <Skeleton className="h-1.5 rounded-full" />
-                      <Skeleton className="h-1.5 rounded-full" />
-                      <Skeleton className="h-1.5 rounded-full" />
+              <Skeleton className="h-4 w-[65%] rounded-md" />
+              <Skeleton className="h-3 w-[40%] rounded-md mt-2" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <Skeleton className="w-8 h-8 rounded-lg" />
+            <Skeleton className="w-8 h-8 rounded-lg" />
+          </div>
+        </div>
+
+        {/* BOTTOM */}
+        <div className="mt-4 flex items-end justify-between">
+          <div className="flex-1">
+            <Skeleton className="h-6 w-[55%] rounded-md" />
+            <Skeleton className="h-3 w-[45%] rounded-md mt-2" />
+          </div>
+
+          <Skeleton className="h-4 w-14 rounded-md" />
+        </div>
+      </div>
+    ))
+  ) : filteredAccounts.length === 0 ? (
+              <div className="mx-2 mt-4">
+                <AccountsListEmpty compact onAdd={() => setShowAddAccountModal(true)} />
+              </div>
+            ) : filteredAccounts.map((acc) => {
+              const Icon = acc.icon;
+
+              return (
+                <div
+                  key={acc._id}
+                  onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
+                  className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border) shadow-xs"
+                >
+                  {/* TOP ROW */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0 w-0 flex-1 basis-0 overflow-hidden">
+                      <div
+                        className="w-11 h-11 flex items-center justify-center rounded-xl flex-shrink-0"
+                        style={{
+                          background: isDark ? `${acc.color}22` : `${acc.color}15`,
+                          color: acc.color,
+                        }}
+                      >
+                        <Icon size={20} strokeWidth={2.2} />
+                      </div>
+
+                      <div className="min-w-0 w-0 flex-1 overflow-hidden">
+                        <p
+                          className="block max-w-full min-w-0 truncate text-[0.95rem] font-semibold text-(--color-text-primary)"
+                        >
+                          {acc.name}
+                        </p>
+                        <p
+                          className="text-[0.75rem] mt-0.5 text-(--color-text-secondary)"
+                        >
+                          {acc.type}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ACTIONS */}
+                    <div className="flex items-center gap-2 ml-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setEditingAccountId(acc._id)}
+                        className="p-2 rounded-lg text-(--color-text-secondary)"
+                      >
+                        <Pencil size={16} />
+                      </button>
+
+                      <button
+                        onClick={() => void handleArchiveAccount(acc)}
+                        className="p-2 rounded-lg text-(--color-danger)"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
-                ) : trendData.length > 0 && accounts.length > 0 ? (
-                  <Sparkline points={trendData} stroke="#4ade80" height={80} pulse />
+
+                  {/* BALANCE */}
+                  <div className="mt-4 flex items-end justify-between">
+                    <div>
+                      <p
+                        className="text-[1.25rem] font-bold tracking-[-0.02em] text-(--color-text-primary)"
+                      >
+                        {acc.balance}
+                      </p>
+                      <p
+                        className="text-[0.7rem] mt-1 text-(--color-text-secondary)"
+                      >
+                        Last updated · {acc.lastUpdated}
+                      </p>
+                    </div>
+
+                    <button
+
+                      className="flex items-center gap-1 text-[0.75rem] font-semibold"
+                      style={{ color: "#22c55e" }}
+                    >
+                      View
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+        {accounts.length > 0 && !accountsLoading ? (
+          <>
+            <div className="my-6 mx-4 relative h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
+            {/* Account Insights Card */}
+            <div className="mx-3 mt-4 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  {trendData.length > 0 && accounts.length > 0 && !accountsLoading ? (
+                    <h3 className="text-[1.05rem] font-bold text-(--color-text-primary)">Account Insights</h3>
+                  ) : null}
+                  <div className="mt-2">
+                    {accountsLoading ? (
+                      <div className="space-y-3">
+                        {/* Fake area chart skeleton */}
+                        <div className="relative overflow-hidden rounded-xl" style={{ height: 80 /* mobile */ /* 120 for desktop */ }}>
+                          <svg
+                            viewBox="0 0 400 80"
+                            preserveAspectRatio="none"
+                            className="w-full h-full animate-pulse"
+                          >
+                            <path
+                              d="M0,80 L0,52 C50,48 90,70 140,50 C190,30 230,72 280,38 C330,8 370,22 400,10 L400,80 Z"
+                              style={{ fill: "var(--color-text-secondary)", opacity: 0.08 }}
+                            />
+                            <path
+                              d="M0,52 C50,48 90,70 140,50 C190,30 230,72 280,38 C330,8 370,22 400,10"
+                              fill="none"
+                              stroke="var(--color-text-secondary)"
+                              strokeWidth="1.5"
+                              strokeOpacity="0.12"
+                            />
+                          </svg>
+                          {/* shimmer overlay */}
+                          <div
+                            className="absolute inset-0 animate-pulse rounded-xl"
+                            style={{ background: "linear-gradient(90deg, transparent 0%, rgba(var(--color-text-secondary),0.04) 50%, transparent 100%)" }}
+                          />
+                        </div>
+                        
+                       
+                      </div>
+                    ) : trendData.length > 0 && accounts.length > 0 ? (
+                      <Sparkline points={trendData} stroke="#4ade80" height={80} pulse />
+                    ) : (
+                      <AccountsDataEmpty
+                        compact
+                        title="No insights yet"
+                        subtitle="Add account activity to unlock trend-based insights."
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  {accountsLoading ? (
+                    <>
+                    <div className="ml-4">
+                      <Skeleton className="h-7 w-28 rounded-md ml-auto" />
+                      <Skeleton className="h-4 w-24 rounded-md mt-2 ml-auto" />
+                      <Skeleton className="h-3 w-32 rounded-md mt-2 ml-auto" />
+
+                    </div>
+                    </>
+                  ) : trendData.length > 0 && accounts.length > 0 ? (
+                    <>
+                      <p className={`text-[1.3rem] font-bold leading-tight ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
+                        {isNetFlowPositive ? "+" : isNetFlowNegative ? "-" : ""}₹{Math.abs(monthlyNetFlow).toLocaleString("en-IN")}
+                      </p>
+                      <p className={`text-[0.72rem] mt-0.5 ${isFlowChangeNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
+                        {isFlowChangePositive ? "↑ " : isFlowChangeNegative ? "↓ " : ""}
+                        {Math.abs(monthlyFlowChange).toFixed(1)}% vs last month
+                      </p>
+                      <p className="text-[0.72rem] mt-0.5 text-(--color-text-secondary)">
+                        This month's net flow
+                      </p>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {/* Account Distribution Card */}
+            <div className="mx-3 mt-3 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
+            >
+              {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
+                <h3 className="text-[1.05rem] font-bold mb-4 text-(--color-text-primary)">Asset Distribution</h3>
+              ) : null}
+              <div className="flex items-center gap-2">
+                {accountsLoading ? (
+                  <div className="flex items-center gap-4">
+                    {/* Donut ring shimmer */}
+                    <div className="relative shrink-0 w-[140px] h-[140px]"> {/* w-[160px] h-[160px] for desktop */}
+                      <svg viewBox="0 0 140 140" className="w-full h-full animate-pulse">
+                        <circle
+                          cx="70" cy="70" r="52"
+                          fill="none"
+                          stroke="var(--color-text-secondary)"
+                          strokeOpacity="0.10"
+                          strokeWidth="16"
+                        />
+                        {/* One partial arc to hint at segments */}
+                        <circle
+                          cx="70" cy="70" r="52"
+                          fill="none"
+                          stroke="var(--color-text-secondary)"
+                          strokeOpacity="0.07"
+                          strokeWidth="16"
+                          strokeDasharray="164 164"
+                          strokeLinecap="round"
+                          style={{ transform: "rotate(-90deg)", transformOrigin: "70px 70px" }}
+                        />
+                      </svg>
+                      {/* hollow center */}
+                      <div
+                        className="absolute rounded-full bg-(--color-surface)"
+                        style={{ inset: "36px" }}
+                      />
+                    </div>
+
+                    {/* Legend rows */}
+                    <div className="flex-1 space-y-3">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2" style={{ opacity: 1 - i * 0.18 }}>
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="w-2 h-2 rounded-full shrink-0" />
+                            <div className="space-y-1.5">
+                              <Skeleton className="h-[11px] w-20 rounded-md" />
+                              <Skeleton className="h-1 w-28 rounded-full" /> {/* progress bar hint */}
+                            </div>
+                          </div>
+                          <Skeleton className="h-[11px] w-9 rounded-md" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
-                  <AccountsDataEmpty
-                    compact
-                    title="No insights yet"
-                    subtitle="Add account activity to unlock trend-based insights."
-                  />
+                  <>
+                    {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
+                      <AccountDistributionDonut
+                        data={distributionData}
+                        activeIndex={activeMobileDistributionIndex}
+                        setActiveIndex={setActiveMobileDistributionIndex}
+                        idPrefix="accounts-mobile-distribution"
+                        sizeClass="w-[140px] h-[140px]"
+                      />
+                    ) : null}
+
+                    <div className="flex-1 space-y-2">
+                      {distributionData.length === 0 || accounts.length === 0 ? (
+                        <AccountsDataEmpty
+                          compact
+                          title="No distribution yet"
+                          subtitle="Your asset split appears here once balances are available."
+                        />
+                      ) : distributionData.map((item, index) => (
+                        <div
+                          key={`${item.label}-${index}`}
+                          className={`flex items-center justify-between rounded-lg px-2 py-1.5 transition-all duration-200 ${activeMobileDistributionIndex === index ? "bg-[var(--color-background)] border border-[var(--color-accent)]/40 shadow-sm" : ""}`}
+                          onMouseEnter={() => setActiveMobileDistributionIndex(index)}
+                          onMouseLeave={() => setActiveMobileDistributionIndex(null)}
+                        >
+                          <span className="flex items-center gap-2 text-[0.82rem]" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>
+                            <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
+                            {item.label}
+                          </span>
+                          <span className="text-[0.82rem] font-semibold" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>
+                            {item.percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
-            <div className="text-right flex-shrink-0">
-              {accountsLoading ? (
-                <>
-                  <Skeleton className="h-7 w-28 rounded-md ml-auto" />
-                  <Skeleton className="h-4 w-24 rounded-md mt-2 ml-auto" />
-                  <Skeleton className="h-3 w-32 rounded-md mt-2 ml-auto" />
-                </>
-              ) :  trendData.length > 0 && accounts.length > 0 ? (
-                <>
-                  <p className={`text-[1.3rem] font-bold leading-tight ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
-                    {isNetFlowPositive ? "+" : isNetFlowNegative ? "-" : ""}₹{Math.abs(monthlyNetFlow).toLocaleString("en-IN")}
-                  </p>
-                  <p className={`text-[0.72rem] mt-0.5 ${isFlowChangeNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
-                    {isFlowChangePositive ? "↑ " : isFlowChangeNegative ? "↓ " : ""}
-                    {Math.abs(monthlyFlowChange).toFixed(1)}% vs last month
-                  </p>
-                  <p className="text-[0.72rem] mt-0.5 text-(--color-text-secondary)">
-                    This month's net flow
-                  </p>
-                </>
-              ): null}
-            </div>
-          </div>
-        </div>
-
-        {/* Account Distribution Card */}
-        <div className="mx-3 mt-3 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
-        >
-          {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
-            <h3 className="text-[1.05rem] font-bold mb-4 text-(--color-text-primary)">Asset Distribution</h3>
-              ): null}
-          <div className="flex items-center gap-2">
-            {accountsLoading ? (
-              <>
-                <div className="relative w-[140px] h-[140px] shrink-0">
-                  <Skeleton className="w-[140px] h-[140px] rounded-full" />
-                  <div className="absolute inset-[34px] rounded-full bg-(--color-surface)" />
-                </div>
-
-                <div className="flex-1 space-y-3">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between rounded-lg px-2 py-1.5"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Skeleton className="w-2 h-2 rounded-full" />
-                        <Skeleton className="h-3 w-24 rounded-md" />
-                      </div>
-
-                      <Skeleton className="h-3 w-10 rounded-md" />
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-              {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
-                <AccountDistributionDonut
-                  data={distributionData}
-                  activeIndex={activeMobileDistributionIndex}
-                  setActiveIndex={setActiveMobileDistributionIndex}
-                  idPrefix="accounts-mobile-distribution"
-                  sizeClass="w-[140px] h-[140px]"
-                />
-              ): null}
-
-                <div className="flex-1 space-y-2">
-                  {distributionData.length === 0 || accounts.length === 0 ? (
-                    <AccountsDataEmpty
-                      compact
-                      title="No distribution yet"
-                      subtitle="Your asset split appears here once balances are available."
-                    />
-                  ) : distributionData.map((item, index) => (
-                    <div
-                      key={`${item.label}-${index}`}
-                      className={`flex items-center justify-between rounded-lg px-2 py-1.5 transition-all duration-200 ${activeMobileDistributionIndex === index ? "bg-[var(--color-background)] border border-[var(--color-accent)]/40 shadow-sm" : ""}`}
-                      onMouseEnter={() => setActiveMobileDistributionIndex(index)}
-                      onMouseLeave={() => setActiveMobileDistributionIndex(null)}
-                    >
-                      <span className="flex items-center gap-2 text-[0.82rem]" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>
-                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
-                        {item.label}
-                      </span>
-                      <span className="text-[0.82rem] font-semibold" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>
-                        {item.percentage.toFixed(1)}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-            </>
-              ): null}
+          </>
+        ) : null}
 
       </div>
 
-       {accounts.length > 0 && (
+      {accounts.length > 0 && (
         <>
           {/* BACKDROP — Smoother blur transition */}
           <AnimatePresence>
@@ -1091,7 +1182,7 @@ export default function Accounts() {
             </motion.button>
           </div>
         </>
-      )}  
+      )}
 
       {/* ─── DESKTOP ─────────────────────────────────────────────────────────── */}
       <div className="hidden lg:block w-full md:pb-10">
@@ -1241,19 +1332,26 @@ export default function Accounts() {
 
               {/* Account Rows */}
               <div className="space-y-3">
-                {accountsLoading ? (
-                  Array.from({ length: 6 }).map((_, idx) => (
-                    <div key={idx} className="rounded-2xl bg-(--color-surface) border border-(--border) px-7 py-5">
-                      <div className="grid items-center gap-5" style={{ gridTemplateColumns: "52px minmax(0, 1fr) minmax(140px, 0.9fr) minmax(80px, 0.6fr) 120px" }}>
+                {accountsLoading
+                  ? Array.from({ length: 5 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-2xl bg-(--color-surface) border border-(--border) px-7 py-5"
+                      style={{ opacity: 1 - idx * 0.12 }}
+                    >
+                      <div
+                        className="grid items-center gap-5"
+                        style={{ gridTemplateColumns: "52px minmax(0,1fr) minmax(140px,0.9fr) minmax(80px,0.6fr) 120px" }}
+                      >
                         <Skeleton className="h-12 w-12 rounded-xl" />
-                        <div>
-                          <Skeleton className="h-4 w-40 rounded-md" />
-                          <Skeleton className="h-3 w-24 rounded-md mt-2" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-[14px] w-44 rounded-lg" />
+                          <Skeleton className="h-[11px] w-28 rounded-lg" />
                         </div>
-                        <Skeleton className="h-5 w-28 rounded-md" />
-                        <div>
-                          <Skeleton className="h-3 w-14 rounded-md" />
-                          <Skeleton className="h-3 w-20 rounded-md mt-2" />
+                        <Skeleton className="h-[18px] w-32 rounded-lg" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-[11px] w-14 rounded-lg" />
+                          <Skeleton className="h-[11px] w-20 rounded-lg" />
                         </div>
                         <div className="flex justify-end gap-3">
                           <Skeleton className="h-9 w-9 rounded-xl" />
@@ -1262,63 +1360,62 @@ export default function Accounts() {
                         </div>
                       </div>
                     </div>
-                  ))
-                ) : filteredAccounts.length === 0 ? (
-                  <AccountsListEmpty onAdd={() => setShowAddAccountModal(true)} />
-                ) : (
-                  filteredAccounts.map((acc) => {
-                    const Icon = acc.icon;
-                    return (
-                      <div
-                        key={acc._id}
-                        onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
-                        className="group cursor-pointer rounded-2xl pl-7 py-5 pr-3 transition grid items-center gap-5 bg-(--color-surface) border border-(--border) hover:border-(--color-accent)/40"
-                        style={{
-                          gridTemplateColumns: "52px minmax(0, 1fr) minmax(140px, 0.9fr) minmax(80px, 0.6fr) 120px",
-                        }}
-                      >
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl"
-                          style={{ background: `${acc.color}1f`, color: acc.color }}>
-                          <Icon size={24} strokeWidth={2.3} />
+                  )) : filteredAccounts.length === 0 ? (
+                    <AccountsListEmpty onAdd={() => setShowAddAccountModal(true)} />
+                  ) : (
+                    filteredAccounts.map((acc) => {
+                      const Icon = acc.icon;
+                      return (
+                        <div
+                          key={acc._id}
+                          onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
+                          className="group cursor-pointer rounded-2xl pl-7 py-5 pr-3 transition grid items-center gap-5 bg-(--color-surface) border border-(--border) hover:border-(--color-accent)/40"
+                          style={{
+                            gridTemplateColumns: "52px minmax(0, 1fr) minmax(140px, 0.9fr) minmax(80px, 0.6fr) 120px",
+                          }}
+                        >
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl"
+                            style={{ background: `${acc.color}1f`, color: acc.color }}>
+                            <Icon size={24} strokeWidth={2.3} />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="truncate text-[1.1rem] font-semibold text-(--color-text-primary)">{acc.name}</h3>
+                            <p className="mt-2 text-[0.85rem] leading-none text-(--color-text-secondary)">{acc.type}</p>
+                          </div>
+                          <div className="min-w-0 truncate text-[1.1rem] font-semibold tracking-[-0.02em] text-(--color-text-primary)" title={acc.balance}>
+                            {acc.balance}
+                          </div>
+                          <div>
+                            <p className="text-[0.85rem] text-(--color-text-secondary)">Updated</p>
+                            <p className="mt-1 text-[0.9rem] text-(--color-text-secondary)">{acc.lastUpdated}</p>
+                          </div>
+                          <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setEditingAccountId(acc._id)}
+                              className="flex h-9 w-9 items-center justify-center rounded-xl transition text-(--color-text-secondary) hover:bg-(--color-accent-soft) p-2"
+                              aria-label={`Edit ${acc.name}`}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => void handleArchiveAccount(acc)}
+                              className="flex h-9 w-9 items-center justify-center rounded-xl text-(--color-danger) hover:bg-(--color-danger)/10 transition p-2"
+                              aria-label={`Delete ${acc.name}`}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <button
+                              onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
+                              className="text-[var(--color-text-secondary)] opacity-30 translate-x-[-6px] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0 flex h-9 w-9 items-center justify-center rounded-xl"
+                              aria-label={`View ${acc.name}`}
+                            >
+                              <ChevronRight size={18} />
+                            </button>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="truncate text-[1.1rem] font-semibold text-(--color-text-primary)">{acc.name}</h3>
-                          <p className="mt-2 text-[0.85rem] leading-none text-(--color-text-secondary)">{acc.type}</p>
-                        </div>
-                        <div className="min-w-0 truncate text-[1.1rem] font-semibold tracking-[-0.02em] text-(--color-text-primary)" title={acc.balance}>
-                          {acc.balance}
-                        </div>
-                        <div>
-                          <p className="text-[0.85rem] text-(--color-text-secondary)">Updated</p>
-                          <p className="mt-1 text-[0.9rem] text-(--color-text-secondary)">{acc.lastUpdated}</p>
-                        </div>
-                        <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => setEditingAccountId(acc._id)}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl transition text-(--color-text-secondary) hover:bg-(--color-accent-soft) p-2"
-                            aria-label={`Edit ${acc.name}`}
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            onClick={() => void handleArchiveAccount(acc)}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl text-(--color-danger) hover:bg-(--color-danger)/10 transition p-2"
-                            aria-label={`Delete ${acc.name}`}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => navigate(`/accounts/transactions/${acc._id}`)}
-                            className="text-[var(--color-text-secondary)] opacity-30 translate-x-[-6px] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0 flex h-9 w-9 items-center justify-center rounded-xl"
-                            aria-label={`View ${acc.name}`}
-                          >
-                            <ChevronRight size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
               </div>
             </div>
 
@@ -1327,17 +1424,33 @@ export default function Accounts() {
               {/* Account Insights */}
               <div className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]">
                 {trendData.length > 0 && accounts.length > 0 && !accountsLoading ? (
-                <h3 className="text-base leading-none font-semibold text-(--color-text-primary)">Account Insights</h3>
-              ): null}
+                  <h3 className="text-base leading-none font-semibold text-(--color-text-primary)">Account Insights</h3>
+                ) : null}
                 <div className="mt-6">
                   {accountsLoading ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-[120px] w-full rounded-2xl" />
-                      <div className="grid grid-cols-6 gap-2">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <Skeleton key={i} className="h-1.5 rounded-full" />
-                        ))}
+                    <div className="space-y-3">
+                      {/* Fake area chart skeleton */}
+                      <div className="relative overflow-hidden rounded-xl" style={{ height: 120 }}>
+                        <svg
+                          viewBox="0 0 400 120"
+                          preserveAspectRatio="none"
+                          className="w-full h-full animate-pulse"
+                        >
+                          <path
+                            d="M0,80 L0,52 C50,48 90,70 140,50 C190,30 230,72 280,38 C330,8 370,22 400,10 L400,80 Z"
+                            style={{ fill: "var(--color-text-secondary)", opacity: 0.08 }}
+                          />
+                          <path
+                            d="M0,52 C50,48 90,70 140,50 C190,30 230,72 280,38 C330,8 370,22 400,10"
+                            fill="none"
+                            stroke="var(--color-text-secondary)"
+                            strokeWidth="1.5"
+                            strokeOpacity="0.12"
+                          />
+                        </svg>
                       </div>
+                      {/* Tick marks */}
+                     
                     </div>
                   ) : trendData.length > 0 && accounts.length > 0 ? (
                     <Sparkline points={trendData} stroke="#22c55e" height={120} pulse />
@@ -1405,48 +1518,67 @@ export default function Accounts() {
               {/* Account Distribution */}
               <div className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]">
                 {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
-                <h3 className="font-semibold mb-5 text-base leading-none text-(--color-text-primary)">Asset Distribution</h3>
-              ): null}
+                  <h3 className="font-semibold mb-5 text-base leading-none text-(--color-text-primary)">Asset Distribution</h3>
+                ) : null}
                 <div className="flex items-center gap-6">
                   {accountsLoading ? (
-                    <>
-                      <div className="relative w-[160px] h-[160px] shrink-0">
-                        <Skeleton className="w-[160px] h-[160px] rounded-full" />
-                        <div className="absolute inset-[40px] rounded-full bg-(--color-surface)" />
+                    <div className="flex items-center gap-4">
+                      {/* Donut ring shimmer */}
+                      <div className="relative shrink-0 w-[140px] h-[140px]"> {/* w-[160px] h-[160px] for desktop */}
+                        <svg viewBox="0 0 140 140" className="w-full h-full animate-pulse">
+                          <circle
+                            cx="70" cy="70" r="52"
+                            fill="none"
+                            stroke="var(--color-text-secondary)"
+                            strokeOpacity="0.10"
+                            strokeWidth="16"
+                          />
+                          {/* One partial arc to hint at segments */}
+                          <circle
+                            cx="70" cy="70" r="52"
+                            fill="none"
+                            stroke="var(--color-text-secondary)"
+                            strokeOpacity="0.07"
+                            strokeWidth="16"
+                            strokeDasharray="164 164"
+                            strokeLinecap="round"
+                            style={{ transform: "rotate(-90deg)", transformOrigin: "70px 70px" }}
+                          />
+                        </svg>
+                        {/* hollow center */}
+                        <div
+                          className="absolute rounded-full bg-(--color-surface)"
+                          style={{ inset: "36px" }}
+                        />
                       </div>
 
+                      {/* Legend rows */}
                       <div className="flex-1 space-y-3">
-                        {Array.from({ length: 3 }).map((_, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between rounded-xl px-2.5 py-2 border border-transparent"
-                          >
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="flex items-center justify-between gap-2" style={{ opacity: 1 - i * 0.18 }}>
                             <div className="flex items-center gap-2">
-                              <Skeleton className="w-2.5 h-2.5 rounded-full shrink-0" />
-
-                              <div className="space-y-2">
-                                <Skeleton className="h-3 w-24 rounded-md" />
-
-                                <Skeleton className="h-1.5 w-32 rounded-full" />
+                              <Skeleton className="w-2 h-2 rounded-full shrink-0" />
+                              <div className="space-y-1.5">
+                                <Skeleton className="h-[11px] w-20 rounded-md" />
+                                <Skeleton className="h-1 w-28 rounded-full" /> {/* progress bar hint */}
                               </div>
                             </div>
-
-                            <Skeleton className="h-3 w-10 rounded-md" />
+                            <Skeleton className="h-[11px] w-9 rounded-md" />
                           </div>
                         ))}
                       </div>
-                    </>
+                    </div>
                   ) : (
                     <>
-                    {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
-                      <AccountDistributionDonut
-                        data={distributionData}
-                        activeIndex={activeDesktopDistributionIndex}
-                        setActiveIndex={setActiveDesktopDistributionIndex}
-                        idPrefix="accounts-desktop-distribution"
-                        sizeClass="w-[160px] h-[160px]"
-                      />
-                    ) : null}
+                      {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
+                        <AccountDistributionDonut
+                          data={distributionData}
+                          activeIndex={activeDesktopDistributionIndex}
+                          setActiveIndex={setActiveDesktopDistributionIndex}
+                          idPrefix="accounts-desktop-distribution"
+                          sizeClass="w-[160px] h-[160px]"
+                        />
+                      ) : null}
 
                       <div
                         className="flex-1 space-y-3 text-sm"
@@ -1529,6 +1661,10 @@ export default function Accounts() {
   .recharts-wrapper svg,
   .recharts-surface {
     overflow: visible !important;
+  }
+  @keyframes etPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%       { opacity: 1;   transform: scale(1.06); }
   }
 `}</style>
     </>
