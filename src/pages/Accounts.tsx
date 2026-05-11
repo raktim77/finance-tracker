@@ -316,6 +316,51 @@ function Skeleton({
     />
   );
 }
+
+function AccountsListEmpty({
+  compact = false,
+  onAdd,
+}: {
+  compact?: boolean;
+  onAdd: () => void;
+}) {
+  return (
+    <div className={`rounded-2xl border border-(--border) bg-(--color-surface) text-center ${compact ? "p-6" : "p-10"}`}>
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)] text-[var(--color-primary)]">
+        <Wallet size={compact ? 20 : 24} />
+      </div>
+      <p className={`font-bold text-(--color-text-primary) ${compact ? "text-[0.95rem]" : "text-[1.05rem]"}`}>No accounts yet</p>
+      <p className={`mt-2 text-(--color-text-secondary) ${compact ? "text-[0.78rem]" : "text-sm"}`}>
+        Add your first account to start tracking balances, trends, and allocation.
+      </p>
+      <button
+        type="button"
+        onClick={onAdd}
+        className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-4 py-2 text-xs font-semibold text-[var(--color-primary)]"
+      >
+        <PlusCircle size={14} />
+        Add Account
+      </button>
+    </div>
+  );
+}
+
+function AccountsDataEmpty({
+  title,
+  subtitle,
+  compact = false,
+}: {
+  title: string;
+  subtitle: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`rounded-2xl border border-dashed border-(--border) bg-[var(--color-background)]/40 text-center ${compact ? "px-4 py-5" : "px-5 py-7"}`}>
+      <p className={`font-semibold text-(--color-text-primary) ${compact ? "text-[0.82rem]" : "text-sm"}`}>{title}</p>
+      <p className={`mt-1.5 text-(--color-text-secondary) ${compact ? "text-[0.72rem]" : "text-xs"}`}>{subtitle}</p>
+    </div>
+  );
+}
 export default function Accounts() {
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [showStatementModal, setShowStatementModal] = useState(false);
@@ -685,9 +730,8 @@ export default function Accounts() {
             Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border)"
+                className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border) overflow-hidden"
               >
-                {/* TOP */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
@@ -704,7 +748,6 @@ export default function Accounts() {
                   </div>
                 </div>
 
-                {/* BOTTOM */}
                 <div className="mt-4 flex items-end justify-between">
                   <div className="flex-1">
                     <Skeleton className="h-6 w-[55%] rounded-md" />
@@ -713,8 +756,14 @@ export default function Accounts() {
 
                   <Skeleton className="h-4 w-14 rounded-md" />
                 </div>
+
+                <div className="mt-4 h-px w-full bg-[var(--border)]/50" />
               </div>
             ))
+          ) : filteredAccounts.length === 0 ? (
+            <div className="mx-2 mt-4">
+              <AccountsListEmpty compact onAdd={() => setShowAddAccountModal(true)} />
+            </div>
           ) : filteredAccounts.map((acc) => {
             const Icon = acc.icon;
 
@@ -808,13 +857,23 @@ export default function Accounts() {
               <h3 className="text-[1.05rem] font-bold text-(--color-text-primary)">Account Insights</h3>
               <div className="mt-2">
                 {accountsLoading ? (
-                  <div className="mt-2">
+                  <div className="mt-2 space-y-2">
                     <Skeleton className="h-[80px] w-full rounded-2xl" />
+                    <div className="grid grid-cols-4 gap-2">
+                      <Skeleton className="h-1.5 rounded-full" />
+                      <Skeleton className="h-1.5 rounded-full" />
+                      <Skeleton className="h-1.5 rounded-full" />
+                      <Skeleton className="h-1.5 rounded-full" />
+                    </div>
                   </div>
-                ) : trendData.length > 0 ? (
+                ) : trendData.length > 0 && accounts.length > 0 ? (
                   <Sparkline points={trendData} stroke="#4ade80" height={80} pulse />
                 ) : (
-                  <p className="text-[0.75rem] mt-2 text-(--color-text-secondary)">No trend data available.</p>
+                  <AccountsDataEmpty
+                    compact
+                    title="No insights yet"
+                    subtitle="Add account activity to unlock trend-based insights."
+                  />
                 )}
               </div>
             </div>
@@ -850,7 +909,10 @@ export default function Accounts() {
           <div className="flex items-center gap-2">
             {accountsLoading ? (
               <>
-                <Skeleton className="w-[140px] h-[140px] rounded-full shrink-0" />
+                <div className="relative w-[140px] h-[140px] shrink-0">
+                  <Skeleton className="w-[140px] h-[140px] rounded-full" />
+                  <div className="absolute inset-[34px] rounded-full bg-(--color-surface)" />
+                </div>
 
                 <div className="flex-1 space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
@@ -879,8 +941,12 @@ export default function Accounts() {
                 />
 
                 <div className="flex-1 space-y-2">
-                  {distributionData.length === 0 ? (
-                    <p className="text-[0.82rem] text-(--color-text-secondary)">No distribution data.</p>
+                  {distributionData.length === 0 || accounts.length === 0 ? (
+                    <AccountsDataEmpty
+                      compact
+                      title="No distribution yet"
+                      subtitle="Your asset split appears here once balances are available."
+                    />
                   ) : distributionData.map((item, index) => (
                     <div
                       key={`${item.label}-${index}`}
@@ -1054,13 +1120,28 @@ export default function Accounts() {
               <div className="space-y-3">
                 {accountsLoading ? (
                   Array.from({ length: 6 }).map((_, idx) => (
-                    <div key={idx} className="h-[72px] rounded-2xl animate-pulse bg-(--color-surface) border border-(--border)" />
+                    <div key={idx} className="rounded-2xl bg-(--color-surface) border border-(--border) px-7 py-5">
+                      <div className="grid items-center gap-5" style={{ gridTemplateColumns: "52px minmax(0, 1fr) minmax(140px, 0.9fr) minmax(80px, 0.6fr) 120px" }}>
+                        <Skeleton className="h-12 w-12 rounded-xl" />
+                        <div>
+                          <Skeleton className="h-4 w-40 rounded-md" />
+                          <Skeleton className="h-3 w-24 rounded-md mt-2" />
+                        </div>
+                        <Skeleton className="h-5 w-28 rounded-md" />
+                        <div>
+                          <Skeleton className="h-3 w-14 rounded-md" />
+                          <Skeleton className="h-3 w-20 rounded-md mt-2" />
+                        </div>
+                        <div className="flex justify-end gap-3">
+                          <Skeleton className="h-9 w-9 rounded-xl" />
+                          <Skeleton className="h-9 w-9 rounded-xl" />
+                          <Skeleton className="h-9 w-9 rounded-xl" />
+                        </div>
+                      </div>
+                    </div>
                   ))
                 ) : filteredAccounts.length === 0 ? (
-                  <div className="rounded-2xl p-10 text-base bg-(--color-surface) border border-(--border)"
-                  >
-                    No accounts found in this category.
-                  </div>
+                  <AccountsListEmpty onAdd={() => setShowAddAccountModal(true)} />
                 ) : (
                   filteredAccounts.map((acc) => {
                     const Icon = acc.icon;
@@ -1125,11 +1206,21 @@ export default function Accounts() {
                 <h3 className="text-base leading-none font-semibold text-(--color-text-primary)">Account Insights</h3>
                 <div className="mt-6">
                   {accountsLoading ? (
-                    <Skeleton className="h-[120px] w-full rounded-2xl" />
-                  ) : trendData.length > 0 ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-[120px] w-full rounded-2xl" />
+                      <div className="grid grid-cols-6 gap-2">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <Skeleton key={i} className="h-1.5 rounded-full" />
+                        ))}
+                      </div>
+                    </div>
+                  ) : trendData.length > 0 && accounts.length > 0 ? (
                     <Sparkline points={trendData} stroke="#22c55e" height={120} pulse />
                   ) : (
-                    <p className="text-sm text-(--color-text-secondary)">No trend data available.</p>
+                    <AccountsDataEmpty
+                      title="No insights yet"
+                      subtitle="Track transactions in your accounts to see monthly net-flow trends."
+                    />
                   )}
                 </div>
                 {accountsLoading ? (
@@ -1192,7 +1283,10 @@ export default function Accounts() {
                 <div className="flex items-center gap-6">
                   {accountsLoading ? (
                     <>
-                      <Skeleton className="w-[160px] h-[160px] rounded-full shrink-0" />
+                      <div className="relative w-[160px] h-[160px] shrink-0">
+                        <Skeleton className="w-[160px] h-[160px] rounded-full" />
+                        <div className="absolute inset-[40px] rounded-full bg-(--color-surface)" />
+                      </div>
 
                       <div className="flex-1 space-y-3">
                         {Array.from({ length: 3 }).map((_, index) => (
@@ -1229,10 +1323,11 @@ export default function Accounts() {
                         className="flex-1 space-y-3 text-sm"
                         style={{ color: isDark ? "#d0d5dd" : "#4b5563" }}
                       >
-                        {distributionData.length === 0 ? (
-                          <p className="text-sm text-(--color-text-secondary)">
-                            No distribution data.
-                          </p>
+                        {distributionData.length === 0 || accounts.length === 0 ? (
+                          <AccountsDataEmpty
+                            title="No distribution yet"
+                            subtitle="Once account balances are available, category-wise asset split will appear here."
+                          />
                         ) : (
                           distributionData.map((item, index) => (
                             <div
