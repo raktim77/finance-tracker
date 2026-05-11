@@ -370,7 +370,7 @@ export default function Budgets() {
     return (
       <div>
         {/* MOBILE */}
-        <div className="p-2 flex md:hidden flex-col gap-6 pb-24 w-full ">
+        <div className="px-3 flex md:hidden flex-col gap-6 pb-24 w-full ">
           <div className="pb-">
             <div>
               <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
@@ -606,7 +606,7 @@ export default function Budgets() {
     return (
       <>
         {/* ═══ MOBILE ══════════════════════════════════════════════════════════ */}
-        <div className="lg:hidden flex flex-col pb-24 p-2 gap-5 bg-[var(--color-background)] min-h-screen">
+        <div className="lg:hidden flex flex-col pb-24 px-3 gap-5 bg-[var(--color-background)] min-h-screen">
           <div>
             <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
               {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
@@ -864,9 +864,9 @@ export default function Budgets() {
   return (
     <>
       {/* ═══ MOBILE VIEW ══════════════════════════════════════════════════════ */}
-      <div className="lg:hidden flex flex-col pb-24 bg-[var(--color-background)] min-h-screen">
+      <div className="lg:hidden flex flex-col pb-24 px-1 bg-[var(--color-background)] min-h-screen">
         {/* Header */}
-        <div className="px-2 pt-2 pb-4 flex items-start justify-between">
+        <div className="px-2 pb-4 flex items-start justify-between">
           {/* LEFT: TITLE + MONTH */}
           <div>
             <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">

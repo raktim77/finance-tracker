@@ -46,7 +46,7 @@ export function AnalyticsHeader({
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4 md:gap-6 mb-1 md:mb-4 p-2 md:p-0">
+      <div className="flex items-start justify-between gap-4 md:gap-6 mb-1 md:mb-4 px-3 md:px-0">
         <div className="flex flex-col gap-3 md:gap-4 min-w-0">
           <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)] hidden md:block">
             Analytics

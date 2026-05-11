@@ -123,6 +123,7 @@ export default function Dropdown({
         createPortal(
           <>
             <div
+              data-dropdown-portal="true"
               className="fixed inset-0 z-[9998] backdrop-blur-[2px] bg-black/10"
               onClick={() => setOpen(false)}
             />

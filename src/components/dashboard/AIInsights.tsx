@@ -1,6 +1,7 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { DashboardSummaryResponse } from "../../features/dashboard/types/dashboard.types";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   insights?: DashboardSummaryResponse["insights"];
@@ -44,7 +45,7 @@ export function AIInsights({ insights = [] }: Props) {
   }, [insights]);
 
   const insight = insights[displayIndex];
-
+  const navigate = useNavigate()
   return (
     <div className="h-full w-full rounded-2xl border border-[var(--border)] bg-[var(--color-surface)] p-4 md:p-5 shadow-xs">
 
@@ -103,7 +104,7 @@ export function AIInsights({ insights = [] }: Props) {
 
           {/* CTA */}
           <div className="mt-4">
-            <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-accent-soft)] transition">
+            <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-accent-soft)] transition" onClick={() => navigate("/analytics")}>
               View More Insights
               <ArrowRight size={10} strokeWidth={3} />
             </button>

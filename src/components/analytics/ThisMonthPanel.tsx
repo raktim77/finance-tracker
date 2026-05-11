@@ -41,7 +41,7 @@ export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
             ₹{formatCompactCurrency(spend)}
           </span>
         )}
-        <span className="text-xs font-bold text-[var(--color-text-secondary)] opacity-60 mt-1">
+        <span className="text-xs font-bold text-[var(--color-text-secondary)] mt-1">
           Spent so far
         </span>
       </div>

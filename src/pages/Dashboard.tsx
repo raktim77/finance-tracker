@@ -63,28 +63,26 @@ export default function Dashboard() {
         <HeroDashboard data={data} isLoading={isLoading} />
 
         {isApp ? (
-          <div className="px-2">
             <PendingReviewCard />
-          </div>
         ) : null}
 
-        <div className="">
+        <div className="px-1">
           <RecentTransactions />
         </div>
 
-        <div className="px-2 h-full">
+        <div className="px-3 h-full">
             <ExpenseTrend data={analyticsData?.trend} isLoading={analyticsLoading} />
         </div>
 
-        <div className="px-2">
+        <div className="px-3">
           <SpendingDonut data={analyticsData?.categories} isLoading={analyticsLoading} />
         </div>
 
-        <div className="px-2">
+        <div className="px-3">
           <AIInsights insights={data?.insights} />
         </div>
 
-        <div className="px-2">
+        <div className="px-3">
           <BudgetsPromoCard />
         </div>
       </div>

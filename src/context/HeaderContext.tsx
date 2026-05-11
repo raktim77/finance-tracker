@@ -109,7 +109,10 @@ function iconsForTextColor(textColor: string) {
 
 function syncNativeHeader(backgroundColor: string, textColor: string) {
   if (!isNativeAndroidApp()) return;
-  const iconStyle = iconsForTextColor(textColor);
+  const isLightTheme =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("light");
+  const iconStyle = isLightTheme ? "dark" : iconsForTextColor(textColor);
   void StatusBar.setBackgroundColor({ color: "#00000000" }).catch(() => {});
   void StatusBar.setStyle({
     style: iconStyle === "dark" ? Style.Light : Style.Dark,

@@ -39,7 +39,7 @@ import { useHeaderConfig } from "../hooks/useHeaderConfig";
 import resolveLucideIcon from "../utils/LucideIconsResolver";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import { useExportTransactions } from "../features/transactions/hooks/useExportTransactions";
-
+import { AnimatePresence, motion } from "framer-motion";
 type FilterType = "all" | "income" | "expense" | "transfer";
 type SortType = "latest" | "highest" | "lowest";
 type DateRangeType = "30" | "60" | "90" | "custom";
@@ -213,49 +213,49 @@ export default function Transactions() {
   const hasExportableRows = currentItems.length > 0;
 
   const handleExport = async (
-  format: "csv" | "pdf"
-) => {
-  if (exportingFormat === format || !hasExportableRows) return;
+    format: "csv" | "pdf"
+  ) => {
+    if (exportingFormat === format || !hasExportableRows) return;
 
-  try {
-    setExportingFormat(format);
-    await exportMutation.mutateAsync({
-      format,
+    try {
+      setExportingFormat(format);
+      await exportMutation.mutateAsync({
+        format,
 
-      params: {
-        search:
-          debouncedSearch || undefined,
+        params: {
+          search:
+            debouncedSearch || undefined,
 
-        type:
-          filter === "all"
-            ? undefined
-            : filter,
+          type:
+            filter === "all"
+              ? undefined
+              : filter,
 
-        account_id,
+          account_id,
 
-        sort,
+          sort,
 
-        startDate:
-          formattedStartDate,
+          startDate:
+            formattedStartDate,
 
-        endDate:
-          formattedEndDate,
-      },
-    });
+          endDate:
+            formattedEndDate,
+        },
+      });
 
-    toast.success(
-      "Your export has started"
-    );
-  } catch (err) {
-    console.error(err);
+      toast.success(
+        "Your export has started"
+      );
+    } catch (err) {
+      console.error(err);
 
-    toast.error(
-      "Failed to export transactions"
-    );
-  } finally {
-    setExportingFormat(null);
-  }
-};
+      toast.error(
+        "Failed to export transactions"
+      );
+    } finally {
+      setExportingFormat(null);
+    }
+  };
 
   const handleOpenTransactionSheet = useCallback(() => {
     if (!hasAccounts) {
@@ -327,6 +327,8 @@ export default function Transactions() {
   const previousPageRef = useRef(currentPage);
   const shouldScrollDesktopOnLoadRef = useRef(false);
   const mobileItems = allTransactions.length ? allTransactions : (data?.transactions ?? []);
+  const [mobileExportOpen, setMobileExportOpen] = useState(false);
+
 
   useEffect(() => {
     if (!mobileCriteriaChanged) return;
@@ -392,20 +394,33 @@ export default function Transactions() {
   const groupedDesktopTransactions = groupTransactionsByMonth(currentItems);
 
 
-  
+
 
 
   return (
     <>
       {/* MOBILE VIEW */}
-      <div className="p-2 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden md:hidden">
+      <div className="px-3 flex flex-col gap-6 pb-24 w-full mx-auto box-border overflow-x-hidden md:hidden">
         <div className="flex w-full items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "History"}</h2>
-            <p className="mt-2 text-[0.8rem] font-semibold text-(--color-text-secondary)">
-              {totalRecords} records found
-            </p>
+          <div className="min-w-0 flex-1 flex items-start gap-3">
+            {isScopedToAccount && (
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center justify-center h-8 w-8 rounded-full border border-[var(--color-text-secondary)]/30 shrink-0"
+              >
+                <ChevronLeft size={16} className="text-[var(--color-text-secondary)]" />
+              </button>
+            )}
+            <div className="min-w-0">
+              <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "History"}</h2>
+              <p className="mt-2 text-[0.8rem] font-semibold text-(--color-text-secondary)">
+                {totalRecords} records found
+              </p>
+
+            </div>
           </div>
+          {/* <div className="min-w-0 flex-1">
+          </div> */}
           <button
             onClick={handleOpenTransactionSheet}
             className="text-[var(--color-primary)] flex shrink-0 group items-center justify-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-4 py-2 text-xs font-semibold"
@@ -493,15 +508,174 @@ export default function Transactions() {
         <div className="overflow-hidden">
           <div className="flex flex-col gap-2">
             {isLoading && mobileItems.length === 0 ? (
-              <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">Loading...</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <style>{`
+    @keyframes tx-shimmer {
+      0%   { opacity: .35; }
+      50%  { opacity: .70; }
+      100% { opacity: .35; }
+    }
+  `}</style>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: "10px 4px",
+                    borderBottom: "1px solid var(--border)", opacity: 1 - i * 0.1
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
+                      background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `tx-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                    }} />
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{
+                        height: 12, width: "65%", borderRadius: 6,
+                        background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `tx-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                      }} />
+                      <div style={{
+                        height: 9, width: "40%", borderRadius: 6,
+                        background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `tx-shimmer 1.6s ease-in-out ${i * 0.1 + 0.1}s infinite`
+                      }} />
+                    </div>
+                    <div style={{
+                      width: 52, height: 12, borderRadius: 6, flexShrink: 0,
+                      background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `tx-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                    }} />
+                  </div>
+                ))}
+              </div>
             ) : isError ? (
               <div className="py-20 text-center text-sm font-bold text-[var(--color-danger)]">
                 {error instanceof Error ? error.message : "Failed to load transactions"}
               </div>
             ) : mobileItems.length === 0 ? (
-              <div className="py-20 text-center text-sm font-bold text-[var(--color-text-secondary)]">No transactions</div>
+              <div style={{ padding: "40px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, textAlign: "center" }}>
+                <style>{`
+    @keyframes txe-pulse { 0%,100%{opacity:.45;transform:scale(1);} 50%{opacity:.9;transform:scale(1.07);} }
+    @keyframes txe-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+    @keyframes txe-bar   { from{opacity:.22;} to{opacity:.55;} }
+  `}</style>
+
+                <div style={{
+                  position: "relative", width: 100, height: 100, display: "flex",
+                  alignItems: "center", justifyContent: "center", animation: "txe-float 3.2s ease-in-out infinite", flexShrink: 0
+                }}>
+                  <div style={{
+                    position: "absolute", inset: 10, borderRadius: "50%",
+                    border: "1.5px solid rgba(34,197,94,.22)", animation: "txe-pulse 2.8s ease-in-out infinite"
+                  }} />
+                  <div style={{
+                    position: "absolute", inset: 0, borderRadius: "50%",
+                    border: "1px solid rgba(34,197,94,.10)", animation: "txe-pulse 2.8s ease-in-out .5s infinite"
+                  }} />
+                  <div style={{
+                    width: 64, height: 64, borderRadius: 18, position: "relative", zIndex: 1,
+                    background: "linear-gradient(135deg,rgba(34,197,94,.14) 0%,rgba(16,185,129,.07) 100%)",
+                    border: "1px solid rgba(34,197,94,.22)", boxShadow: "0 8px 24px rgba(34,197,94,.10)",
+                    display: "flex", alignItems: "center", justifyContent: "center"
+                  }}>
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                      <circle cx="12" cy="12" r="7" stroke="#22c55e" strokeWidth="1.8" strokeOpacity="0.8" fill="none" />
+                      <path d="M17 17l4 4" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.8" />
+                      <path d="M9 12h6M12 9v6" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--color-text-primary)" }}>No Transactions</p>
+                  <p style={{ margin: 0, fontSize: 12, lineHeight: 1.65, color: "var(--color-text-secondary)", maxWidth: 220 }}>
+                    Try adjusting your filters or date range, or record a new transaction.
+                  </p>
+                </div>
+
+                {/* ghost rows */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%", maxWidth: 240, marginTop: 4 }}>
+                  {[["75%", "0s"], ["55%", "0.12s"], ["65%", "0.24s"]].map(([w, d], i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: "50%", background: "rgba(34,197,94,0.08)", flexShrink: 0,
+                        animation: `txe-bar 1.8s ease-in-out ${d} infinite alternate`
+                      }} />
+                      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+                        <div style={{
+                          height: 7, width: w as string, borderRadius: 4, background: "rgba(34,197,94,0.13)",
+                          animation: `txe-bar 1.8s ease-in-out ${d} infinite alternate`
+                        }} />
+                        <div style={{
+                          height: 5, width: "40%", borderRadius: 4, background: "rgba(34,197,94,0.08)",
+                          animation: `txe-bar 1.8s ease-in-out ${d} infinite alternate`
+                        }} />
+                      </div>
+                      <div style={{
+                        width: 40, height: 7, borderRadius: 4, background: "rgba(34,197,94,0.10)", flexShrink: 0,
+                        animation: `txe-bar 1.8s ease-in-out ${d} infinite alternate`
+                      }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <>
+                {mobileItems.length > 0 && (
+                  <div className="mb-4 flex flex-col gap-2">
+
+                    <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 shadow-xs">
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className="text-[11px] text-[var(--color-text-secondary)]">{activeDateLabel}</span>
+                        <span className={`text-[11px] font-semibold ${netFlow >= 0 ? "text-(--color-success)" : "text-(--color-danger)"}`}>
+                          Net {netFlow >= 0 ? "+" : "-"}₹{Math.abs(netFlow).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                      <div className="flex rounded-full overflow-hidden h-1.5 mb-2.5">
+                        <div
+                          className="h-full"
+                          style={{ width: `${totalSpent > 0 || totalReceived > 0 ? Math.round((totalSpent / (totalSpent + totalReceived)) * 100) : 0}%`, background: "var(--color-danger)" }}
+                        />
+                        <div className="h-full flex-1" style={{ background: "var(--color-success)" }} />
+                      </div>
+                      <div className="flex justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-[7px] h-[7px] rounded-[2px] shrink-0" style={{ background: "var(--color-danger)" }} />
+                          <span className="text-[11px] text-[var(--color-text-secondary)]">
+                            Spent <strong className="text-(--color-danger)">₹{totalSpent.toLocaleString("en-IN")}</strong>
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-[7px] h-[7px] rounded-[2px] shrink-0" style={{ background: "var(--color-success)" }} />
+                          <span className="text-[11px] text-[var(--color-text-secondary)]">
+                            Received <strong className="text-(--color-success)">₹{totalReceived.toLocaleString("en-IN")}</strong>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {desktopSpendingByType.length > 0 && (
+                      <div className="bg-[var(--color-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 shadow-xs">
+                        <p className="text-[12px] font-semibold text-[var(--color-text-primary)] mb-2.5">Spending by category</p>
+                        <div className="flex flex-col gap-2">
+                          {desktopSpendingByType.map((item) => (
+                            <div key={item.label} className="flex items-center gap-2">
+                              <span className="text-[11px] text-[var(--color-text-secondary)] w-24 shrink-0 truncate">{item.label}</span>
+                              <div className="flex-1 h-[5px] rounded-full overflow-hidden bg-[var(--color-background)]">
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{
+                                    width: `${item.percentage}%`,
+                                    backgroundColor: item.color,
+                                    animation: "growBar 0.6s ease-out both",
+                                  }}
+                                />
+                              </div>
+                              <span className="text-[10px] text-[var(--color-text-secondary)] w-7 text-right shrink-0">
+                                {Math.round(item.percentage)}%
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+                )}
                 {Object.entries(groupedMobileTransactions).map(([month, items], groupIndex, arr) => {
                   const isLastGroup = groupIndex === arr.length - 1;
 
@@ -564,14 +738,139 @@ export default function Transactions() {
         </div>
       </div>
 
+      {mobileItems.length > 0 && (
+        <>
+          {/* BACKDROP — Smoother blur transition */}
+          <AnimatePresence>
+            {mobileExportOpen && (
+              <motion.div
+                initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
+                exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                onClick={() => setMobileExportOpen(false)}
+                className="md:hidden fixed inset-0 z-30 bg-black/20"
+              />
+            )}
+          </AnimatePresence>
+
+          {/* WRAPPER */}
+          <div className="md:hidden fixed right-4 bottom-24 z-40 w-14 pointer-events-none">
+
+            {/* ACTIONS — Switched to Spring for "Snap" feel (removes jerkiness) */}
+            <div className="absolute bottom-[72px] right-0 flex flex-col items-end gap-3 pointer-events-auto">
+              <AnimatePresence mode="popLayout">
+                {mobileExportOpen && (
+                  <>
+                    {/* CSV */}
+                    <motion.button
+                      key="csv"
+                      layout
+                      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28, delay: 0.05 }}
+                      onClick={() => { handleExport("csv"); setMobileExportOpen(false); }}
+                      disabled={exportingFormat === "csv" || !hasExportableRows}
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--color-surface)]/95 backdrop-blur-2xl px-5 py-3.5 shadow-2xl active:scale-95 disabled:opacity-50"
+                    >
+                      <Sheet size={18} className="text-[var(--color-success)]" />
+                      <span className="text-sm font-bold text-[var(--color-text-primary)]">CSV</span>
+                    </motion.button>
+
+                    {/* PDF */}
+                    <motion.button
+                      key="pdf"
+                      layout
+                      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                      onClick={() => { handleExport("pdf"); setMobileExportOpen(false); }}
+                      disabled={exportingFormat === "pdf" || !hasExportableRows}
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--color-surface)]/95 backdrop-blur-2xl px-5 py-3.5 shadow-2xl active:scale-95 disabled:opacity-50"
+                    >
+                      <FileText size={18} className="text-[var(--color-warm)]" />
+                      <span className="text-sm font-bold text-[var(--color-text-primary)]">PDF</span>
+                    </motion.button>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* MAIN FAB — "The Industrial Chamber" (Static Version) */}
+            <motion.button
+              layout
+              whileTap={{ scale: 0.94 }}
+              onClick={() => setMobileExportOpen((prev) => !prev)}
+              className="
+    pointer-events-auto
+    relative h-14 w-14
+    rounded-[22px] 
+    flex items-center justify-center
+    bg-[var(--color-background)]
+    border-2 border-[var(--color-accent)]
+    shadow-[0_0_20px_rgba(var(--color-accent-rgb),0.15)]
+    overflow-hidden
+  "
+            >
+              {/* Internal Glow logic */}
+              <div className={`absolute inset-0 transition-opacity duration-300 ${mobileExportOpen ? 'opacity-100' : 'opacity-0'} bg-gradient-to-tr from-[var(--color-accent)]/20 to-transparent`} />
+
+              <div className="relative z-10 text-[var(--color-accent)]">
+                <AnimatePresence mode="wait">
+                  {mobileExportOpen ? (
+                    <motion.div
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <X size={24} strokeWidth={2.5} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="download"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {/* Static Industrial Download Icon */}
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.button>
+          </div>
+        </>
+      )}
+
       {/* DESKTOP VIEW */}
       <div className="hidden md:flex md:flex-col gap-5 pb-10" ref={desktopListTopRef}>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "Transactions"}</h2>
-            <p className="mt-2 text-[1rem] font-semibold text-(--color-text-secondary)">{totalRecords} transactions found</p>
+          <div className="flex items-start gap-4">
+            {isScopedToAccount && (
+              <button
+                onClick={() => navigate(-1)}
+                className="mt-1 flex items-center justify-center h-8 w-8 rounded-full border border-[var(--color-text-secondary)]/30 shrink-0"
+              >
+                <ChevronLeft size={18} className="text-[var(--color-text-secondary)]" />
+              </button>
+            )}
+            <div>
+              <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">{isScopedToAccount ? displayTitle : "Transactions"}</h2>
+              <p className="mt-2 text-[1rem] font-semibold text-(--color-text-secondary)">{totalRecords} transactions found</p>
+
+            </div>
           </div>
           <button
             onClick={handleOpenTransactionSheet}
@@ -712,15 +1011,120 @@ export default function Transactions() {
             </div> */}
 
             {isLoading ? (
-              <div className="py-20 text-center text-sm text-[var(--color-text-secondary)]">Loading transactions...</div>
+              <div style={{ padding: "8px" }}>
+                <style>{`@keyframes txd-shimmer{0%,100%{opacity:.30;}50%{opacity:.60;}}`}</style>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 0,
+                    borderBottom: "1px solid var(--border)", opacity: 1 - i * 0.08
+                  }}>
+                    {/* date col */}
+                    <div style={{
+                      width: 72, minHeight: 80, display: "flex", alignItems: "center",
+                      paddingLeft: 16, paddingRight: 8, flexShrink: 0, position: "relative"
+                    }}>
+                      <div style={{
+                        position: "absolute", left: 67, top: 0, bottom: 0, width: 1,
+                        background: "var(--border)"
+                      }} />
+                      <div style={{
+                        width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                        background: "rgba(34,197,94,0.20)", animation: `txd-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`,
+                        position: "relative", zIndex: 1
+                      }} />
+                    </div>
+                    {/* content */}
+                    <div style={{
+                      flex: 1, display: "grid", gridTemplateColumns: "1fr 140px 150px 130px",
+                      alignItems: "center", gap: 16, padding: "20px 16px"
+                    }}>
+                      {/* title+icon */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{
+                          width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                          background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `txd-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                        }} />
+                        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                          <div style={{
+                            height: 13, width: 120, borderRadius: 6,
+                            background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `txd-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                          }} />
+                          <div style={{
+                            height: 10, width: 80, borderRadius: 6,
+                            background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `txd-shimmer 1.6s ease-in-out ${i * 0.08 + 0.1}s infinite`
+                          }} />
+                        </div>
+                      </div>
+                      {/* type badge */}
+                      <div style={{
+                        height: 22, width: 70, borderRadius: 999,
+                        background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `txd-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                      }} />
+                      {/* date */}
+                      <div style={{
+                        height: 11, width: 90, borderRadius: 6,
+                        background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `txd-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                      }} />
+                      {/* amount */}
+                      <div style={{
+                        height: 13, width: 70, borderRadius: 6, marginLeft: "auto",
+                        background: "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)", animation: `txd-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : isError ? (
               <div className="py-20 text-center text-sm font-semibold text-[var(--color-danger)]">
                 {error instanceof Error ? error.message : "Failed to load transactions"}
               </div>
             ) : currentItems.length === 0 ? (
-              <div className="py-24 text-center">
-                <p className="text-base font-semibold text-[var(--color-text-primary)]">No Transactions Yet</p>
-                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Start recording transactions to build your history.</p>
+              <div style={{
+                padding: "88px 24px", display: "flex", flexDirection: "column",
+                alignItems: "center", gap: 16, textAlign: "center"
+              }}>
+                <style>{`
+    @keyframes txde-pulse { 0%,100%{opacity:.45;transform:scale(1);} 50%{opacity:.9;transform:scale(1.07);} }
+    @keyframes txde-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+    @keyframes txde-bar   { from{opacity:.20;} to{opacity:.50;} }
+  `}</style>
+
+                <div style={{
+                  position: "relative", width: 100, height: 100, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  animation: "txde-float 3.2s ease-in-out infinite", flexShrink: 0
+                }}>
+                  <div style={{
+                    position: "absolute", inset: 10, borderRadius: "50%",
+                    border: "1.5px solid rgba(34,197,94,.22)", animation: "txde-pulse 2.8s ease-in-out infinite"
+                  }} />
+                  <div style={{
+                    position: "absolute", inset: 0, borderRadius: "50%",
+                    border: "1px solid rgba(34,197,94,.10)", animation: "txde-pulse 2.8s ease-in-out .5s infinite"
+                  }} />
+                  <div style={{
+                    width: 64, height: 64, borderRadius: 18, position: "relative", zIndex: 1,
+                    background: "linear-gradient(135deg,rgba(34,197,94,.14) 0%,rgba(16,185,129,.07) 100%)",
+                    border: "1px solid rgba(34,197,94,.22)", boxShadow: "0 8px 24px rgba(34,197,94,.10)",
+                    display: "flex", alignItems: "center", justifyContent: "center"
+                  }}>
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                      <circle cx="12" cy="12" r="7" stroke="#22c55e" strokeWidth="1.8" strokeOpacity="0.8" fill="none" />
+                      <path d="M17 17l4 4" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.8" />
+                      <path d="M9 12h6M12 9v6" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--color-text-primary)" }}>
+                    No Transactions Found
+                  </p>
+                  <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: "var(--color-text-secondary)", maxWidth: 400 }}>
+                    No results match your current filters. Try a different date range, clearing the search or by changing the filters.
+                  </p>
+                </div>
+
               </div>
             ) : (
               <>
@@ -1015,7 +1419,7 @@ export default function Transactions() {
 
           </div>
         </div>
-      </div>
+      </div >
 
       <TransactionSheet
         open={sheetOpen}

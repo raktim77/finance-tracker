@@ -95,6 +95,7 @@ export default function PendingReviewCard() {
               Reads from your existing --color-accent variable so it
               automatically adapts to light / dark themes.
             */}
+            <div className="px-2">
             <div
                 className="pending-border-wrap mt-2 -mb-2 w-full"
                 style={{
@@ -152,6 +153,8 @@ export default function PendingReviewCard() {
                         </div>
                     </div>
                 </div>
+            </div>
+                
             </div>
         </>
     );

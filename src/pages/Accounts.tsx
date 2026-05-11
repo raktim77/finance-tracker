@@ -506,7 +506,7 @@ export default function Accounts() {
         }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-2 pt-2 pb-3 mb-3">
+        <div className="flex items-start justify-between px-3 pb-3 mb-3">
           <div>
             <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
               Accounts
@@ -529,7 +529,7 @@ export default function Accounts() {
         </div>
 
         {/* Hero Balance Card */}
-        <div className="mx-2 rounded-[1.4rem] overflow-hidden" style={{
+        <div className="mx-3 rounded-[1.4rem] shadow-xs overflow-hidden" style={{
           background: isDark
             ? "linear-gradient(160deg, #071209 0%, #0a1f0e 40%, #0c2a12 100%)"
             : "#ffffff",
@@ -665,7 +665,7 @@ export default function Accounts() {
         </div>
 
         {/* Account List */}
-        <div className="mt-5">
+        <div className="mt-5 mx-1">
           {accountsLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="mx-2 mt-2 h-[72px] rounded-xl animate-pulse bg-(--color-surface)" />
@@ -758,10 +758,10 @@ export default function Accounts() {
           })}
         </div>
 
-        <div className="my-6 mx-3 relative h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
+        <div className="my-6 mx-4 relative h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
 
         {/* Account Insights Card */}
-        <div className="mx-2 mt-4 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
+        <div className="mx-3 mt-4 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -788,10 +788,10 @@ export default function Accounts() {
         </div>
 
         {/* Account Distribution Card */}
-        <div className="mx-2 mt-3 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
+        <div className="mx-3 mt-3 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
         >
           <h3 className="text-[1.05rem] font-bold mb-4 text-(--color-text-primary)">Asset Distribution</h3>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2">
             <AccountDistributionDonut
               data={distributionData}
               activeIndex={activeMobileDistributionIndex}

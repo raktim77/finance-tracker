@@ -654,7 +654,7 @@ export default function Settings() {
   return (
 
 
-    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 p-2 md:p-0 pb-24">
+    <div className="flex flex-col h-full md:h-[calc(100vh-100px)] mx-auto w-full overflow-hidden gap-6 md:gap-8 px-3 md:px-0 pb-24">
       <input
         ref={avatarInputRef}
         type="file"

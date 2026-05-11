@@ -1,8 +1,7 @@
-import { Sparkles, TrendingUp, ArrowUpRight, TrendingDown } from "lucide-react";
+import { Sparkles, ArrowUp, ArrowDown } from "lucide-react";
 import { useAuth } from "../../lib/context/useAuth";
 import type { DashboardSummaryResponse } from "../../features/dashboard/types/dashboard.types";
-import { useContext, useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useContext } from "react";
 import formatCompactCurrency from "../../utils/getCompactAmount";
 import ProfileMenu from "../ProfileMenu";
 import { ThemeContext } from "../../context/ThemeContext";
@@ -15,7 +14,6 @@ type Props = {
 export const HeroDashboard = ({ data, isLoading }: Props) => {
   const { user } = useAuth();
   const { theme } = useContext(ThemeContext);
-  const [index, setIndex] = useState(0);
   const positiveColor = "var(--color-success)";
   const negativeColor = "var(--color-danger)";
   const mutedText = "color-mix(in srgb, var(--color-text-primary) 45%, transparent)";
@@ -23,7 +21,7 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
   const divider = "color-mix(in srgb, var(--color-text-primary) 10%, transparent)";
   const softOverlay = "color-mix(in srgb, var(--color-text-primary) 8%, transparent)";
   const mediumOverlay = "color-mix(in srgb, var(--color-text-primary) 12%, transparent)";
-  const heroDot = "color-mix(in srgb, var(--color-primary) 45%, transparent)";
+  const heroDot = "color-mix(in srgb, var(--color-primary) 25%, transparent)";
   const isDark =
     theme === "dark" ||
     (theme === "system" &&
@@ -36,17 +34,7 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
 
   const displayName = user?.name?.split(" ")[0] ?? "there";
 
-  useEffect(() => {
-    if (!data?.insights?.length) return;
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % data.insights.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [data?.insights]);
-
-  useEffect(() => {
-    setIndex(0);
-  }, [data]);
+ 
 
   // ── LOADING ──────────────────────────────────────────────────────────────
   if (isLoading) {
@@ -106,15 +94,14 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
 
   const netChange = data.summary.net;
   const percentChange = data.comparison.percent_change;
-  const insight = data.insights?.[index];
 
   const compactAmount = (value: number) => `₹${formatCompactCurrency(value)}`;
   const budgetLabel =
     data.summary.budget_left !== null
-      ? `${compactAmount(data.summary.budget_left)} budget left`
-      : "No budget set";
+      ? `You have ${compactAmount(data.summary.budget_left)} budget left still`
+      : "No budget set by you";
 
-  const isPositive = netChange >= 0;
+  // const isPositive = netChange >= 0;
 
 
   // ── SHARED BACKGROUND LAYERS ─────────────────────────────────────────────
@@ -136,53 +123,39 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
             position: "absolute", inset: 0, pointerEvents: "none",
             backgroundImage: `radial-gradient(circle, var(--color-primary) 1px, transparent 1px)`,
             backgroundSize: mobile ? "16px 16px" : "22px 22px",
-            opacity: 0.3,
+            opacity: 0.25,
             filter: "blur(0.8px)",
           }}
         />
       )}
 
       {/* Top-right radial glow */}
-      {isDark ? (
-        <div
-          style={{
-            position: "absolute", top: "-40px", right: "-30px",
-            width: mobile ? "220px" : "320px",
-            height: mobile ? "180px" : "240px",
-            background: "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 22%, transparent) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-      ) : (
-        <div
-          style={{
-            position: "absolute", inset: 0, pointerEvents: "none",
-            background: `radial-gradient(60% 60% at 100% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent) 0%, color-mix(in srgb, var(--color-primary) 10%, transparent) 25%, color-mix(in srgb, var(--color-primary) 5%, transparent) 40%, transparent 55%)`,
-          }}
-        />
-      )}
+      <div
+        style={{
+          position: "absolute", top: "-40px", right: "-30px",
+          width: mobile ? "220px" : "320px",
+          height: mobile ? "180px" : "240px",
+          background: "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 22%, transparent) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
 
       {/* Bottom-left subtle glow — dark only */}
       {isDark && (
-        <div
-          style={{
-            position: "absolute", bottom: "-20px", left: "-10px",
-            width: mobile ? "160px" : "220px",
-            height: mobile ? "120px" : "160px",
-            background: "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 10%, transparent) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
+          <div
+            style={{
+              position: "absolute", bottom: "-20px", left: "-10px",
+              width: mobile ? "160px" : "220px",
+              height: mobile ? "120px" : "160px",
+              background: "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 10%, transparent) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
       )}
     </>
   );
 
-  const insightBg = {
-    positive: "bg-white/8 border-white/10",
-    warning: "bg-yellow-400/10 border-yellow-300/20",
-    neutral: "bg-white/8 border-white/10",
-    info: "bg-white/8 border-white/10",
-  };
+
 
   return (
     <div>
@@ -237,130 +210,93 @@ export const HeroDashboard = ({ data, isLoading }: Props) => {
             style={{ background: divider }}
           />
 
-          {/* Row 2: Net + Insight */}
-          <div className="flex items-stretch justify-between gap-3">
-            {/* Net change */}
-            <div className="shrink-0 flex flex-col justify-center">
-              <span
-                className="text-[8px] font-black uppercase tracking-[0.2em] mb-1"
-                style={{ color: mutedText }}
-              >
-                This Month
-              </span>
-              <div
-                className="text-[1.8rem] font-black leading-none tracking-tight"
-                style={{ color: isPositive ? positiveColor : negativeColor }}
-              >
-                {netChange > 0 ? "+" : netChange < 0 ? "−" : ""}₹{formatCompactCurrency(Math.abs(netChange))}
+          {/* Main section: Left (This Month + chips) | Right (Income + Spent stacked) */}
+          <div className="flex items-stretch gap-3">
+            {/* LEFT: This Month net + chips stacked vertically */}
+            <div className="flex flex-col justify-between gap-3 w-4/7">
+              {/* Net figure */}
+              <div>
+                <span
+                  className="text-[9px] font-black uppercase tracking-[0.2em] mb-2 block text-(--color-text-secondary)"
+                >
+                  This Month
+                </span>
+                <div
+                  className="text-[1.8rem] font-black leading-none tracking-tight"
+                  // style={{ color: isPositive ? positiveColor : negativeColor }}
+                >
+                  {netChange > 0 ? "+" : netChange < 0 ? "−" : ""}₹{formatCompactCurrency(Math.abs(netChange))}
+                </div>
+                {/* % change badge */}
+                <div
+                  className="mt-2 inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5"
+                  style={{ background: softOverlay }}
+                >
+                  {data.comparison.percent_change >= 0
+                    ? <ArrowUp size={9} strokeWidth={3} style={{ color: positiveColor }} />
+                    : <ArrowDown size={9} strokeWidth={3} style={{ color: negativeColor }} />
+                  }
+                  <span className="text-[9px] font-black" style={{ color: data.comparison.percent_change >= 0 ? positiveColor : negativeColor }}>
+                    {percentChange}%
+                  </span>
+                </div>
               </div>
-              {/* % change badge */}
+
+              {/* Chips stacked vertically */}
+              <div className="flex flex-col gap-1.5">
+                <div
+                  className="rounded-full px-3 py-1.5 text-[10px] font-black whitespace-nowrap"
+                  style={{
+                    color: positiveColor,
+                    background: "color-mix(in srgb, var(--color-success) 10%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--color-success) 30%, transparent)",
+                  }}
+                >
+                  You have saved {data.summary.savings_rate.toFixed(1)}% till now
+                </div>
+                <div
+                  className="rounded-full px-3 py-1.5 text-[10px] font-black whitespace-nowrap"
+                  style={{
+                    color: softText,
+                    background: softOverlay,
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  {budgetLabel}
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Income on top, Spent below */}
+            <div className="flex flex-col gap-2.5 w-3/7">
               <div
-                className="mt-2 inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5"
-                style={{ background: softOverlay }}
+                className="rounded-2xl px-4 py-3 flex-1 bg-(--color-accent-soft) flex flex-col justify-center"
+                style={{ border: "1px solid var(--border)" }}
               >
-                {isPositive
-                  ? <ArrowUpRight size={9} strokeWidth={3} style={{ color: positiveColor }} />
-                  : <TrendingDown size={9} strokeWidth={3} style={{ color: negativeColor }} />
-                }
-                <span className="text-[9px] font-black" style={{ color: isPositive ? positiveColor : negativeColor }}>
-                  {percentChange}%
+                <span
+                  className="block text-[9px] font-black uppercase tracking-[0.18em] mb-1.5 text-(--color-text-secondary)"
+                  
+                >
+                  Income
+                </span>
+                <span className="block text-[1.05rem] font-black leading-none" style={{ color: positiveColor }}>
+                  {compactAmount(data.summary.income)}
                 </span>
               </div>
-            </div>
-
-            {/* Insight card */}
-            <div className="flex flex-1 min-w-0 max-w-[175px]">
-              <AnimatePresence mode="wait">
-                {insight && (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className={`w-full rounded-2xl p-3 flex items-start gap-2 border backdrop-blur-xl ${insightBg[insight.type]}`}
-                    style={{
-                      background: "color-mix(in srgb, var(--color-surface) 75%, transparent)",
-                      borderColor: "var(--border)",
-                    }}
-                  >
-                    <div
-                      className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                      style={{ background: "color-mix(in srgb, var(--color-success) 20%, transparent)" }}
-                    >
-                      <TrendingUp size={11} style={{ color: positiveColor }} />
-                    </div>
-                    <p
-                      className="text-[9.5px] font-semibold leading-snug"
-                      style={{ color: softText }}
-                    >
-                      {insight.message}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Row 3: Income / Spent cards */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{
-                background: softOverlay,
-                border: "1px solid var(--border)",
-              }}
-            >
-              <span
-                className="block text-[8px] font-black uppercase tracking-[0.18em] mb-1.5"
-                style={{ color: mutedText }}
+              <div
+                className="rounded-2xl px-4 py-3 flex-1 bg-(--color-accent-soft) flex flex-col justify-center"
+                style={{ border: "1px solid var(--border)" }}
               >
-                Income
-              </span>
-              <span className="block text-[1.05rem] font-black leading-none" style={{ color: positiveColor }}>
-                {compactAmount(data.summary.income)}
-              </span>
-            </div>
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{
-                background: softOverlay,
-                border: "1px solid var(--border)",
-              }}
-            >
-              <span
-                className="block text-[8px] font-black uppercase tracking-[0.18em] mb-1.5"
-                style={{ color: mutedText }}
-              >
-                Spent
-              </span>
-              <span className="block text-[1.05rem] font-black leading-none" style={{ color: negativeColor }}>
-                {compactAmount(data.summary.expenses)}
-              </span>
-            </div>
-          </div>
-
-          {/* Row 4: Pills */}
-          <div className="flex flex-wrap gap-2">
-            <div
-              className="rounded-full px-3 py-1.5 text-[9.5px] font-black"
-              style={{
-                color: positiveColor,
-                background: "color-mix(in srgb, var(--color-success) 15%, transparent)",
-                border: "1px solid color-mix(in srgb, var(--color-success) 30%, transparent)",
-              }}
-            >
-              {data.summary.savings_rate.toFixed(1)}% saved
-            </div>
-            <div
-              className="rounded-full px-3 py-1.5 text-[9.5px] font-black"
-              style={{
-                color: softText,
-                background: softOverlay,
-                border: "1px solid var(--border)",
-              }}
-            >
-              {budgetLabel}
+                <span
+                  className="block text-[9px] font-black uppercase tracking-[0.18em] mb-1.5 text-(--color-text-secondary)"
+                  
+                >
+                  Spent
+                </span>
+                <span className="block text-[1.05rem] font-black leading-none" style={{ color: negativeColor }}>
+                  {compactAmount(data.summary.expenses)}
+                </span>
+              </div>
             </div>
           </div>
         </div>

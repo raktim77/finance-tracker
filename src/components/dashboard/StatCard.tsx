@@ -50,7 +50,7 @@ export const StatCard = ({
 
       {/* Amount */}
       {isLoading ? (
-        <div className="h-5 w-24 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
+        <div className="h-5 w-19 bg-[var(--color-text-secondary)]/10 rounded animate-pulse" />
       ) : (
         <span className="text-base md:text-l font-black text-[var(--color-text-primary)] truncate w-full text-center sm:text-left">
           {amount}

@@ -13,6 +13,249 @@ type Props = {
   isLoading: boolean;
 };
 
+export const SpendingDonutEmpty = () => {
+  const C = 36;
+  const R = 26;
+  const STROKE = 10;
+  const CIRC = 2 * Math.PI * R;
+
+  const arcs = [
+    { pct: 0.42, opacity: 1, color: "#22c55e", delay: "0s" },
+    { pct: 0.33, opacity: 0.4, color: "#22c55e", delay: "0s" },
+    { pct: 0.22, opacity: 0.18, color: "#22c55e", delay: "0s" },
+  ];
+
+  let rotation = -90;
+
+  const built = arcs.map((a) => {
+    const dash = a.pct * CIRC;
+    const gap = CIRC - dash;
+    const rot = rotation;
+
+    rotation += a.pct * 360 + 0.02 * 360;
+
+    return { ...a, dash, gap, rot };
+  });
+
+  return (
+    <div
+      style={{
+        height: "100%",
+        width: "100%",
+        borderRadius: 20,
+        padding: "20px 16px",
+        background: "var(--color-surface)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        // gap: 16,
+        justifyContent: "center",
+        textAlign: "center",
+        minHeight: 250,
+        position: "relative",
+        overflow: "hidden",
+      }}
+      className="gap-10 shadow-xs border border-(--border)"
+    >
+      <style>{`
+        @keyframes sde-pulse {
+          0%,100%{ opacity:.45; transform:scale(1); }
+          50%    { opacity:.90; transform:scale(1.07); }
+        }
+
+        @keyframes sde-spin {
+          from{ transform:rotate(-90deg); }
+          to  { transform:rotate(270deg); }
+        }
+
+        @keyframes sde-bar {
+          from{ opacity:.25; }
+          to  { opacity:.70; }
+        }
+      `}</style>
+
+      {/* ambient blobs */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          overflow: "hidden",
+          borderRadius: "inherit",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: "-30%",
+            left: "-10%",
+            width: "55%",
+            paddingBottom: "55%",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle,rgba(34,197,94,.13) 0%,transparent 70%)",
+            filter: "blur(32px)",
+          }}
+        />
+
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-25%",
+            right: "-10%",
+            width: "50%",
+            paddingBottom: "50%",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle,rgba(16,185,129,.09) 0%,transparent 70%)",
+            filter: "blur(28px)",
+          }}
+        />
+      </div>
+
+      {/* donut + legend */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 30,
+          width: "100%",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {/* donut */}
+        <div
+          style={{
+            position: "relative",
+            width: 72,
+            height: 72,
+            flexShrink: 0,
+          }}
+        >
+          {/* pulse ring 1 */}
+          <div
+            style={{
+              position: "absolute",
+              inset: -8,
+              borderRadius: "50%",
+              border: "1.5px solid rgba(34,197,94,.22)",
+              animation: "sde-pulse 2.8s ease-in-out infinite",
+            }}
+          />
+
+          {/* pulse ring 2 */}
+          <div
+            style={{
+              position: "absolute",
+              inset: -18,
+              borderRadius: "50%",
+              border: "1px solid rgba(34,197,94,.10)",
+              animation: "sde-pulse 2.8s ease-in-out 0.5s infinite",
+            }}
+          />
+
+          <svg
+            width="72"
+            height="72"
+            viewBox="0 0 72 72"
+            fill="none"
+            style={{
+              position: "relative",
+              zIndex: 1,
+              overflow: "visible",
+            }}
+          >
+            {/* track */}
+            <circle
+              cx={C}
+              cy={C}
+              r={R}
+              stroke="rgba(34,197,94,0.08)"
+              strokeWidth={STROKE}
+              fill="none"
+            />
+
+            {/* animated arcs */}
+            <g
+              style={{
+                transformOrigin: `${C}px ${C}px`,
+                animation: "sde-spin 8s linear infinite",
+              }}
+            >
+              {built.map((a, i) => (
+                <circle
+                  key={i}
+                  cx={C}
+                  cy={C}
+                  r={R}
+                  fill="none"
+                  stroke="#22c55e"
+                  strokeOpacity={a.opacity}
+                  strokeWidth={STROKE}
+                  strokeDasharray={`${a.dash} ${a.gap}`}
+                  strokeLinecap="round"
+                  style={{
+                    transform: `rotate(${a.rot}deg)`,
+                    transformOrigin: `${C}px ${C}px`,
+                  }}
+                />
+              ))}
+            </g>
+
+            {/* center */}
+            <circle
+              cx={C}
+              cy={C}
+              r={R - STROKE / 2 - 1}
+              fill="var(--color-surface)"
+            />
+          </svg>
+        </div>
+
+       
+      </div>
+
+      {/* text */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+          maxWidth: 260,
+          textAlign: "center",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            fontSize: 14,
+            fontWeight: 700,
+            letterSpacing: "0.02em",
+            color: "var(--color-text-primary)",
+          }}
+        >
+          Empty Vault
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            fontSize: 12,
+            lineHeight: 1.65,
+            color: "var(--color-text-secondary)",
+          }}
+        >
+          Start recording transactions and categorizing your spending to
+          unlock category insights.
+        </p>
+      </div>
+    </div>
+  );
+};
 export function SpendingDonut({ data, isLoading }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -44,15 +287,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
 
   if (!hasData) {
     return (
-      <div className="h-full w-full rounded-2xl p-5 bg-[var(--color-surface)] border border-[var(--border)] shadow-xs flex flex-col gap-4 items-center justify-center text-center min-h-[200px]">
-        <div className="w-10 h-10 rounded-xl bg-[var(--color-background)] flex items-center justify-center border border-[var(--border)]">
-          <span className="text-lg">🍩</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-bold text-[var(--color-text-primary)]">Empty Vault</h2>
-          <p className="text-xs text-[var(--color-text-secondary)]">Record categories to see spending insights.</p>
-        </div>
-      </div>
+      <SpendingDonutEmpty />
     );
   }
 
@@ -234,13 +469,13 @@ export function SpendingDonut({ data, isLoading }: Props) {
 
       {/* Footer */}
       {/* CTA — fits content, not full width */}
-          <div className="mt-4">
-            <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-accent-soft)] transition">
-              View Full Report
-              <ArrowRight size={10} strokeWidth={3} />
+      <div className="mt-4">
+        <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)] px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-accent-soft)] transition">
+          View Full Report
+          <ArrowRight size={10} strokeWidth={3} />
 
-            </button>
-          </div>
+        </button>
+      </div>
       <style>{`
   .recharts-wrapper svg,
   .recharts-surface {

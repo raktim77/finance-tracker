@@ -18,7 +18,7 @@ type BottomNavProps = {
 export default function BottomNav({ onAddTransaction }: BottomNavProps) {
   return (
     <div
-      className="fixed left-0 right-0 px-3 lg:hidden z-50"
+      className="fixed left-0 right-0 px-2 lg:hidden z-50"
       style={{ bottom: "calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 0.1rem)" }}
     >
       <nav className="

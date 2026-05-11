@@ -47,7 +47,7 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
 
   // ─── MOBILE layout: 2×2 metric cards + efficiency/budget row ───
   const MobileHero = (
-    <div className="flex flex-col gap-3 md:hidden px-2">
+    <div className="flex flex-col gap-3 md:hidden px-3">
       {/* Row 1 */}
       <div className="grid grid-cols-2 gap-3">
         {/* Cumulative Spending */}
