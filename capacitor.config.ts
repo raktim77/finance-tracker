@@ -35,6 +35,10 @@ const config: CapacitorConfig = {
       authDomain: undefined,
       skipNativeAuth: false,
       providers: ["google.com"],
+    },
+    LocalNotifications: {
+      "smallIcon": "ic_notification",
+      "iconColor": "#7C6CFF"
     }
   },
 };

@@ -32,6 +32,8 @@ import { parseSMSLegacy } from "./lib/smsParser";
 import type { PluginListenerHandle } from "@capacitor/core";
 import PendingReview from "./pages/PendingReview";
 import { App as CapacitorApp } from "@capacitor/app";
+import { LocalNotifications } from "@capacitor/local-notifications";
+import { FileOpener } from "@capacitor-community/file-opener";
 
 window.addEventListener("unhandledrejection", (event) => {
   console.error("UNHANDLED PROMISE:", event.reason);
@@ -216,6 +218,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to={isNativeAndroidApp() ? "/login" : "/"} replace />;
 }
 
+function setupNotificationListeners() {
+  LocalNotifications.addListener(
+    "localNotificationActionPerformed",
+    (action) => {
+      const { filePath, mimeType } = action.notification.extra ?? {};
+      if (filePath && mimeType) {
+        FileOpener.open({
+          filePath,
+          contentType: mimeType,
+          openWithDefault: true,
+        });
+      }
+    }
+  );
+}
+
 function AppCore() {
   const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
@@ -333,6 +351,10 @@ function AppCore() {
       appListener?.remove();
     };
   }, [navigate]);
+
+  useEffect(() => {
+  setupNotificationListeners();
+}, []);
 
   return (
     <>
