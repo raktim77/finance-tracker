@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Sheet,
   FileText,
+  Download,
 } from "lucide-react";
 import Dropdown from "../components/ui/Dropdown";
 import DatePicker from "../components/ui/DatePicker";
@@ -807,8 +808,7 @@ export default function Transactions() {
     relative h-14 w-14
     rounded-[22px] 
     flex items-center justify-center
-    bg-[var(--color-background)]
-    border-2 border-[var(--color-accent)]
+    bg-[var(--color-text-primary)]
     shadow-[0_0_20px_rgba(var(--color-accent-rgb),0.15)]
     overflow-hidden
   "
@@ -816,7 +816,8 @@ export default function Transactions() {
               {/* Internal Glow logic */}
               <div className={`absolute inset-0 transition-opacity duration-300 ${mobileExportOpen ? 'opacity-100' : 'opacity-0'} bg-gradient-to-tr from-[var(--color-accent)]/20 to-transparent`} />
 
-              <div className="relative z-10 text-[var(--color-accent)]">
+              {/* Changed text color to white for the icons */}
+              <div className="relative z-10 text-(--color-surface)">
                 <AnimatePresence mode="wait">
                   {mobileExportOpen ? (
                     <motion.div
@@ -836,13 +837,8 @@ export default function Transactions() {
                       exit={{ scale: 0.8, opacity: 0 }}
                       transition={{ duration: 0.15 }}
                     >
-                      {/* Static Industrial Download Icon */}
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                      </svg>
+                      {/* Lucide Download Icon replaced the custom SVG */}
+                      <Download size={24} strokeWidth={2.5} />
                     </motion.div>
                   )}
                 </AnimatePresence>

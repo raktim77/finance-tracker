@@ -159,7 +159,7 @@ function Sparkline({
               // 2. USE DotProps AND FIX NULL RETURN
               shape={(props: DotProps) => {
                 const { cx, cy } = props;
-                
+
                 // If coordinates aren't ready, return an empty group (not null)
                 if (cx === undefined || cy === undefined) return <g />;
 
@@ -177,12 +177,12 @@ function Sparkline({
                         animationDuration: '2s'
                       }}
                     />
-                    <circle 
-                      cx={cx} 
-                      cy={cy} 
-                      r={4} 
-                      fill={stroke} 
-                      stroke="var(--color-surface)" 
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={4}
+                      fill={stroke}
+                      stroke="var(--color-surface)"
                       strokeWidth={2}
                     />
                   </g>
@@ -301,6 +301,21 @@ function AccountDistributionDonut({
   );
 }
 
+function Skeleton({
+  className = "",
+}: {
+  className?: string;
+}) {
+  return (
+    <div
+      className={`animate-pulse rounded-xl ${className}`}
+      style={{
+        background:
+          "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)",
+      }}
+    />
+  );
+}
 export default function Accounts() {
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [showStatementModal, setShowStatementModal] = useState(false);
@@ -668,13 +683,38 @@ export default function Accounts() {
         <div className="mt-5 mx-1">
           {accountsLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="mx-2 mt-2 h-[72px] rounded-xl animate-pulse bg-(--color-surface)" />
+              <div
+                key={i}
+                className="mx-2 mt-4 rounded-2xl p-4 bg-(--color-surface) border border-(--border)"
+              >
+                {/* TOP */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
+
+                    <div className="flex-1 min-w-0">
+                      <Skeleton className="h-4 w-[65%] rounded-md" />
+                      <Skeleton className="h-3 w-[40%] rounded-md mt-2" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Skeleton className="w-8 h-8 rounded-lg" />
+                    <Skeleton className="w-8 h-8 rounded-lg" />
+                  </div>
+                </div>
+
+                {/* BOTTOM */}
+                <div className="mt-4 flex items-end justify-between">
+                  <div className="flex-1">
+                    <Skeleton className="h-6 w-[55%] rounded-md" />
+                    <Skeleton className="h-3 w-[45%] rounded-md mt-2" />
+                  </div>
+
+                  <Skeleton className="h-4 w-14 rounded-md" />
+                </div>
+              </div>
             ))
-          ) : filteredAccounts.length === 0 ? (
-            <div className="text-center mx-2 mt-2 rounded-2xl p-10 text-base bg-(--color-surface) border border-(--border)"
-            >
-              No accounts found in this category.
-            </div>
           ) : filteredAccounts.map((acc) => {
             const Icon = acc.icon;
 
@@ -767,7 +807,11 @@ export default function Accounts() {
             <div className="flex-1 min-w-0">
               <h3 className="text-[1.05rem] font-bold text-(--color-text-primary)">Account Insights</h3>
               <div className="mt-2">
-                {trendData.length > 0 ? (
+                {accountsLoading ? (
+                  <div className="mt-2">
+                    <Skeleton className="h-[80px] w-full rounded-2xl" />
+                  </div>
+                ) : trendData.length > 0 ? (
                   <Sparkline points={trendData} stroke="#4ade80" height={80} pulse />
                 ) : (
                   <p className="text-[0.75rem] mt-2 text-(--color-text-secondary)">No trend data available.</p>
@@ -775,14 +819,26 @@ export default function Accounts() {
               </div>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className={`text-[1.3rem] font-bold leading-tight ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
-                {isNetFlowPositive ? "+" : isNetFlowNegative ? "-" : ""}₹{Math.abs(monthlyNetFlow).toLocaleString("en-IN")}
-              </p>
-              <p className={`text-[0.72rem] mt-0.5 ${isFlowChangeNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
-                {isFlowChangePositive ? "↑ " : isFlowChangeNegative ? "↓ " : ""}
-                {Math.abs(monthlyFlowChange).toFixed(1)}% vs last month
-              </p>
-              <p className="text-[0.72rem] mt-0.5 text-(--color-text-secondary)" >This month's net flow</p>
+              {accountsLoading ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-md ml-auto" />
+                  <Skeleton className="h-4 w-24 rounded-md mt-2 ml-auto" />
+                  <Skeleton className="h-3 w-32 rounded-md mt-2 ml-auto" />
+                </>
+              ) : (
+                <>
+                  <p className={`text-[1.3rem] font-bold leading-tight ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
+                    {isNetFlowPositive ? "+" : isNetFlowNegative ? "-" : ""}₹{Math.abs(monthlyNetFlow).toLocaleString("en-IN")}
+                  </p>
+                  <p className={`text-[0.72rem] mt-0.5 ${isFlowChangeNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
+                    {isFlowChangePositive ? "↑ " : isFlowChangeNegative ? "↓ " : ""}
+                    {Math.abs(monthlyFlowChange).toFixed(1)}% vs last month
+                  </p>
+                  <p className="text-[0.72rem] mt-0.5 text-(--color-text-secondary)">
+                    This month's net flow
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -792,31 +848,58 @@ export default function Accounts() {
         >
           <h3 className="text-[1.05rem] font-bold mb-4 text-(--color-text-primary)">Asset Distribution</h3>
           <div className="flex items-center gap-2">
-            <AccountDistributionDonut
-              data={distributionData}
-              activeIndex={activeMobileDistributionIndex}
-              setActiveIndex={setActiveMobileDistributionIndex}
-              idPrefix="accounts-mobile-distribution"
-              sizeClass="w-[140px] h-[140px]"
-            />
-            <div className="flex-1 space-y-2">
-              {distributionData.length === 0 ? (
-                <p className="text-[0.82rem] text-(--color-text-secondary)">No distribution data.</p>
-              ) : distributionData.map((item, index) => (
-                <div
-                  key={`${item.label}-${index}`}
-                  className={`flex items-center justify-between rounded-lg px-2 py-1.5 transition-all duration-200 ${activeMobileDistributionIndex === index ? "bg-[var(--color-background)] border border-[var(--color-accent)]/40 shadow-sm" : ""}`}
-                  onMouseEnter={() => setActiveMobileDistributionIndex(index)}
-                  onMouseLeave={() => setActiveMobileDistributionIndex(null)}
-                >
-                  <span className="flex items-center gap-2 text-[0.82rem]" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>
-                    <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
-                    {item.label}
-                  </span>
-                  <span className="text-[0.82rem] font-semibold" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>{item.percentage.toFixed(1)}%</span>
+            {accountsLoading ? (
+              <>
+                <Skeleton className="w-[140px] h-[140px] rounded-full shrink-0" />
+
+                <div className="flex-1 space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-lg px-2 py-1.5"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="w-2 h-2 rounded-full" />
+                        <Skeleton className="h-3 w-24 rounded-md" />
+                      </div>
+
+                      <Skeleton className="h-3 w-10 rounded-md" />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <>
+                <AccountDistributionDonut
+                  data={distributionData}
+                  activeIndex={activeMobileDistributionIndex}
+                  setActiveIndex={setActiveMobileDistributionIndex}
+                  idPrefix="accounts-mobile-distribution"
+                  sizeClass="w-[140px] h-[140px]"
+                />
+
+                <div className="flex-1 space-y-2">
+                  {distributionData.length === 0 ? (
+                    <p className="text-[0.82rem] text-(--color-text-secondary)">No distribution data.</p>
+                  ) : distributionData.map((item, index) => (
+                    <div
+                      key={`${item.label}-${index}`}
+                      className={`flex items-center justify-between rounded-lg px-2 py-1.5 transition-all duration-200 ${activeMobileDistributionIndex === index ? "bg-[var(--color-background)] border border-[var(--color-accent)]/40 shadow-sm" : ""}`}
+                      onMouseEnter={() => setActiveMobileDistributionIndex(index)}
+                      onMouseLeave={() => setActiveMobileDistributionIndex(null)}
+                    >
+                      <span className="flex items-center gap-2 text-[0.82rem]" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>
+                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
+                        {item.label}
+                      </span>
+                      <span className="text-[0.82rem] font-semibold" style={{ color: isDark ? "#d1d5db" : "#4b5563" }}>
+                        {item.percentage.toFixed(1)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1041,24 +1124,39 @@ export default function Accounts() {
               <div className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]">
                 <h3 className="text-base leading-none font-semibold text-(--color-text-primary)">Account Insights</h3>
                 <div className="mt-6">
-                  {trendData.length > 0 ? (
+                  {accountsLoading ? (
+                    <Skeleton className="h-[120px] w-full rounded-2xl" />
+                  ) : trendData.length > 0 ? (
                     <Sparkline points={trendData} stroke="#22c55e" height={120} pulse />
                   ) : (
                     <p className="text-sm text-(--color-text-secondary)">No trend data available.</p>
                   )}
                 </div>
-                <p className="text-sm font-semibold text-(--color-text-secondary)">This month's net flow</p>
-                <p className={`mt-2 text-[24px] font-bold ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
-                  {isNetFlowPositive ? "+" : isNetFlowNegative ? "-" : ""}₹{Math.abs(monthlyNetFlow).toLocaleString("en-IN")}
-                </p>
-                <p className="mt-2 text-sm text-(--color-text-secondary) flex">
-                  <span className={`font-semibold mr-2 flex items-center ${isFlowChangeNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
-                    {isFlowChangePositive ? <ArrowUp size={18} className="mr-1" /> : null}
-                    {isFlowChangeNegative ? <ArrowDown size={18} className="mr-1" /> : null}
-                    {Math.abs(monthlyFlowChange).toFixed(1)}%
-                  </span>
-                  vs last month
-                </p>
+                {accountsLoading ? (
+                  <>
+                    <Skeleton className="h-4 w-36 rounded-md mt-4" />
+                    <Skeleton className="h-8 w-40 rounded-md mt-3" />
+                    <div className="flex items-center gap-2 mt-3">
+                      <Skeleton className="h-4 w-16 rounded-md" />
+                      <Skeleton className="h-4 w-24 rounded-md" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-semibold text-(--color-text-secondary)">This month's net flow</p>
+                    <p className={`mt-2 text-[24px] font-bold ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
+                      {isNetFlowPositive ? "+" : isNetFlowNegative ? "-" : ""}₹{Math.abs(monthlyNetFlow).toLocaleString("en-IN")}
+                    </p>
+                    <p className="mt-2 text-sm text-(--color-text-secondary) flex">
+                      <span className={`font-semibold mr-2 flex items-center ${isFlowChangeNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
+                        {isFlowChangePositive ? <ArrowUp size={18} className="mr-1" /> : null}
+                        {isFlowChangeNegative ? <ArrowDown size={18} className="mr-1" /> : null}
+                        {Math.abs(monthlyFlowChange).toFixed(1)}%
+                      </span>
+                      vs last month
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* Quick Actions */}
@@ -1092,34 +1190,75 @@ export default function Accounts() {
               <div className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]">
                 <h3 className="font-semibold mb-5 text-base leading-none text-(--color-text-primary)">Asset Distribution</h3>
                 <div className="flex items-center gap-6">
-                  <AccountDistributionDonut
-                    data={distributionData}
-                    activeIndex={activeDesktopDistributionIndex}
-                    setActiveIndex={setActiveDesktopDistributionIndex}
-                    idPrefix="accounts-desktop-distribution"
-                    sizeClass="w-[160px] h-[160px]"
-                  />
-                  <div className="flex-1 space-y-3 text-sm" style={{ color: isDark ? "#d0d5dd" : "#4b5563" }}>
-                    {distributionData.length === 0 ? (
-                      <p className="text-sm text-(--color-text-secondary)">No distribution data.</p>
-                    ) : distributionData.map((item, index) => (
-                      <div
-                        key={`${item.label}-${index}`}
-                        className={`cursor-pointer flex items-center justify-between rounded-xl px-2.5 py-2 transition-all duration-200 ${activeDesktopDistributionIndex === index
-                          ? "bg-[var(--color-background)] border border-[var(--color-accent)] shadow-sm"
-                          : "border border-transparent"
-                          }`}
-                        onMouseEnter={() => setActiveDesktopDistributionIndex(index)}
-                        onMouseLeave={() => setActiveDesktopDistributionIndex(null)}
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ background: item.color }} />
-                          {item.label}
-                        </span>
-                        <span>{item.percentage.toFixed(1)}%</span>
+                  {accountsLoading ? (
+                    <>
+                      <Skeleton className="w-[160px] h-[160px] rounded-full shrink-0" />
+
+                      <div className="flex-1 space-y-3">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between rounded-xl px-2.5 py-2 border border-transparent"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Skeleton className="w-2.5 h-2.5 rounded-full shrink-0" />
+
+                              <div className="space-y-2">
+                                <Skeleton className="h-3 w-24 rounded-md" />
+
+                                <Skeleton className="h-1.5 w-32 rounded-full" />
+                              </div>
+                            </div>
+
+                            <Skeleton className="h-3 w-10 rounded-md" />
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </>
+                  ) : (
+                    <>
+                      <AccountDistributionDonut
+                        data={distributionData}
+                        activeIndex={activeDesktopDistributionIndex}
+                        setActiveIndex={setActiveDesktopDistributionIndex}
+                        idPrefix="accounts-desktop-distribution"
+                        sizeClass="w-[160px] h-[160px]"
+                      />
+
+                      <div
+                        className="flex-1 space-y-3 text-sm"
+                        style={{ color: isDark ? "#d0d5dd" : "#4b5563" }}
+                      >
+                        {distributionData.length === 0 ? (
+                          <p className="text-sm text-(--color-text-secondary)">
+                            No distribution data.
+                          </p>
+                        ) : (
+                          distributionData.map((item, index) => (
+                            <div
+                              key={`${item.label}-${index}`}
+                              className={`cursor-pointer flex items-center justify-between rounded-xl px-2.5 py-2 transition-all duration-200 ${activeDesktopDistributionIndex === index
+                                ? "bg-[var(--color-background)] border border-[var(--color-accent)] shadow-sm"
+                                : "border border-transparent"
+                                }`}
+                              onMouseEnter={() => setActiveDesktopDistributionIndex(index)}
+                              onMouseLeave={() => setActiveDesktopDistributionIndex(null)}
+                            >
+                              <span className="inline-flex items-center gap-2">
+                                <span
+                                  className="h-2.5 w-2.5 rounded-full"
+                                  style={{ background: item.color }}
+                                />
+                                {item.label}
+                              </span>
+
+                              <span>{item.percentage.toFixed(1)}%</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
