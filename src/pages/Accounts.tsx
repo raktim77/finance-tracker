@@ -329,8 +329,8 @@ function AccountsListEmpty({
       <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)] text-[var(--color-primary)]">
         <Wallet size={compact ? 20 : 24} />
       </div>
-      <p className={`font-bold text-(--color-text-primary) ${compact ? "text-[0.95rem]" : "text-[1.05rem]"}`}>No accounts yet</p>
-      <p className={`mt-2 text-(--color-text-secondary) ${compact ? "text-[0.78rem]" : "text-sm"}`}>
+      <p className={`font-bold text-(--color-text-primary) ${compact ? "text-[14px]" : "text-[16px]"}`}>No accounts yet</p>
+      <p className={`mt-2 text-(--color-text-secondary) ${compact ? "text-[12px]" : "text-[14px]"} max-w-[400px] mx-auto`}>
         Add your first account to start tracking balances, trends, and allocation.
       </p>
       <button
@@ -355,9 +355,9 @@ function AccountsDataEmpty({
   compact?: boolean;
 }) {
   return (
-    <div className={`rounded-2xl border border-dashed border-(--border) bg-[var(--color-background)]/40 text-center ${compact ? "px-4 py-5" : "px-5 py-7"}`}>
-      <p className={`font-semibold text-(--color-text-primary) ${compact ? "text-[0.82rem]" : "text-sm"}`}>{title}</p>
-      <p className={`mt-1.5 text-(--color-text-secondary) ${compact ? "text-[0.72rem]" : "text-xs"}`}>{subtitle}</p>
+    <div className={`rounded-2xl text-center ${compact ? "px-4 py-5" : "px-5 py-7"}`}>
+      <p className={`font-bold text-(--color-text-primary) text-[14px]`}>{title}</p>
+      <p className={`mt-1.5 text-(--color-text-secondary) text-[12px]`}>{subtitle}</p>
     </div>
   );
 }
@@ -520,6 +520,8 @@ export default function Accounts() {
   const isExportingData =
     exportMutation.isPending ||
     exportSummaryMutation.isPending;
+  const hasExportableAccounts = rawAccounts.length > 0;
+  const disableQuickActions = isExportingData || !hasExportableAccounts;
 
   useEffect(() => {
     const el = mobileTabsScrollRef.current;
@@ -846,15 +848,17 @@ export default function Accounts() {
             );
           })}
         </div>
-
+          {accounts.length > 0 && !accountsLoading ? (
+            <>
         <div className="my-6 mx-4 relative h-px bg-[var(--border)] md:bottom-0 md:left-15 md:right-2" />
-
         {/* Account Insights Card */}
         <div className="mx-3 mt-4 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
         >
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <h3 className="text-[1.05rem] font-bold text-(--color-text-primary)">Account Insights</h3>
+              {trendData.length > 0 && accounts.length > 0 && !accountsLoading ? (
+                <h3 className="text-[1.05rem] font-bold text-(--color-text-primary)">Account Insights</h3>
+              ): null}
               <div className="mt-2">
                 {accountsLoading ? (
                   <div className="mt-2 space-y-2">
@@ -884,7 +888,7 @@ export default function Accounts() {
                   <Skeleton className="h-4 w-24 rounded-md mt-2 ml-auto" />
                   <Skeleton className="h-3 w-32 rounded-md mt-2 ml-auto" />
                 </>
-              ) : (
+              ) :  trendData.length > 0 && accounts.length > 0 ? (
                 <>
                   <p className={`text-[1.3rem] font-bold leading-tight ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
                     {isNetFlowPositive ? "+" : isNetFlowNegative ? "-" : ""}₹{Math.abs(monthlyNetFlow).toLocaleString("en-IN")}
@@ -897,7 +901,7 @@ export default function Accounts() {
                     This month's net flow
                   </p>
                 </>
-              )}
+              ): null}
             </div>
           </div>
         </div>
@@ -905,7 +909,9 @@ export default function Accounts() {
         {/* Account Distribution Card */}
         <div className="mx-3 mt-3 rounded-2xl overflow-hidden p-5 bg-(--color-surface) border border-(--border)"
         >
-          <h3 className="text-[1.05rem] font-bold mb-4 text-(--color-text-primary)">Asset Distribution</h3>
+          {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
+            <h3 className="text-[1.05rem] font-bold mb-4 text-(--color-text-primary)">Asset Distribution</h3>
+              ): null}
           <div className="flex items-center gap-2">
             {accountsLoading ? (
               <>
@@ -932,6 +938,7 @@ export default function Accounts() {
               </>
             ) : (
               <>
+              {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
                 <AccountDistributionDonut
                   data={distributionData}
                   activeIndex={activeMobileDistributionIndex}
@@ -939,6 +946,7 @@ export default function Accounts() {
                   idPrefix="accounts-mobile-distribution"
                   sizeClass="w-[140px] h-[140px]"
                 />
+              ): null}
 
                 <div className="flex-1 space-y-2">
                   {distributionData.length === 0 || accounts.length === 0 ? (
@@ -968,6 +976,9 @@ export default function Accounts() {
             )}
           </div>
         </div>
+            </>
+              ): null}
+
       </div>
 
       {/* ─── DESKTOP ─────────────────────────────────────────────────────────── */}
@@ -1203,7 +1214,9 @@ export default function Accounts() {
             <div className="space-y-4">
               {/* Account Insights */}
               <div className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]">
+                {trendData.length > 0 && accounts.length > 0 && !accountsLoading ? (
                 <h3 className="text-base leading-none font-semibold text-(--color-text-primary)">Account Insights</h3>
+              ): null}
                 <div className="mt-6">
                   {accountsLoading ? (
                     <div className="space-y-2">
@@ -1232,7 +1245,7 @@ export default function Accounts() {
                       <Skeleton className="h-4 w-24 rounded-md" />
                     </div>
                   </>
-                ) : (
+                ) : trendData.length > 0 && accounts.length > 0 ? (
                   <>
                     <p className="text-sm font-semibold text-(--color-text-secondary)">This month's net flow</p>
                     <p className={`mt-2 text-[24px] font-bold ${isNetFlowNegative ? "text-(--color-danger)" : "text-(--color-primary)"}`}>
@@ -1247,7 +1260,7 @@ export default function Accounts() {
                       vs last month
                     </p>
                   </>
-                )}
+                ) : null}
               </div>
 
               {/* Quick Actions */}
@@ -1256,18 +1269,18 @@ export default function Accounts() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setShowStatementModal(true)}
-                    disabled={isExportingData}
-                    className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={disableQuickActions ? undefined : () => setShowStatementModal(true)}
+                    disabled={disableQuickActions}
+                    className="rounded-xl border border-[var(--border)] p-3 text-center transition-colors flex flex-col gap-3 hover:bg-[var(--color-background)]/40 disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <FileText className="mx-auto text-[var(--color-success)] mb-1.5" size={22} />
                     <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">Account Statement</p>
                   </button>
                   <button
                     type="button"
-                    onClick={() => void handleExportSummary()}
-                    disabled={isExportingData}
-                    className="rounded-xl border border-[var(--border)] p-3 text-center cursor-pointer hover:bg-[var(--color-background)]/40 transition-colors flex flex-col gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={disableQuickActions ? undefined : () => void handleExportSummary()}
+                    disabled={disableQuickActions}
+                    className="rounded-xl border border-[var(--border)] p-3 text-center transition-colors flex flex-col gap-3 hover:bg-[var(--color-background)]/40 disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <FileSpreadsheet className="mx-auto text-[var(--color-warm)] mb-1.5" size={22} />
                     <p className="text-[12px] font-semibold text-[var(--color-text-secondary)] leading-tight">
@@ -1279,7 +1292,9 @@ export default function Accounts() {
 
               {/* Account Distribution */}
               <div className="rounded-2xl p-6 bg-(--color-surface) shadow-xs border border-[var(--border)]">
+                {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
                 <h3 className="font-semibold mb-5 text-base leading-none text-(--color-text-primary)">Asset Distribution</h3>
+              ): null}
                 <div className="flex items-center gap-6">
                   {accountsLoading ? (
                     <>
@@ -1311,6 +1326,7 @@ export default function Accounts() {
                     </>
                   ) : (
                     <>
+                    {distributionData.length > 0 && accounts.length > 0 && !accountsLoading ? (
                       <AccountDistributionDonut
                         data={distributionData}
                         activeIndex={activeDesktopDistributionIndex}
@@ -1318,6 +1334,7 @@ export default function Accounts() {
                         idPrefix="accounts-desktop-distribution"
                         sizeClass="w-[160px] h-[160px]"
                       />
+                    ) : null}
 
                       <div
                         className="flex-1 space-y-3 text-sm"
