@@ -8,10 +8,15 @@ import {
   Settings,
   PlusCircle,
   LogOut,
+  Monitor,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { useContext } from "react";
 import { useConfirm } from "../ui/confirm-modal/useConfirm";
 import { useAuth } from "../../lib/context/useAuth";
 import { isNativeAndroidApp } from "../../lib/capacitor/platform";
+import { ThemeContext } from "../../context/ThemeContext";
 
 import Logo from "../../assets/images/logo.png";
 import onlyLogo from "../../assets/images/only_logo.png";
@@ -36,6 +41,7 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
   const { logout } = useAuth();
   const isNativeApp = isNativeAndroidApp();
   const versionNumber = import.meta.env.VITE_VERSION_NUMBER;
+  const { theme, setTheme } = useContext(ThemeContext);
 
   const handleLogout = async () => {
     const ok = await confirm({
@@ -136,6 +142,45 @@ export default function Sidebar({ collapsed, onAddTransaction }: SidebarProps) {
 
         {/* --- REFINED LOGOUT SECTION --- */}
       <div className="mt-auto px-3 pb-8 pt-4">
+        {!collapsed && (
+          <div className="mb-4 px-1 flex items-center justify-center">
+            <div className="flex items-center gap-2 p-1 rounded-xl bg-[var(--color-surface)] w-fit">
+              <button
+                onClick={() => setTheme("light")}
+                className={`p-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
+                  theme === "light"
+                    ? "bg-[var(--color-accent)]/20 text-[var(--color-text-primary)]"
+                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                }`}
+              >
+                <Sun size={14} />
+              </button>
+
+              <button
+                onClick={() => setTheme("dark")}
+                className={`p-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
+                  theme === "dark"
+                    ? "bg-[var(--color-accent)]/20 text-[var(--color-text-primary)]"
+                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                }`}
+              >
+                <Moon size={14} />
+              </button>
+
+              <button
+                onClick={() => setTheme("system")}
+                className={`p-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
+                  theme === "system"
+                    ? "bg-[var(--color-accent)]/20 text-[var(--color-text-primary)]"
+                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                }`}
+              >
+                <Monitor size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {!collapsed && (
           <div className="mb-5 px-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-secondary)] opacity-45">

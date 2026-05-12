@@ -720,7 +720,7 @@ export default function Settings() {
           </div>
 
           {/* DESKTOP SIDEBAR */}
-          <div className="hidden lg:flex flex-col gap-2 w-full">
+          <div className="hidden lg:flex flex-col gap-2 w-full pl-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -881,7 +881,7 @@ export default function Settings() {
                       <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight leading-tight">
                         Theme
                       </p>
-                      <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70 leading-relaxed">
+                      <p className="text-[10px] md:text-[12px] font-medium text-[var(--color-text-secondary)] leading-relaxed mt-1">
                         Choose how Xpensio looks across your device
                       </p>
                     </div>
@@ -908,7 +908,7 @@ export default function Settings() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-black text-[var(--color-text-primary)] tracking-tight leading-tight">Sidebar Layout</p>
-                      <p className="text-[10px] font-medium text-[var(--color-text-secondary)] opacity-70 leading-relaxed break-words">Choose your preferred navigation style and keep it synced across the app</p>
+                      <p className="text-[10px] md:text-[12px] font-medium text-[var(--color-text-secondary)] leading-relaxed mt-1">Choose your preferred navigation style and keep it synced across the app</p>
                     </div>
                   </div>
                   <div className="w-full md:w-[180px] md:shrink-0">
