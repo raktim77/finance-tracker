@@ -30,7 +30,7 @@ export function AnalyticsMainGrid({
   pieData,
   savingsData,
   barData,
-  children,
+  // children,
   mode,
   isLoading,
   thisMonthData,
@@ -74,7 +74,7 @@ export function AnalyticsMainGrid({
       </div>
  
       {/* ── ROW 3: AI Insights — full width ── */}
-      {children}
+      {/* {children} */}
     </div>
   );
 }

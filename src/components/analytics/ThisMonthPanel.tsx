@@ -35,7 +35,7 @@ export function ThisMonthPanel({ data, isLoading }: ThisMonthPanelProps) {
       {/* Big spend number */}
       <div className="flex flex-col items-center justify-center flex-1 pb-4 gap-1">
         {isLoading ? (
-          <Skeleton w="w-24" h="h-12" />
+          <Skeleton w="w-24" h="h-8" />
         ) : (
           <span className="text-[clamp(1.5rem,1.6vw,1.9rem)] font-semibold text-[var(--color-text-primary)] tracking-tighter leading-none break-all">
             ₹{formatCompactCurrency(spend)}

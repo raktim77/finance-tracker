@@ -368,8 +368,8 @@ export default function Budgets() {
       </div>
 
       {/* text */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: 280, position: "relative" }}>
-        <p className="text-[14px] md:text-[16px]" style={{ margin: 0, fontWeight: 800, color: "var(--color-text-primary)", letterSpacing: "0.01em" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 280, position: "relative" }}>
+        <p className="text-[14px] md:text-[16px]" style={{ margin: 0, fontWeight: 700, color: "var(--color-text-primary)", letterSpacing: "0.01em" }}>
           No Budget Found
         </p>
         <p className="text-[12px] md:text-[14px]" style={{ margin: 0, lineHeight: 1.65, color: "var(--color-text-secondary)" }}>

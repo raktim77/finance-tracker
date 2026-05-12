@@ -40,7 +40,7 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
 
   const SkeletonVal = ({ wide }: { wide?: boolean }) => (
     <div
-      className={`h-7 ${wide ? "w-40" : "w-24"} bg-[var(--color-text-secondary)]/10 rounded-md animate-pulse mt-1`}
+      className={`h-6 ${wide ? "w-40" : "w-24"} bg-[var(--color-text-secondary)]/20 rounded-md animate-pulse`}
     />
   );
 
@@ -56,7 +56,7 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
             Cumulative Spending
           </span>
           {isLoading ? (
-            <SkeletonVal wide />
+            <SkeletonVal />
           ) : (
             <div className="flex flex-wrap items-end gap-x-2 gap-y-2 justify-between">
               <span className="text-2xl font-semibold text-[var(--color-text-primary)] tracking-tight leading-none">
@@ -65,8 +65,8 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
 
               <div
                 className={`inline-flex items-center gap-1 px-1 py-0.5 rounded-lg text-[12px] font-black w-fit ${isNegativeChange
-                    ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
-                    : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
+                  ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
+                  : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
                   }`}
               >
                 {isNegativeChange ? (
@@ -162,7 +162,10 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
             Budget Used
           </span>
           {isLoading ? (
+            <>
             <div className="h-2 w-full bg-[var(--color-text-secondary)]/10 rounded-full animate-pulse" />
+            <div className="h-4 w-8 bg-[var(--color-text-secondary)]/10 rounded-full animate-pulse" />
+            </>
           ) : (
             <>
               <div className="w-full h-2 bg-[var(--color-text-secondary)]/15 rounded-full overflow-hidden">
@@ -204,8 +207,8 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
 
               <div
                 className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-black shrink-0 ${isNegativeChange
-                    ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
-                    : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
+                  ? "bg-[var(--color-danger)]/15 text-[var(--color-danger)]"
+                  : "bg-[var(--color-success)]/15 text-[var(--color-success)]"
                   }`}
               >
                 {isNegativeChange ? (
@@ -297,8 +300,12 @@ export function AnalyticsHero({ data, isLoading }: AnalyticsHeroProps) {
             </span>
 
             {isLoading ? (
-              <div className="h-2 w-full bg-[var(--color-text-secondary)]/10 rounded-full animate-pulse" />
-            ) : (
+              <>
+              <div className="h-2 w-25 bg-[var(--color-text-secondary)]/10 rounded animate-pulse " />
+              <div className="h-4 w-10 bg-[var(--color-text-secondary)]/10 rounded animate-pulse mt-1" />
+              </>
+              )
+               : (
               <>
                 <div className="w-full h-2 bg-[var(--color-text-secondary)]/15 rounded-full overflow-hidden">
                   <div

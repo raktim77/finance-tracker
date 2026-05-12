@@ -3,7 +3,7 @@ import { AnalyticsHeader } from "../components/analytics/AnalyticsHeader";
 import { AnalyticsHero } from "../components/analytics/AnalyticsHero";
 // import { AnalyticsMetrics } from "../components/analytics/AnalyticsMetrics";
 import { AnalyticsMainGrid } from "../components/analytics/AnalyticsMainGrid";
-import { AnalyticsInsights } from "../components/analytics/AnalyticsInsights";
+// import { AnalyticsInsights } from "../components/analytics/AnalyticsInsights";
 import { formatOverviewText, getPresetRange } from "../components/analytics/data/dateRange";
 import type { AnalyticsDatePreset, AnalyticsDateRange } from "../components/analytics/data/types";
 import { useAnalytics } from "../features/analytics/hooks/useAnalytics";
@@ -139,7 +139,7 @@ export default function Analytics() {
       mode={mode}
       isLoading={isLoading}
     >
-      <AnalyticsInsights />
+      {/* <AnalyticsInsights /> */}
     </AnalyticsMainGrid>
   </div>
 
