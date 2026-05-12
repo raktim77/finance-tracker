@@ -364,7 +364,7 @@ export function SpendingDonut({ data, isLoading }: Props) {
                 animationEasing="ease-out"
                 onMouseEnter={(_, index) => setActiveIndex(index)}
               >
-                {data.map((entry, index) => {
+                {data.map((_, index) => {
                   const isActive = activeIndex === index;
                   return (
                     <Cell

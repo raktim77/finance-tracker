@@ -432,7 +432,7 @@ if (isLoading) {
                 animationEasing="ease-out"
                 onMouseEnter={(_, index) => setActiveIndex(index)}
               >
-                {pieData.map((entry, index) => {
+                {pieData.map((_, index) => {
                   const isActive = activeIndex === index;
                   return (
                     <Cell
