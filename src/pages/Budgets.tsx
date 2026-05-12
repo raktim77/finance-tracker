@@ -332,34 +332,486 @@ export default function Budgets() {
     );
   };
 
+  // shared card — use for both mobile and desktop center card
+  const NoBudgetCard = (
+    <div style={{
+      position: "relative", overflow: "hidden",
+      borderRadius: 20, padding: "32px 24px",
+      background: "var(--color-surface)",
+      border: "1px solid var(--border)",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", gap: 14, textAlign: "center",
+    }}>
+      <style>{`
+      @keyframes nb-pulse{0%,100%{opacity:.45;transform:scale(1);}50%{opacity:.9;transform:scale(1.07);}}
+      @keyframes nb-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+    `}</style>
 
-  // Month nav pill — rounded for mobile, rectangular for desktop create header
-  // const MonthNavPill: React.FC<{ rounded?: boolean }> = ({ rounded }) => (
-  //   <div className={`inline-flex items-center gap-3 border border-[var(--border)] bg-[var(--color-surface)] px-4 py-2.5 ${rounded ? "rounded-full" : "rounded-xl"}`}>
-  //     <button onClick={() => shiftMonth(-1)}
-  //       className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)]">
-  //       <ChevronLeft size={15} />
-  //     </button>
-  //     <span className="text-[0.78rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-primary)]">
-  //       {monthLabelShortUpper}
-  //     </span>
-  //     <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
-  //       className="flex items-center bg-transparent border-none cursor-pointer p-0 text-[var(--color-text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed">
-  //       <ChevronRight size={15} />
-  //     </button>
-  //   </div>
-  // );
+      {/* blobs */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", borderRadius: "inherit" }}>
+        <div style={{ position: "absolute", top: "-30%", left: "-10%", width: "55%", paddingBottom: "55%", borderRadius: "50%", background: "radial-gradient(circle,rgba(34,197,94,.10) 0%,transparent 70%)", filter: "blur(32px)" }} />
+        <div style={{ position: "absolute", bottom: "-25%", right: "-10%", width: "50%", paddingBottom: "50%", borderRadius: "50%", background: "radial-gradient(circle,rgba(16,185,129,.07) 0%,transparent 70%)", filter: "blur(28px)" }} />
+      </div>
 
+      {/* icon */}
+      <div style={{ position: "relative", width: 100, height: 100, display: "flex", alignItems: "center", justifyContent: "center", animation: "nb-float 3.2s ease-in-out infinite", flexShrink: 0 }}>
+        <div style={{ position: "absolute", inset: 10, borderRadius: "50%", border: "1.5px solid rgba(34,197,94,.22)", animation: "nb-pulse 2.8s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "1px solid rgba(34,197,94,.10)", animation: "nb-pulse 2.8s ease-in-out .5s infinite" }} />
+        <div style={{
+          width: 64, height: 64, borderRadius: 18, position: "relative", zIndex: 1,
+          background: "linear-gradient(135deg,rgba(34,197,94,.14) 0%,rgba(16,185,129,.07) 100%)",
+          border: "1px solid rgba(34,197,94,.22)", boxShadow: "0 8px 24px rgba(34,197,94,.10)",
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <Sparkles size={26} style={{ color: "#22c55e" }} />
+        </div>
+      </div>
+
+      {/* text */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: 280, position: "relative" }}>
+        <p className="text-[14px] md:text-[16px]" style={{ margin: 0, fontWeight: 800, color: "var(--color-text-primary)", letterSpacing: "0.01em" }}>
+          No Budget Found
+        </p>
+        <p className="text-[12px] md:text-[14px]" style={{ margin: 0, lineHeight: 1.65, color: "var(--color-text-secondary)" }}>
+          Budget creation is only available for the current and next month.
+        </p>
+      </div>
+    </div>
+  );
+  const skeletonBg =
+  "color-mix(in srgb, var(--color-text-secondary) 20%, transparent)";
   // ─── LOADING ──────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="p-4 flex flex-col gap-6 pb-24 w-full animate-pulse">
-        <div className="h-8 w-48 rounded-lg bg-[var(--color-text-secondary)]/10" />
-        <div className="h-[220px] rounded-[1.5rem] bg-[var(--color-text-secondary)]/10" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl bg-[var(--color-text-secondary)]/10" />
-          ))}
+      <div>
+        <style>{`
+        @keyframes bg-shimmer {
+          0%,100%{ opacity:.30; }
+          50%    { opacity:.65; }
+        }
+      `}</style>
+
+        {/* MOBILE skeleton */}
+        <div className="lg:hidden flex flex-col pb-24 px-3 gap-5">
+          {/* header — always visible */}
+          <div>
+            <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+              {monthLabelLong} Budget
+            </h2>
+            <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3 py-2 mt-3 border border-(--color-accent-soft)">
+              <button onClick={() => shiftMonth(-1)} className="flex items-center text-[var(--color-text-primary)]">
+                <ChevronLeft size={14} />
+              </button>
+              <span className="text-[0.75rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+              <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+                className="flex items-center text-[var(--color-text-primary)] disabled:opacity-30">
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* gauge skeleton */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <div style={{
+              width: 220, height: 120, borderRadius: 110,
+              background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+            }} />
+            <div style={{
+              height: 13, width: 60, borderRadius: 6,
+              background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+            }} />
+          </div>
+
+          {/* stats row skeleton */}
+          <div style={{
+            borderRadius: 16, overflow: "hidden",
+            background: "linear-gradient(135deg,rgba(34,197,94,0.08),rgba(34,197,94,0.04))",
+            border: "1px solid rgba(34,197,94,0.12)"
+          }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "12px 16px", borderBottom: i < 2 ? "1px solid var(--border)" : "none"
+              }}>
+                <div style={{
+                  height: 11, width: 70, borderRadius: 5,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                }} />
+                <div style={{
+                  height: 13, width: 90, borderRadius: 5,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                }} />
+              </div>
+            ))}
+          </div>
+
+          {/* unallocated card skeleton */}
+          <div style={{
+            borderRadius: 16, padding: "16px", display: "flex", alignItems: "center", gap: 12,
+            background: "var(--color-surface)", border: "1px solid var(--border)"
+          }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+              background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+            }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{
+                height: 10, width: 110, borderRadius: 5,
+                background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+              }} />
+              <div style={{
+                height: 14, width: 80, borderRadius: 5,
+                background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .2s infinite"
+              }} />
+            </div>
+          </div>
+
+          {/* spending pace card skeleton */}
+          <div style={{
+            borderRadius: 16, overflow: "hidden", background: "var(--color-surface)",
+            border: "1px solid var(--border)"
+          }}>
+            <div style={{ padding: "16px 16px 12px" }}>
+              <div style={{
+                height: 14, width: 120, borderRadius: 5,
+                background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+              }} />
+              <div style={{
+                height: 10, width: 180, borderRadius: 5, marginTop: 8,
+                background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+              }} />
+            </div>
+            <div style={{ padding: "0 16px 16px", display: "flex", gap: 12 }}>
+              <div style={{
+                width: "38%", height: 88, borderRadius: 10,
+                background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+              }} />
+              <div style={{
+                flex: 1, height: 88, borderRadius: 10,
+                background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+              }} />
+            </div>
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{
+                display: "flex", justifyContent: "space-between",
+                padding: "14px 16px", borderTop: "1px solid var(--border)"
+              }}>
+                <div style={{
+                  height: 10, width: 80, borderRadius: 5,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                }} />
+                <div style={{
+                  height: 12, width: 100, borderRadius: 5,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                }} />
+              </div>
+            ))}
+            {/* 3 metric boxes */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
+              margin: "0 16px 16px", borderRadius: 12, overflow: "hidden",
+              border: "1px solid var(--border)"
+            }}>
+              {[0, 1, 2].map((i) => (
+                <div key={i} style={{
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  gap: 6, padding: "12px 8px",
+                  borderRight: i < 2 ? "1px solid var(--border)" : "none"
+                }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: "50%",
+                    background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                  }} />
+                  <div style={{
+                    height: 8, width: 32, borderRadius: 4,
+                    background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                  }} />
+                  <div style={{
+                    height: 12, width: 44, borderRadius: 4,
+                    background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                  }} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* category list skeleton */}
+          <div style={{
+            borderRadius: 16, overflow: "hidden", background: "var(--color-surface)",
+            border: "1px solid var(--border)"
+          }}>
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "14px 16px",
+                borderBottom: i < 3 ? "1px solid var(--border)" : "none"
+              }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                }} />
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div style={{
+                      height: 12, width: "45%", borderRadius: 5,
+                      background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                    }} />
+                    <div style={{
+                      height: 10, width: "20%", borderRadius: 5,
+                      background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                    }} />
+                  </div>
+                  <div style={{
+                    height: 5, width: "100%", borderRadius: 99,
+                    background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* DESKTOP skeleton */}
+        <div className="hidden lg:flex flex-col gap-5 pb-10 w-full">
+          {/* header — always visible */}
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-5">
+              <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+                {monthLabelLong} Budget
+              </h2>
+              <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
+                <button onClick={() => shiftMonth(-1)} className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]">
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-[0.9rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+                <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth}
+                  className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+            {/* edit/delete button ghosts */}
+            <div style={{ display: "flex", gap: 8 }}>
+              {[100, 80].map((w, i) => (
+                <div key={i} style={{
+                  height: 36, width: w, borderRadius: 10,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                }} />
+              ))}
+            </div>
+          </div>
+
+          {/* hero 2-col */}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-11 items-stretch auto-rows-fr">
+            {/* left panel */}
+            <div className="lg:col-span-5 flex flex-col gap-4">
+              {/* donut + stats card */}
+              <div style={{
+                padding: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16,
+                background: "var(--color-surface)", border: "1px solid var(--border)",
+                borderRadius: 16, flex: 1
+              }}>
+                {/* donut ghost */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{
+                    width: 200, height: 200, borderRadius: "50%",
+                    background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite",
+                    position: "relative"
+                  }}>
+                    <div style={{
+                      position: "absolute", inset: 48, borderRadius: "50%",
+                      background: "var(--color-surface)"
+                    }} />
+                  </div>
+                </div>
+                {/* stats ghost */}
+                <div style={{
+                  display: "flex", flexDirection: "column", justifyContent: "center",
+                  alignItems: "center", gap: 28
+                }}>
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                      <div style={{
+                        height: 9, width: 60, borderRadius: 4,
+                        background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                      }} />
+                      <div style={{
+                        height: 20, width: 100, borderRadius: 5,
+                        background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                      }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* unallocated ghost */}
+              <div style={{
+                padding: "16px 28px", display: "flex", alignItems: "center", gap: 12,
+                background: "var(--color-surface)", border: "1px solid var(--border)", borderRadius: 16
+              }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+                }} />
+                <div style={{
+                  height: 11, width: 130, borderRadius: 5,
+                  background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+                }} />
+                <div style={{
+                  height: 16, width: 90, borderRadius: 5, marginLeft: 8,
+                  background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .2s infinite"
+                }} />
+              </div>
+            </div>
+
+            {/* right panel — spending pace */}
+            <div style={{
+              background: "var(--color-surface)", border: "1px solid var(--border)",
+              borderRadius: 16, padding: 28, display: "flex", flexDirection: "column", gap: 24
+            }}
+              className="lg:col-span-6">
+              {/* header */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{
+                  height: 14, width: 140, borderRadius: 5,
+                  background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+                }} />
+                <div style={{
+                  height: 10, width: 220, borderRadius: 5,
+                  background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+                }} />
+              </div>
+              {/* pace hero */}
+              <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+                <div style={{
+                  display: "flex", flexDirection: "column", gap: 12,
+                  borderRight: "1px solid var(--border)", paddingRight: 32, flex: 1
+                }}>
+                  <div style={{
+                    height: 38, width: 100, borderRadius: 8,
+                    background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+                  }} />
+                  <div style={{
+                    height: 11, width: 120, borderRadius: 5,
+                    background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+                  }} />
+                  <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{
+                      height: 9, width: 70, borderRadius: 4,
+                      background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+                    }} />
+                    <div style={{
+                      height: 14, width: 90, borderRadius: 5,
+                      background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out .1s infinite"
+                    }} />
+                  </div>
+                </div>
+                <div style={{
+                  width: 280, height: 130, borderRadius: 12, flexShrink: 0,
+                  background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+                }} />
+              </div>
+              {/* should/actual/diff */}
+              <div style={{
+                display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24,
+                padding: "24px 0", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)"
+              }}>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{
+                      height: 9, width: 70, borderRadius: 4,
+                      background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                    }} />
+                    <div style={{
+                      height: 16, width: 90, borderRadius: 5,
+                      background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                    }} />
+                  </div>
+                ))}
+              </div>
+              {/* pace/burn/risk */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    paddingLeft: i > 0 ? 16 : 0, paddingRight: i < 2 ? 16 : 0,
+                    borderRight: i < 2 ? "1px solid var(--border)" : "none"
+                  }}>
+                    <div style={{
+                      width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                      background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                    }} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{
+                        height: 9, width: 55, borderRadius: 4,
+                        background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                      }} />
+                      <div style={{
+                        height: 14, width: 65, borderRadius: 5,
+                        background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                      }} />
+                      <div style={{
+                        height: 9, width: 50, borderRadius: 4,
+                        background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.1}s infinite`
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* status bar ghost */}
+          <div style={{
+            height: 56, borderRadius: 16,
+            background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+          }} />
+
+          {/* breakdown heading ghost */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+            <div style={{
+              height: 20, width: 160, borderRadius: 6,
+              background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+            }} />
+            <div style={{
+              height: 12, width: 80, borderRadius: 5,
+              background: skeletonBg, animation: "bg-shimmer 1.6s ease-in-out infinite"
+            }} />
+          </div>
+
+          {/* category cards grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} style={{
+                background: "var(--color-surface)", border: "1px solid var(--border)",
+                borderRadius: 16, padding: 20, opacity: 1 - i * 0.06
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+                    background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                  }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                    <div style={{
+                      height: 13, width: 90, borderRadius: 5,
+                      background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                    }} />
+                    <div style={{
+                      height: 10, width: 110, borderRadius: 5,
+                      background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.08 + 0.1}s infinite`
+                    }} />
+                  </div>
+                </div>
+                <div style={{
+                  height: 5, borderRadius: 99,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`,
+                  marginBottom: 10
+                }} />
+                <div style={{
+                  height: 14, width: 40, borderRadius: 5,
+                  background: skeletonBg, animation: `bg-shimmer 1.6s ease-in-out ${i * 0.08}s infinite`
+                }} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -398,15 +850,7 @@ export default function Budgets() {
               </div>
             </div>
           </div>
-          <div className="rounded-2xl p-10 text-center bg-[var(--color-surface)] border border-[var(--border)]">
-            <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-4">
-              <Sparkles size={26} className="text-[var(--color-accent)]" />
-            </div>
-            <h3 className="text-xl font-black text-[var(--color-text-primary)]">No Budget Found</h3>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Budget creation is only available for the current and next month.
-            </p>
-          </div>
+          {NoBudgetCard}
         </div>
         {/* DESKTOP */}
         <div className=" hidden md:flex flex-col gap-4 pb-24 w-full">
@@ -429,15 +873,7 @@ export default function Budgets() {
               </div>
             </div>
           </div>
-          <div className="rounded-2xl p-10 text-center bg-[var(--color-surface)] border border-[var(--border)]">
-            <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-4">
-              <Sparkles size={26} className="text-[var(--color-accent)]" />
-            </div>
-            <h3 className="text-xl font-black text-[var(--color-text-primary)]">No Budget Found</h3>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Budget creation is only available for the current and next month.
-            </p>
-          </div>
+          {NoBudgetCard}
         </div>
 
       </div>
@@ -448,13 +884,104 @@ export default function Budgets() {
   if (!budget?.exists || isEditingBudget) {
     if (!isEditingBudget && suggestionsLoading) {
       return (
-        <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-pulse">
-          <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mb-4">
-            <Sparkles className="text-[var(--color-accent)]" size={28} />
+        <div>
+          <style>{`@keyframes sl-shimmer{0%,100%{opacity:.30;}50%{opacity:.65;}}`}</style>
+
+          {/* MOBILE */}
+          <div className="lg:hidden flex flex-col pb-24 px-3 gap-5">
+            <div>
+              <h2 className="text-[1.5rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+                {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
+              </h2>
+              <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3 py-2 mt-3 border border-(--color-accent-soft)">
+                <button onClick={() => shiftMonth(-1)} className="flex items-center text-[var(--color-text-primary)]"><ChevronLeft size={14} /></button>
+                <span className="text-[0.75rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+                <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth} className="flex items-center text-[var(--color-text-primary)] disabled:opacity-30"><ChevronRight size={14} /></button>
+              </div>
+            </div>
+            {/* Step 1 card ghost */}
+            <div style={{ background: "var(--color-surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ height: 10, width: 140, borderRadius: 5, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+              <div style={{ height: 42, width: "70%", borderRadius: 8, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out .1s infinite" }} />
+              <div style={{ height: 1, background: "var(--border)" }} />
+              <div style={{ height: 10, width: 110, borderRadius: 5, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+              <div style={{ height: 6, borderRadius: 99, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+              <div style={{ height: 11, width: "55%", borderRadius: 5, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out .1s infinite" }} />
+            </div>
+            {/* save button ghost */}
+            <div style={{ height: 56, borderRadius: 12, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+            {/* category cards ghost */}
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} style={{ background: "var(--color-surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 12, opacity: 1 - i * 0.12 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                    <div style={{ height: 13, width: 90, borderRadius: 5, background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                  </div>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                </div>
+                <div style={{ height: 28, width: "55%", borderRadius: 6, background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+              </div>
+            ))}
           </div>
-          <p className="text-[0.75rem] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
-            Analyzing your spending...
-          </p>
+
+          {/* DESKTOP */}
+          <div className="hidden lg:flex flex-col gap-6 pb-10 w-full">
+            <div className="flex flex-col gap-5">
+              <h2 className="text-[2.1rem] leading-[1.1] font-bold text-[var(--color-text-primary)]">
+                {isEditingBudget ? `Edit ${monthLabelLong} Budget` : `Create ${monthLabelLong} Budget`}
+              </h2>
+              <div className="inline-flex items-center gap-2 bg-[var(--color-accent-soft)] rounded-xl px-3.5 py-2 self-start border border-(--color-accent-soft)">
+                <button onClick={() => shiftMonth(-1)} className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)]"><ChevronLeft size={16} /></button>
+                <span className="text-[0.9rem] font-semibold text-[var(--color-text-primary)]">{monthLabelFull}</span>
+                <button onClick={() => shiftMonth(1)} disabled={!canGoToNextMonth} className="flex items-center bg-transparent border-none cursor-pointer text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight size={16} /></button>
+              </div>
+              <div style={{ height: 16, width: 360, borderRadius: 6, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+            </div>
+            <div className="grid grid-cols-5 gap-4 items-start">
+              {/* left */}
+              <div className="lg:col-span-2 flex flex-col gap-4">
+                <div style={{ background: "var(--color-surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+                    <div style={{ height: 14, width: 180, borderRadius: 5, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out .1s infinite" }} />
+                  </div>
+                  <div style={{ height: 42, width: "65%", borderRadius: 8, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+                  <div style={{ height: 1, background: "var(--border)" }} />
+                  <div style={{ height: 10, width: 120, borderRadius: 5, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+                  <div style={{ height: 6, borderRadius: 99, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+                  <div style={{ height: 11, width: "50%", borderRadius: 5, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out .1s infinite" }} />
+                </div>
+                <div style={{ height: 56, borderRadius: 12, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+              </div>
+              {/* right */}
+              <div className="lg:col-span-3" style={{ background: "var(--color-surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out infinite" }} />
+                  <div style={{ height: 14, width: 200, borderRadius: 5, background: skeletonBg, animation: "sl-shimmer 1.6s ease-in-out .1s infinite" }} />
+                </div>
+                {/* table header */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 200px 80px", gap: 12, paddingBottom: 12, borderBottom: "1px solid var(--border)", marginBottom: 4 }}>
+                  {[80, 60, 40].map((w, i) => (
+                    <div key={i} style={{ height: 9, width: w, borderRadius: 4, background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                  ))}
+                </div>
+                {/* rows */}
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 200px 80px", gap: 12, alignItems: "center", padding: "14px 0", borderBottom: "1px solid var(--border)", opacity: 1 - i * 0.12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                      <div style={{ height: 13, width: 100, borderRadius: 5, background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                    </div>
+                    <div style={{ height: 36, borderRadius: 10, background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", background: skeletonBg, animation: `sl-shimmer 1.6s ease-in-out ${i * 0.1}s infinite` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -1514,7 +2041,7 @@ export default function Budgets() {
                   <div>
                     <p className="text-[0.7rem] text-[var(--color-text-secondary)] mb-2 font-semibold">PACE</p>
                     <p className="text-[1rem] font-bold text-[var(--color-text-primary)] mb-1">
-                      ₹{formatCompactCurrency(Math.round(budgetActualSpent / Math.max(budgetCurrentDay, 1)))} 
+                      ₹{formatCompactCurrency(Math.round(budgetActualSpent / Math.max(budgetCurrentDay, 1)))}
                       {/* /
                       ₹{formatCompactCurrency(Math.round(budgetIdealPerDay))} */}
                     </p>
